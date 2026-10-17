@@ -1,3 +1,4 @@
+var STG = {};
 (function () {
   /* ================= Style Studio (layered avatars) ================= */
   var CAT = VNNA.CATALOG, byId = VNNA.byId;
@@ -32,7 +33,7 @@
     if (cur) {
       cx.clearRect(0, 0, cvs.width, cvs.height);
       var s = 840 / 2010, t = danceOn ? (now - t0) / 1000 : frozen;
-      VNNA.draw(cx, cur.set, cur.spec, { x: 230, y: 2005 * s, h: 1700 * s * cur.spec.hs, clip: VNNA.clipOf(sel.dance), t: t, beat: 0.5, ph: 0, amp: 1, head: headFn });
+      VNNA.draw(cx, cur.set, cur.spec, { st: STG, now: performance.now() / 1000, x: 230, y: 2005 * s, h: 1700 * s * cur.spec.hs, clip: VNNA.clipOf(sel.dance), t: t, beat: 0.5, ph: 0, amp: 1, head: headFn });
     }
     requestAnimationFrame(frame);
   }

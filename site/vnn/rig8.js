@@ -58,7 +58,7 @@ var RIG = (function () {
   function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
   function len3(v) { return Math.hypot(v[0], v[1], v[2]); }
   function figure(ctx, o, headFn) {
-    var P = o.pose, J = P.j, px = o.px || 0.3, base0 = ctx.globalAlpha;
+    var P = o.pose, J = P.j, px = o.px || 0.3, base0 = ctx.globalAlpha, ST = o.st || {}, NOW = o.now || 0;
     function g(n) { var i = JI[n] * 3; return [J[i], J[i + 1], J[i + 2]]; }
     var c0 = CL.salsa.mean; function g0(n) { var i = JI[n] * 3; return [c0[i], c0[i + 1], c0[i + 2]]; }
     var th = PART.thigh, sn = PART.shin, ua = PART.uarm, fm = PART.farm;
@@ -96,17 +96,22 @@ var RIG = (function () {
       var A = [Kp[0] + kleg * (F0[0] - K0[0]), Kp[1] - kleg * (F0[1] - K0[1])];
       var r = { K: Kp, d1: Math.atan2(-(Kp[0] - H[0]), Kp[1] - H[1]), f1: clamp(Math.hypot(Kp[0] - H[0], Kp[1] - H[1]) / th.len, 0.42, 1.2), d2: Math.atan2(-(A[0] - Kp[0]), A[1] - Kp[1]), f2: clamp(Math.hypot(A[0] - Kp[0], A[1] - Kp[1]) / sn.len, 0.42, 1.2) };
       var tx = T0[0] - F0[0], tz = T0[2] - F0[2], th0 = Math.atan2(F0[1] - T0[1], Math.hypot(tx, tz) + 1e-4);
-      var pitch = clamp(th0 - 0.62, -0.6, 0.9), flip = Math.abs(tx) > 0.03 ? tx < 0 : sd < 0;
+      var pitch = clamp(th0 - 0.62, -0.6, 0.9), flip = Math.abs(tx) > 0.06 ? tx < 0 : (Math.abs(tx) > 0.015 && ST['fl' + s] != null ? ST['fl' + s] : (Math.abs(tx) > 0.03 ? tx < 0 : sd < 0)); ST['fl' + s] = flip;
       var beta = Math.atan2(Math.abs(tx), tz) / D2R, th2 = 18 + beta * 0.9;
       var wF = 0, wA = 0, wS = 0, wB = 0;
       if (th2 <= 45) { wF = (45 - th2) / 45; wA = 1 - wF; } else if (th2 <= 90) { wA = (90 - th2) / 45; wS = 1 - wA; } else { wS = clamp((180 - th2) / 90, 0, 1); wB = 1 - wS; }
-      return { sd: sd, H: H, A: A, ik: r, psi: pitch * (flip ? -1 : 1) * 0.9 * (1 - wB), flip: flip, w: { shoeF: wF, shoeA: wA, shoeS: wS, shoeB: wB } };
+      var W4 = { shoeF: wF, shoeA: wA, shoeS: wS, shoeB: wB }, best = 'shoeF', bk; for (bk in W4) if (PART[bk] && (!PART[best] || W4[bk] > W4[best])) best = bk; var prv = ST['sv' + s]; if (prv && PART[prv] && W4[prv] >= W4[best] - 0.2) best = prv; ST['sv' + s] = best;
+      return { sd: sd, H: H, A: A, ik: r, psi: pitch * (flip ? -1 : 1) * 0.9 * (1 - wB), flip: flip, view: best, w: W4 };
     });
     function drawFoot(gl) {
-      var order = ['shoeF', 'shoeA', 'shoeS', 'shoeB'].sort(function (a, b) { return gl.w[b] - gl.w[a]; }).slice(0, 1);
+      var sq0 = ST['sx' + gl.sd];
+      if (!sq0 || sq0.cur !== gl.view) ST['sx' + gl.sd] = sq0 = { cur: gl.view, prev: sq0 ? sq0.cur : null, t0: NOW };
+      var sf = clamp((NOW - sq0.t0) / 0.12, 0, 1);
+      if (sq0.prev && sf < 1 && PART[sq0.prev]) { var pp = PART[sq0.prev], TT = tier(pp, px), ddy = FOOTH - (pp.h - pp.ank[1]); ctx.save(); ctx.translate(gl.A[0], gl.A[1] + ddy); ctx.rotate(gl.psi); ctx.scale(gl.flip ? -1 : 1, 1); blit(ctx, pp, TT, 0, 0, pp.w, pp.h, -pp.ank[0], -pp.ank[1]); ctx.restore(); }
+      var order = PART[gl.view] ? [gl.view] : [];
       order.forEach(function (n, i) {
         var pt = PART[n], T = tier(pt, px), dy = FOOTH - (pt.h - pt.ank[1]);
-        ctx.save(); ctx.globalAlpha = base0 * (i === 0 ? 1 : gl.w[n]); ctx.translate(gl.A[0], gl.A[1] + dy); ctx.rotate(gl.psi); ctx.scale(gl.flip ? -1 : 1, 1); blit(ctx, pt, T, 0, 0, pt.w, pt.h, -pt.ank[0], -pt.ank[1]); ctx.restore();
+        ctx.save(); ctx.globalAlpha = base0 * ((sq0.prev && sf < 1) ? sf : 1); ctx.translate(gl.A[0], gl.A[1] + dy); ctx.rotate(gl.psi); ctx.scale(gl.flip ? -1 : 1, 1); blit(ctx, pt, T, 0, 0, pt.w, pt.h, -pt.ank[0], -pt.ank[1]); ctx.restore();
       });
     }
     legs.forEach(function (gl) {
@@ -119,31 +124,46 @@ var RIG = (function () {
     var head = g('Head'), hang = Math.atan2(head[0] - NK[0], head[1] - NK[1]);
     var hrot = hang * 0.85 + torsoTop * 0.15, hcr = HEADR;
     var na = (torsoTop + hrot) / 2, nt = rot([0, -PART.neck.len], na), hco = rot([0, -HEADUP], hrot); var hc = [nb[0] + nt[0] + hco[0], nb[1] + nt[1] + hco[1]];
+    var sw = (o.sway || 0);
     function hair(front) {
       if (!hasHair || front && !o.fronthair) return;
-      var pt = PART[front ? 'hairf' : 'hairb'], k = CFG.hk, sw = (o.sway || 0);
+      var pt = PART[front ? 'hairf' : 'hairb'], k = CFG.hk;
       ctx.save(); ctx.translate(hc[0], hc[1]); ctx.rotate(hrot + (front ? 0 : sw * 0.5)); ctx.scale(k, k);
       blit(ctx, pt, tier(pt, px * k), 0, 0, pt.w, pt.h, -pt.disc[0], -pt.disc[1]); ctx.restore();
     }
+    var hsw = ST.hsw || (ST.hsw = { x: hc[0], a: 0, t: NOW }), hdt = clamp(NOW - hsw.t, 0.001, 0.1), hvx = (hc[0] - hsw.x) / hdt; hsw.x = hc[0]; hsw.t = NOW;
+    hsw.a += (clamp(-hvx * 0.0009, -0.4, 0.4) - hsw.a) * Math.min(1, hdt * 9); sw += hsw.a;
     hair(false);
     /* arms */
     var arms = [[1, 'Left', S[0]], [-1, 'Right', S[1]]].map(function (z) {
+      var ak = z[1];
       var sd = z[0], s = z[1], Sh = z[2], A0 = g(s + 'Arm'), E0 = g(s + 'ForeArm'), W0 = g(s + 'Hand');
       var v1 = [E0[0] - A0[0], -(E0[1] - A0[1])], v2 = [W0[0] - E0[0], -(W0[1] - E0[1])], l1 = len3(sub(E0, A0)), l2 = len3(sub(W0, E0));
       var f1 = clamp(Math.hypot(v1[0], v1[1]) / l1, 0.34, 1), f2 = clamp(Math.hypot(v2[0], v2[1]) / l2, 0.3, 1);
       var a1 = Math.atan2(-v1[0], v1[1]), a2 = Math.atan2(-v2[0], v2[1]);
       var Ep = rot([0, ua.len * f1], a1); Ep = [Sh[0] + Ep[0], Sh[1] + Ep[1]];
       var Wp = rot([0, fm.len * f2], a2); Wp = [Ep[0] + Wp[0], Ep[1] + Wp[1]];
-      var z2 = ((E0[2] + W0[2]) / 2) - SP1[2], towards = (W0[2] - E0[2]) > 0;
-      return { hand: (W0[1] - A0[1] > 0.1) ? 'hand_open' : 'hand_relax', sd: sd, Sh: Sh, Ep: Ep, Wp: Wp, a1: a1, a2: a2, f1: f1, f2: f2, front: z2 > 0.11, fist: f2 < 0.42 && towards, curl: f2 < 0.78 && towards };
+      var z2 = ((E0[2] + W0[2]) / 2) - SP1[2], dz = W0[2] - E0[2], rise = W0[1] - A0[1];
+      var towards = ST['tw' + ak] ? dz > -0.03 : dz > 0.03; ST['tw' + ak] = towards;
+      var fullF = towards && (ST['ff' + ak] ? f2 < 0.5 : f2 < 0.38); ST['ff' + ak] = fullF;
+      var curlF = towards && (ST['cf' + ak] ? f2 < 0.86 : f2 < 0.76); ST['cf' + ak] = curlF;
+      var openH = ST['oh' + ak] ? rise > 0.06 : rise > 0.14; ST['oh' + ak] = openH;
+      var frontF = ST['fr' + ak] ? z2 > 0.06 : z2 > 0.16; ST['fr' + ak] = frontF;
+      return { ak: ak, hand: openH ? 'hand_open' : 'hand_relax', sd: sd, Sh: Sh, Ep: Ep, Wp: Wp, a1: a1, a2: a2, f1: f1, f2: f2, front: frontF, fist: fullF, curl: curlF };
     });
+    function bH0() { return clamp((wH - 0.36) / 0.04, 0, 1); }
+    if (o.dbg) o.dbg.push({ hc: hc.slice(), arms: arms.map(function (q) { return { h: q.fist ? 'ffarm' : (q.curl ? 'fist' : q.hand), fr: q.front, Wp: q.Wp.slice(), Ep: q.Ep.slice() }; }), foot: legs.map(function (gl) { return gl.view; }), bH: bH0(), wT: wT });
     function drawArm(a) {
       var fl = a.sd < 0;
       drawRot(ctx, 'uarm', a.Sh[0], a.Sh[1], a.a1, fl, a.f1, px);
       if (a.fist) drawRot(ctx, 'ffarm', a.Ep[0], a.Ep[1], a.a2, fl, clamp(a.f2 * 1.15, 0.5, 0.85), px);
       else { drawRot(ctx, 'farm', a.Ep[0], a.Ep[1], a.a2, fl, a.f2, px);
         if (PART.wacc) { var pw = PART.wacc, wk = 0.9; ctx.save(); ctx.translate(a.Wp[0], a.Wp[1] - 8); ctx.rotate(a.a2); ctx.scale(wk, a.f2 * 0.9 + 0.1); blit(ctx, pw, tier(pw, px), 0, 0, pw.w, pw.h, -pw.piv[0], -pw.piv[1]); ctx.restore(); }
-        drawRot(ctx, (a.curl && PART.fist) ? 'fist' : a.hand, a.Wp[0], a.Wp[1], a.a2, fl, 0.65 + 0.35 * a.f2, px); }
+        var hn = (a.curl && PART.fist) ? 'fist' : a.hand, hq = ST['hs' + a.ak];
+        if (!hq || hq.cur !== hn) ST['hs' + a.ak] = hq = { cur: hn, prev: hq ? hq.cur : null, t0: NOW };
+        var hf = clamp((NOW - hq.t0) / 0.13, 0, 1), hsc = 0.65 + 0.35 * a.f2;
+        if (hq.prev && hf < 1 && PART[hq.prev]) drawRot(ctx, hq.prev, a.Wp[0], a.Wp[1], a.a2, fl, hsc, px);
+        ctx.globalAlpha = base0 * ((hq.prev && hf < 1) ? hf : 1); drawRot(ctx, hn, a.Wp[0], a.Wp[1], a.a2, fl, hsc, px); ctx.globalAlpha = base0; }
     }
     arms.forEach(function (a) { if (!a.front) drawArm(a); });
     function drawPelvis(name, alpha, mir) { ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr); ctx.scale((mir ? -1 : 1) * rp * PK, 1); ctx.translate(-pelC[0], -pelC[1]); drawRot(ctx, name, pelC[0], pelC[1], 0, false, 1, px); ctx.restore(); }

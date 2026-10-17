@@ -245,7 +245,7 @@
       if (!u.dirty && st > 1 && ((frameN + (u.h32 % st)) % st)) continue;
       var cx = u.cx; cx.clearRect(0, 0, u.cw, u.ch); u.dirty = 0;
       try {
-        VNNA.draw(cx, u.set, u.spec, { x: u.cw / 2, y: 2005 * u.s0, h: u.fh, clip: walking ? 'idle' : VNNA.clipOf(u.dance), t: bclk * 0.5, beat: 0.5, ph: (u.h32 % 16) / 4, amp: (u.stage && S.top5) ? 1.25 : (u.bt ? 0.7 : 1), head: headFor(u) });
+        VNNA.draw(cx, u.set, u.spec, { st: u.rst || (u.rst = {}), now: performance.now() / 1000, x: u.cw / 2, y: 2005 * u.s0, h: u.fh, clip: walking ? 'idle' : VNNA.clipOf(u.dance), t: bclk * 0.5, beat: 0.5, ph: (u.h32 % 16) / 4, amp: (u.stage && S.top5) ? 1.25 : (u.bt ? 0.7 : 1), head: headFor(u) });
       } catch (e) { if (!u.err) { u.err = 1; console.error('draw', u.key, e); } }
       if (performance.now() - t0 > (u.dirty ? 34 : 14)) break;
     }
