@@ -208,11 +208,11 @@ var VNNA = (function () {
       if (sx !== 1 || sy !== 1) { var c2 = document.createElement('canvas'); c2.width = Math.max(1, Math.round(c.width * sx)); c2.height = Math.max(1, Math.round(c.height * sy)); var x2 = c2.getContext('2d'); x2.imageSmoothingQuality = 'high'; x2.drawImage(c, 0, 0, c2.width, c2.height); c = c2; d.piv = [d.piv[0] * sx, d.piv[1] * sy]; if (d.bone) d.bone = [d.bone[0] * sx, d.bone[1] * sy]; }
       var res = { canvas: c, def: d };
       if (key === 'uarm' && S.top && lyr(S.top.sheet, 'sleeveU', S.top.v)) {
-        var ch = Math.round(150 * Q * sy), cw = c.width, cc = document.createElement('canvas'); cc.width = Math.round(cw * 1.22); cc.height = ch; var cx = cc.getContext('2d'); cx.imageSmoothingQuality = 'high';
+        var ch = Math.round(120 * Q * sy), cw = c.width, cc = document.createElement('canvas'); cc.width = Math.round(cw * 1.08); cc.height = ch; var cx = cc.getContext('2d'); cx.imageSmoothingQuality = 'high';
         cx.drawImage(c, 0, 0, cw, ch, 0, 0, cc.width, ch);
         /* fade the bottom of the cap so it blends into the sleeve */
-        cx.globalCompositeOperation = 'destination-in'; var gr = cx.createLinearGradient(0, ch * 0.55, 0, ch); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); cx.fillStyle = gr; cx.fillRect(0, 0, cc.width, ch);
-        res.extra = { scap: { canvas: cc, def: { piv: [d.piv[0] * 1.22, 30] } } };
+        cx.globalCompositeOperation = 'destination-in'; var gr = cx.createLinearGradient(0, ch * 0.25, 0, ch * 0.75); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); cx.fillStyle = gr; cx.fillRect(0, 0, cc.width, ch);
+        res.extra = { scap: { canvas: cc, def: { piv: [d.piv[0] * 1.08, 30] } } };
       }
       return res;
     });

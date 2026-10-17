@@ -188,7 +188,7 @@ var RIG = (function () {
     if (PART.bacc) { var pt = PART.bacc; ctx.save(); ctx.translate(nodes[0].p[0], nodes[0].p[1] - 22); ctx.rotate(nodes[0].a); ctx.scale(0.8 * cy, 0.8); blit(ctx, pt, tier(pt, px * 0.8), 0, 0, pt.w, pt.h, -pt.piv[0], -pt.piv[1]); ctx.restore(); }
     if (PART.nacc) { var pn = PART.nacc; ctx.save(); ctx.translate(nb[0], nb[1] + CFG.nOff); ctx.rotate(na); ctx.scale(0.62 * cy, 0.62); blit(ctx, pn, tier(pn, px * 0.62), 0, 0, pn.w, pn.h, -pn.piv[0], -pn.piv[1]); ctx.restore(); }
     arms.forEach(function (a) { if (a.front) drawArm(a); });
-    if (PART.scap) arms.forEach(function (a) { drawRot(ctx, 'scap', a.Sh[0] + (a.sd > 0 ? -4 : 4), a.Sh[1] - 4, a.a1 * 0.5 + torsoTop * 0.5, a.sd < 0, 1, px); });
+    if (PART.scap) arms.forEach(function (a) { drawRot(ctx, 'scap', a.Sh[0] + (a.sd > 0 ? -2 : 2), a.Sh[1] - 30, clamp(a.a1 * 0.6, -0.5, 0.5) + torsoTop * 0.4, a.sd < 0, 1, px); });
     headFn(ctx, hc[0], hc[1], hrot, HEADR, px);
     hair(true);
     if (PART.hacc) { var ph = PART.hacc, kk = CFG.ak; ctx.save(); ctx.translate(hc[0], hc[1]); ctx.rotate(hrot); ctx.scale(kk, kk); blit(ctx, ph, tier(ph, px * kk), 0, 0, ph.w, ph.h, -ph.disc[0], -ph.disc[1]); ctx.restore(); }
