@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14061f">
+<title>Virtual Nicki Night — Style Studio</title>
+<style>
+:root{--bg:#14061f;--card:#22102f;--card2:#2c1640;--line:#43245e;--pink:#ff2f9e;--pink2:#ff6cc0;--txt:#fff4fb;--dim:#b79bc9;--gold:#ffd35a;--r:18px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:16px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Rounded","Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;background:radial-gradient(1200px 600px at 20% -10%,#4b1362 0,transparent 60%),radial-gradient(900px 500px at 100% 100%,#6a0f47 0,transparent 55%),var(--bg)}
+#top{padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line);background:#14061fcc;backdrop-filter:blur(8px)}
+#top h1{margin:0;font-size:19px;letter-spacing:.4px}#top h1 b{color:var(--pink)}
+#who{display:flex;gap:8px;margin-left:auto;align-items:center;flex-wrap:wrap}
+#who input[type=text]{width:160px}#who select{width:92px}
+body.mod #who,body.mod #top h1{display:none}body.mod #top{display:none}
+input[type=text],select{background:#180a25;border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:10px 12px;font-size:16px;min-height:44px;font-family:inherit}
+input:focus,select:focus{outline:2px solid var(--pink)}
+.btn{border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:14px;padding:10px 14px;font-size:15px;font-weight:650;min-height:44px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.btn:active{transform:scale(.97)}.btn.go{background:linear-gradient(135deg,#ff2f9e,#c2188a);border-color:#ff6cc0;box-shadow:0 4px 18px #ff2f9e55}.btn.on{background:linear-gradient(135deg,#7a2bd6,#ff2f9e);border-color:#ff8fd0}
+#app{flex:1;display:grid;grid-template-columns:minmax(300px,42%) 1fr;gap:14px;padding:14px;min-height:0}
+#stage{position:relative;border-radius:24px;background:radial-gradient(500px 360px at 50% 30%,#5a1a78 0,#2a0f3f 55%,#190a28 100%);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;overflow:hidden;min-height:340px}
+#stage:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 15%,#ff2f9e40 0,transparent 25%),radial-gradient(circle at 85% 25%,#4a8bff33 0,transparent 25%);pointer-events:none}
+#ped{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);width:62%;height:38px;border-radius:50%;background:radial-gradient(closest-side,#ff2f9ecc,#ff2f9e22 70%,transparent);filter:blur(1px)}
+#ring{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);width:58%;height:26px;border-radius:50%;border:2px solid #ff8fd0;box-shadow:0 0 18px #ff2f9e,inset 0 0 14px #ff2f9e88}
+#fig{position:relative;z-index:2;display:flex;align-items:flex-end;justify-content:center;height:100%;width:100%;padding:56px 0 40px}#fig canvas{height:100%;width:auto;max-width:100%}
+#boot{position:fixed;inset:0;z-index:50;background:#14061f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#ff6cc0;font-size:18px;transition:opacity .4s}#boot.off{opacity:0;pointer-events:none}
+#stbar{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:8px;z-index:3;flex-wrap:wrap}
+#note{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:12px;color:var(--dim);z-index:3}
+#lockmsg{position:absolute;bottom:30px;left:12px;right:12px;z-index:4;background:#000b;border:1px solid var(--gold);color:var(--gold);padding:10px 12px;border-radius:14px;font-size:14px;font-weight:600;display:none;text-align:center}
+#panel{display:flex;flex-direction:column;min-height:0;background:#1a0b27cc;border:1px solid var(--line);border-radius:24px;overflow:hidden}
+#cats{display:flex;gap:6px;padding:10px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}#cats::-webkit-scrollbar{display:none}
+#cats button{flex:0 0 auto;border:0;background:var(--card);color:var(--dim);padding:10px 14px;border-radius:99px;font-size:15px;font-weight:700;min-height:44px;display:flex;align-items:center;gap:7px}
+#cats button.on{background:linear-gradient(135deg,#7a2bd6,#ff2f9e);color:#fff;box-shadow:0 0 16px #ff2f9e66}
+#opts{flex:1;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch}
+.sub{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--pink2);margin:14px 2px 8px;font-weight:700}.sub:first-child{margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.opt{position:relative;border:2px solid transparent;background:var(--card);border-radius:16px;padding:6px 6px 8px;text-align:center;cursor:pointer;color:var(--txt);font:inherit;display:flex;flex-direction:column;align-items:center;gap:4px}
+.opt:active{transform:scale(.97)}.opt.on{border-color:var(--pink2);background:#3a1650;box-shadow:0 0 16px #ff2f9e66}
+.opt .th{height:104px;display:flex;align-items:flex-end;justify-content:center;width:100%;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,#2e1642,#1f0d2e)}.opt .th img{max-height:100%;max-width:100%;display:block}.opt .th.ld{background:linear-gradient(110deg,#2e1642 30%,#3d1d57 50%,#2e1642 70%);background-size:200% 100%;animation:ld 1.2s infinite}@keyframes ld{to{background-position:-200% 0}}
+.opt .nm{font-size:13px;font-weight:700;line-height:1.1}
+.badge{position:absolute;top:6px;right:6px;font-size:11px;font-weight:800;padding:3px 7px;border-radius:99px;background:#000c;border:1px solid var(--gold);color:var(--gold);z-index:2}
+.badge.vip{border-color:#b98cff;color:#d9bcff}
+.opt.locked .th{box-shadow:inset 0 0 0 1px #ffd35a55}
+.opt.locked:after{content:"";position:absolute;inset:0;border-radius:16px;background:linear-gradient(115deg,transparent 40%,#ffd35a22 50%,transparent 60%);background-size:250% 100%;animation:shine 3.2s infinite;pointer-events:none}
+@keyframes shine{0%{background-position:150% 0}100%{background-position:-50% 0}}
+.sw{display:flex;gap:8px;flex-wrap:wrap}.sw button{width:46px;height:46px;border-radius:50%;border:3px solid #ffffff22;padding:0;position:relative}.sw button.on{border-color:#fff;box-shadow:0 0 14px #fff8}.sw button.none{background:repeating-linear-gradient(45deg,#444 0 6px,#222 6px 12px)}
+.swn{font-size:11px;color:var(--dim);margin-top:6px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}.seg .btn{flex:1;justify-content:center;min-width:90px}
+#bar{padding:10px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:#10051af0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#cmd{flex:1;min-width:220px;font:600 15px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;background:#0b0412;border:1px solid var(--line);border-radius:12px;padding:11px 12px;color:#ffd1ea;word-break:break-word;max-height:76px;overflow:auto}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:#000d;border:1px solid var(--pink);padding:10px 16px;border-radius:99px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}#toast.on{opacity:1}
+#how{font-size:12px;color:var(--dim);padding:0 14px 10px;text-align:center}
+@media (max-width:820px){#app{grid-template-columns:1fr;grid-template-rows:auto 1fr;padding:10px;gap:10px;overflow:hidden}#stage{min-height:0;height:36vh}.grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}.opt .th{height:88px}#who input[type=text]{width:130px}}
+</style></head><body>
+<div id="boot">Loading the wardrobe…</div>
+<div id="top"><h1>STYLE <b>STUDIO</b></h1><div id="who"><input type="text" id="h" placeholder="@your handle (optional)" autocapitalize="off" autocorrect="off"><select id="pl"><option value="x">X</option><option value="tiktok">TikTok</option><option value="kick">Kick</option></select><button class="btn" id="up">Use my photo</button><input type="file" id="file" accept="image/*" hidden></div></div>
+<div id="app">
+ <div id="stage"><div id="stbar"><button class="btn sm" id="dnc">Dancing</button><button class="btn sm" id="rnd">🎲 Surprise me</button><button class="btn sm" id="rst">Reset</button></div><div id="lockmsg"></div><div id="ped"></div><div id="ring"></div><div id="fig"></div><div id="note"></div></div>
+ <div id="panel"><div id="cats"></div><div id="opts"></div></div>
+</div>
+<div id="how"></div>
+<div id="bar"><div id="cmd"></div><button class="btn go" id="copy">Copy command</button><button class="btn" id="copyd">Copy !dance</button></div>
+<div id="toast"></div>
+<script src="vnn/rig8.js"></script>
+<script src="vnn/vnn-avatar.js"></script>
+<script>

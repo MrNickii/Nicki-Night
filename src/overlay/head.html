@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Virtual Nicki Night Overlay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root { --ink:#f6ecff; --mute:#a990c4; --pink:#ff4fb0; --cyan:#4fe3ff; --gold:#ffd86b; --bg:#120a1b; --sf:#1a1026; --rs:#25163a; --ln:#3a2653; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Arial, sans-serif; color: var(--ink); }
+body.preview { background: #05020a; }
+#stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden; }
+.layer { position: absolute; inset: 0; pointer-events: none; }
+#art { background-size: cover; background-position: center; }
+#crowd { position: absolute; inset: 0; pointer-events: none; }
+.p { position: absolute; left: 0; top: 0; transition: transform 1.6s cubic-bezier(.45,.05,.4,1), opacity .6s; will-change: transform; opacity: 0; }
+.p.in { opacity: 1; }
+.p .in2 { position: relative; }
+.p.walk .av * { animation-play-state: paused !important; }
+.p.walk .in2 { animation: step .3s ease-in-out infinite; }
+@keyframes step { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-7px) rotate(1.5deg); } }
+.pill { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 4px); white-space: nowrap; padding: 3px 9px; border-radius: 99px; background: rgba(18,10,27,.88); border: 1px solid var(--ln); font: 600 15px/1.2 system-ui, Arial, sans-serif; color: #fff; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 5; }
+.pill.show { opacity: 1; transform: translate(-50%, -2px); }
+.pill.gold { border-color: var(--gold); color: var(--gold); }
+.drink { position: absolute; right: -4%; top: 50%; width: 22%; pointer-events: none; }
+.sil { position: absolute; left: 0; top: 0; pointer-events: none; opacity: .5; }
+.sil i { display: block; background: #0a0510; border-radius: 50%; }
+.sil .h { width: 100%; padding-top: 100%; }
+.sil .b { width: 62%; margin: -6% auto 0; height: 0; padding-top: 110%; border-radius: 40% 40% 12% 12%; }
+#badge { position: absolute; display: none; padding: 7px 16px; border-radius: 99px; background: rgba(18,10,27,.82); border: 1px solid var(--pink); color: #fff; font: 700 24px/1 system-ui, Arial, sans-serif; letter-spacing: .02em; }
+#badge b { color: var(--pink); }
+#cmd { position: absolute; display: flex; align-items: center; justify-content: center; gap: 18px; background: linear-gradient(90deg, rgba(18,10,27,.0), rgba(18,10,27,.88) 12%, rgba(18,10,27,.88) 88%, rgba(18,10,27,0)); font: 700 26px/1 "Arial Black", system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; }
+#cmd b { color: var(--pink); }
+#cmd span { transition: opacity .4s; }
+#banner { position: absolute; left: 0; right: 0; top: 150px; text-align: center; font: 900 54px/1 "Arial Black", system-ui, sans-serif; letter-spacing: .04em; color: #fff; text-shadow: 0 0 24px #ff4fb0, 0 0 60px #ff4fb0; opacity: 0; transform: scale(.9); transition: opacity .5s, transform .5s; pointer-events: none; }
+#banner.show { opacity: 1; transform: scale(1); }
+#banner small { display: block; margin-top: 10px; font: 700 22px/1 system-ui, Arial, sans-serif; color: var(--gold); text-shadow: none; letter-spacing: .2em; }
+#glows { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; transition: opacity .8s; }
+#glows i { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); animation: glo var(--t, 4s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+#glows i.p { background: radial-gradient(closest-side, rgba(255,150,210,.62), rgba(255,60,160,.2) 52%, rgba(255,60,160,0)); }
+#glows i.w { background: radial-gradient(closest-side, rgba(255,214,140,.6), rgba(255,150,60,.18) 52%, rgba(255,150,60,0)); }
+@keyframes glo { 0%,100% { opacity: .55; transform: translate(-50%,-50%) scale(.92); } 50% { opacity: 1; transform: translate(-50%,-50%) scale(1.08); } }
+#led { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; transition: opacity .6s; }
+#led rect { fill: none; }
+#led .lb { stroke-width: 2.4; opacity: .95; animation: ledc 9s linear infinite; }
+#led .lc { stroke-width: 3; stroke-linecap: round; stroke: #fff; stroke-dasharray: 36 464; opacity: .55; animation: ledm 5s linear infinite; }
+@keyframes ledm { to { stroke-dashoffset: -500; } }
+@keyframes ledc { 0%,100% { stroke: #ff3fa6; } 25% { stroke: #ff86c6; } 50% { stroke: #e04bff; } 75% { stroke: #ff4f86; } }
+#np { position: absolute; left: 640px; top: 392px; width: 464px; height: 36px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-radius: 99px; background: rgba(14,6,22,.82); border: 1.5px solid #ff4fb0; box-shadow: 0 0 18px rgba(255,79,176,.55), inset 0 0 12px rgba(255,79,176,.25); color: #fff; font: 700 19px/1 system-ui, Arial, sans-serif; overflow: hidden; }
+#np.idle { opacity: .8; }
+#np .eq { display: flex; align-items: flex-end; gap: 3px; height: 18px; flex: none; }
+#np .eq i { width: 4px; background: #ff4fb0; border-radius: 2px; animation: eq .9s ease-in-out infinite; }
+#np .eq i:nth-child(2) { animation-delay: -.3s; background: #ffd86b; } #np .eq i:nth-child(3) { animation-delay: -.6s; } #np .eq i:nth-child(4) { animation-delay: -.15s; background: #ffd86b; }
+@keyframes eq { 0%,100% { height: 4px; } 50% { height: 18px; } }
+#np .lbl { flex: none; font-size: 12px; letter-spacing: .18em; color: #ff8ad0; }
+#npbox { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
+#npbox span { display: inline-block; }
+#npt.mq { animation: mq 12s linear infinite; padding-left: 0; }
+@keyframes mq { 0%,12% { transform: translateX(0); } 88%,100% { transform: translateX(calc(-100% + 300px)); } }
+#npa { color: #ffd86b; } #npd { color: #ff4fb0; margin: 0 8px; }
+.rk { position: absolute; left: 50%; top: 100%; transform: translate(-50%, 4px); padding: 1px 9px; border-radius: 99px; background: linear-gradient(90deg, #ffd86b, #ff8ad0); color: #1a0f26; font: 900 16px/1.3 system-ui, Arial, sans-serif; box-shadow: 0 0 14px rgba(255,216,107,.8); z-index: 6; }
+.bt .btclip { clip-path: inset(-30% -40% 34% -40%); }
+#stagefx { position: absolute; display: none; pointer-events: none; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,216,107,.35), rgba(255,79,176,.28) 55%, rgba(255,79,176,0) 100%); box-shadow: 0 0 40px rgba(255,79,176,.5); border: 3px solid rgba(255,216,107,.7); animation: stp 2.4s ease-in-out infinite; }
+@keyframes stp { 0%,100% { opacity: .7; } 50% { opacity: 1; } }
+#nfx { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+#nfx.go { opacity: 1; animation: nfxo 7.6s ease-out forwards; }
+@keyframes nfxo { 0% { opacity: 0; } 4% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
+#nfx .rays { position: absolute; left: 50%; top: 300px; width: 2600px; height: 2600px; margin: -1300px 0 0 -1300px; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(255,216,107,.4) 0 5deg, rgba(255,79,176,0) 5deg 15deg); -webkit-mask: radial-gradient(closest-side, #000 8%, transparent 70%); mask: radial-gradient(closest-side, #000 8%, transparent 70%); mix-blend-mode: screen; animation: spin 14s linear infinite, raysin 1.2s ease-out; }
+#nfx .rays.r2 { background: repeating-conic-gradient(from 7deg, rgba(255,79,176,.45) 0 4deg, rgba(255,79,176,0) 4deg 18deg); animation: spin 22s linear infinite reverse, raysin 1.6s ease-out; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes raysin { from { opacity: 0; } to { opacity: 1; } }
+#nfx .nfl { position: absolute; inset: 0; background: #fff; opacity: 0; animation: one .5s ease-out; }
+@keyframes one { 0% { opacity: .65; } 100% { opacity: 0; } }
+#nfx .nbig { position: absolute; left: 0; right: 0; top: 70px; text-align: center; }
+#nfx .n1 { font: 900 250px/1 "Arial Black", Impact, system-ui, sans-serif; letter-spacing: .02em; display: flex; justify-content: center; filter: drop-shadow(0 0 22px #ff4fb0) drop-shadow(0 0 60px #ff4fb0) drop-shadow(0 6px 0 #7a1250); }
+#nfx .n1 span { display: inline-block; background: linear-gradient(180deg, #fff 8%, #ffe9a0 36%, #ffb21f 52%, #ff6fb5 80%); background-size: 100% 200%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; opacity: 0; animation: slam .7s cubic-bezier(.2,1.5,.4,1) forwards, shine 2.4s ease-in-out .9s infinite; }
+@keyframes slam { 0% { opacity: 0; transform: translateY(-420px) scale(2.6) rotate(-14deg); } 70% { opacity: 1; transform: translateY(14px) scale(.94) rotate(2deg); } 100% { opacity: 1; transform: none; } }
+@keyframes shine { 0%,100% { background-position: 0 0; } 50% { background-position: 0 100%; } }
+#nfx .n2 { margin-top: -6px; font: 900 62px/1 "Arial Black", system-ui, sans-serif; letter-spacing: .14em; color: #fff; text-shadow: 0 0 20px #ff4fb0, 0 0 50px #ff4fb0; opacity: 0; animation: rise .6s ease-out 1.05s forwards; }
+#nfx .n3 { margin-top: 16px; font: 700 28px/1 system-ui, Arial, sans-serif; letter-spacing: .34em; text-transform: uppercase; color: #ffd86b; text-shadow: 0 0 14px rgba(255,216,107,.7); opacity: 0; animation: rise .6s ease-out 1.5s forwards; }
+@keyframes rise { from { opacity: 0; transform: translateY(24px) scale(.96); } to { opacity: 1; transform: none; } }
+#nfx .conf { position: absolute; inset: 0; overflow: hidden; }
+#nfx .conf i { position: absolute; top: -40px; opacity: 0; animation: fall var(--d) linear var(--dl) 1 forwards; }
+@keyframes fall { 0% { opacity: 1; transform: translate(0,0) rotate(0); } 100% { opacity: 1; transform: translate(var(--dx), 1160px) rotate(var(--r)); } }
+#nfx .paps i { position: absolute; border-radius: 50%; background: radial-gradient(closest-side, #fff, rgba(255,255,255,.55) 35%, rgba(255,255,255,0)); opacity: 0; transform: translate(-50%,-50%); animation: pap .22s ease-out 1 both; }
+@keyframes pap { 0% { opacity: .95; transform: translate(-50%,-50%) scale(.4); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.4); } }
+#carpet { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; opacity: 0; transition: opacity .8s; }
+#carpet.on { opacity: 1; }
+#carpet polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#carpet .c1 { stroke: rgba(255,79,176,.55); stroke-width: 34; filter: blur(10px); }
+#carpet .c2 { stroke: #ffd86b; stroke-width: 6; stroke-dasharray: 2 26; filter: drop-shadow(0 0 8px #ffd86b); animation: cmv 1.2s linear infinite; }
+@keyframes cmv { to { stroke-dashoffset: -28; } }
+#zones .z { position: absolute; border: 2px dashed; font: 600 14px/1 monospace; padding: 4px 6px; }
+/* lighting */
+#fxc { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; mix-blend-mode: screen; }
+#fog { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1s; mix-blend-mode: screen; overflow: hidden; }
+#fog i { position: absolute; width: 1100px; height: 360px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.55), rgba(255,255,255,0)); filter: blur(30px); animation: drift 22s linear infinite; }
+#fog i:nth-child(1) { left: -400px; top: 620px; }
+#fog i:nth-child(2) { left: 400px; top: 780px; animation-duration: 31s; animation-delay: -10s; }
+#fog i:nth-child(3) { left: 900px; top: 540px; animation-duration: 27s; animation-delay: -18s; }
+@keyframes drift { 0% { transform: translateX(-300px); } 50% { transform: translateX(300px); } 100% { transform: translateX(-300px); } }
+#wash { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .6s, background-color .6s; mix-blend-mode: overlay; }
+#wash.rainbow { background: linear-gradient(100deg, #ff2f9e, #ff9a2f, #ffe22f, #2fff9a, #2fc8ff, #8a3cff, #ff2f9e); background-size: 200% 100%; animation: rb 6s linear infinite; }
+@keyframes rb { to { background-position: 200% 0; } }
+#pulse { position: absolute; inset: 0; pointer-events: none; opacity: 0; mix-blend-mode: screen; background: radial-gradient(ellipse at 50% 70%, rgba(255,79,176,.75), rgba(255,79,176,0) 70%); }
+#pulse.on { animation: beat var(--beat, .48s) ease-out infinite; }
+@keyframes beat { 0% { opacity: var(--i, .6); } 100% { opacity: 0; } }
+#strobe { position: absolute; inset: 0; pointer-events: none; background: #fff; opacity: 0; }
+#strobe.on { animation: flash .34s steps(1) infinite; }
+@keyframes flash { 0% { opacity: var(--i, .5); } 14% { opacity: 0; } 100% { opacity: 0; } }
+@property --sx { syntax: '<length>'; inherits: false; initial-value: 960px; }
+@property --sy { syntax: '<length>'; inherits: false; initial-value: 700px; }
+#spot { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .8s, --sx 1.2s ease-in-out, --sy 1.2s ease-in-out; background: radial-gradient(circle at var(--sx) var(--sy), rgba(0,0,0,0) 80px, rgba(0,0,0,var(--sa, .6)) 300px); }
+#dark { position: absolute; inset: 0; pointer-events: none; background: #000; opacity: 0; transition: opacity .8s; }
+/* operator panel */
+#stage.hole #art { -webkit-mask-image: linear-gradient(#000,#000), linear-gradient(#000,#000); mask-image: linear-gradient(#000,#000), linear-gradient(#000,#000); -webkit-mask-size: 100% 100%, var(--hw) var(--hh); mask-size: 100% 100%, var(--hw) var(--hh); -webkit-mask-position: 0 0, var(--hx) var(--hy); mask-position: 0 0, var(--hx) var(--hy); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-composite: xor; mask-composite: exclude; }
+#hot { position: fixed; left: 0; top: 0; width: 28px; height: 28px; z-index: 50; cursor: pointer; }
+#panel { position: fixed; right: 0; top: 0; bottom: 0; width: 440px; max-width: 100vw; background: var(--bg); border-left: 1px solid var(--ln); z-index: 60; overflow: auto; display: none; padding: 14px 14px 40px; }
+body.pan #panel { display: block; }
+#panel h1 { font: 800 16px/1.2 system-ui, Arial, sans-serif; margin: 0 0 2px; }
+#panel .sub { color: var(--mute); margin: 0 0 12px; }
+#panel h2 { font: 700 11px/1 monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--pink); margin: 18px 0 8px; }
+#panel .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; align-items: center; }
+#panel button, #panel .btn { font: 600 13px/1 system-ui, Arial, sans-serif; color: var(--ink); background: var(--sf); border: 1px solid var(--ln); border-radius: 6px; padding: 9px 11px; cursor: pointer; }
+#panel button:hover { border-color: var(--mute); }
+#panel button[aria-pressed="true"] { background: var(--pink); border-color: var(--pink); color: #1a0a22; }
+#panel button.go { border-color: var(--cyan); color: var(--cyan); }
+#panel input[type=text], #panel input[type=number], #panel select, #panel textarea { font: 13px/1.3 system-ui, Arial, sans-serif; color: var(--ink); background: #0b0612; border: 1px solid var(--ln); border-radius: 6px; padding: 8px; }
+#panel textarea { width: 100%; min-height: 90px; font-family: monospace; font-size: 12px; }
+#panel input[type=text] { flex: 1; min-width: 120px; }
+#panel input[type=number] { width: 76px; }
+#panel label { color: var(--mute); font-size: 12px; }
+#panel .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #666; margin-right: 6px; }
+#panel .dot.ok { background: #53fc18; } #panel .dot.bad { background: #fe2c55; }
+#panel .note { color: var(--mute); font-size: 12px; margin: 4px 0; }
+#log { background: #0b0612; border: 1px solid var(--ln); border-radius: 6px; padding: 8px; font: 11.5px/1.5 monospace; height: 150px; overflow: auto; white-space: pre-wrap; word-break: break-all; }
+#panel input[type=range] { flex: 1; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs id="defs"></defs></svg>
+<div id="stage">
+  <div id="art" class="layer"></div>
+  <canvas id="fxc" width="1920" height="1080"></canvas>
+  <div id="glows"></div>
+  <svg id="led" viewBox="0 0 1920 1080"></svg>
+  <div id="fog"><i></i><i></i><i></i></div>
+  <div id="stagefx"></div>
+  <div id="crowd"></div>
+  <div id="badge"></div>
+  <div id="wash"></div>
+  <div id="pulse"></div>
+  <div id="spot"></div>
+  <div id="cmd"></div>
+  <svg id="carpet" viewBox="0 0 1920 1080"></svg>
+  <div id="np" class="idle"><div class="eq"><i></i><i></i><i></i><i></i></div><span class="lbl">NOW PLAYING</span><div id="npbox"><span id="npa"></span><span id="npd">&mdash;</span><span id="npt">DJ set live</span></div></div>
+  <div id="banner"></div>
+  <div id="nfx"></div>
+  <div id="zones" class="layer"></div>
+  <div id="strobe"></div>
+  <div id="dark"></div>
+</div>
+<div id="hot" title="Operator panel"></div>
+<div id="panel">
+  <h1>Virtual Nicki Night</h1>
+  <p class="sub">Operator panel. Click the top-left corner or press P to open or close it.</p>
+
+  <h2>Chat connection</h2>
+  <div class="row"><span class="dot" id="dot"></span><span id="cstat">Not connected</span></div>
+  <div class="row"><input type="text" id="sess" placeholder="Social Stream Ninja session ID"><button id="conn" class="go">Connect</button></div>
+  <div class="row"><input type="text" id="wsurl" placeholder="Server (optional, default wss://io.socialstream.ninja)"></div>
+  <p class="note">In Social Stream Ninja, Global settings, Mechanics: turn on Toggle 1 and Toggle 3 (send chat to the API server), or this page gets no chat.</p>
+  <div id="log"></div>
+
+  <h2>Lighting</h2>
+  <div class="row" id="presets"></div>
+  <div class="row" id="lights"></div>
+  <div class="row" id="washes"></div>
+  <div class="row"><label>Intensity</label><input type="range" id="inten" min="10" max="100" value="70"><label>BPM</label><input type="number" id="bpm" min="60" max="200" value="124"><button id="tap">Tap</button></div>
+  <p class="note">Strobe is capped at 3 flashes a second. Mods can type !light party, !light drop, !light off and so on.</p>
+
+  <h2>Nicki</h2>
+  <div class="row"><button id="nrehearse" class="go">Rehearse her entrance</button><button id="nout">Nicki walks out</button><button id="nnew">New show (reset once-per-show)</button></div>
+
+  <h2>Top 5 stage</h2>
+  <div class="row"><button id="top5btn" aria-pressed="false">Top 5 chatters dance in the middle</button></div>
+  <p class="note">Ranks by chats this show. Everyone else moves aside. Mods can type !top5, !top5 on or !top5 off. "New show" resets the counts.</p>
+
+  <h2>Now playing</h2>
+  <div class="row"><input type="text" id="npa_in" placeholder="Artist"><input type="text" id="npt_in" placeholder="Song"></div>
+  <div class="row"><button id="npset" class="go">Show it</button><button id="npclr">Clear</button></div>
+  <div class="row"><input type="text" id="npurl" placeholder="Later: link to a small file that holds the song (optional)"></div>
+  <p class="note">Mods can type !np Artist - Song, or !np off. Under the big screen.</p>
+
+  <h2>Crowd test</h2>
+  <div class="row"><button data-bots="1">+1</button><button data-bots="10">+10</button><button data-bots="50">+50</button><button data-bots="200">+200</button><button id="bchat">Random chat</button><button id="bclear">Clear crowd</button></div>
+  <div class="row"><button data-sim="bar:10">+10 at the bar</button><button data-sim="vip:10">+10 in VIP</button><button data-sim="floor:10">+10 on the floor</button></div>
+  <div class="row"><input type="text" id="sh" placeholder="@handle" style="max-width:130px"><select id="sp"><option value="x">X</option><option value="kick">Kick</option><option value="tiktok">TikTok</option></select><input type="text" id="sm" placeholder="!enter"><button id="ssend" class="go">Send</button></div>
+
+  <h2>VIP list (X @handles)</h2>
+  <textarea id="viptxt" placeholder="@jaylux&#10;@someone"></textarea>
+  <div class="row"><button id="vipsave" class="go">Save list</button><button id="vipexp">Export</button><span class="note" id="vipn"></span></div>
+  <div class="note">Mods (X handles): <span id="modn"></span></div>
+
+  <h2>Layout</h2>
+  <p class="note">Room setup: zones, floor rows, bars, VIP, Nicki's spot and her walking path, all in 1920x1080 pixels. Edit and press Apply. Show zones draws every seat and her path.</p>
+  <div class="row"><label>Avatar size</label><input type="range" id="cscale" min="50" max="130" value="85"></div>
+  <textarea id="laytxt"></textarea>
+  <div class="row"><button id="layapply" class="go">Apply</button><button id="layreset">Reset to default</button><button id="zonebtn" aria-pressed="false">Show zones</button></div>
+  <div class="row"><label class="btn" for="bgfile">Background image…</label><input type="file" id="bgfile" accept="image/*" hidden><button id="bgclear">Default background</button><button id="bgtog" aria-pressed="true">Show background</button></div>
+
+  <h2>Rules</h2>
+  <div class="row"><label>Unlock: dances</label><input type="number" id="needd" min="0" max="500"><label>chats</label><input type="number" id="needc" min="0" max="2000"></div>
+  <div class="row"><label><input type="checkbox" id="holeck"> See-through main screen (put your video UNDER this overlay in OBS so announcements show on top)</label></div>
+  <div class="row"><label>Hard cap (avatars shrink on their own first)</label><input type="number" id="maxs" min="10" max="300"></div>
+  <div class="row"><button id="rules" class="go">Save rules</button></div>
+</div>
+<script>

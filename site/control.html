@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#14061f">
+<title>Nicki Night Control</title>
+<style>
+:root{--bg:#14061f;--card:#22102f;--card2:#2c1640;--line:#43245e;--pink:#ff2f9e;--pink2:#ff6cc0;--txt:#fff4fb;--dim:#b79bc9;--ok:#34e08a;--warn:#ffb02f;--bad:#ff4d6a;--kick:#53fc18;--x:#4aa3ff;--tt:#ff3b5c;--r:18px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font:16px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Rounded","Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
+body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+header{padding:10px 16px 8px;background:linear-gradient(180deg,#2a0f3f,#14061f);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;letter-spacing:.3px}header h1 b{color:var(--pink)}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--dim)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--bad);box-shadow:0 0 8px currentColor;color:var(--bad)}.dot.ok{background:var(--ok);color:var(--ok)}.dot.warn{background:var(--warn);color:var(--warn)}
+.chips{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}.chip{padding:5px 11px;border-radius:99px;background:var(--card2);font-size:13px;font-weight:600}.chip b{color:var(--pink2)}
+main{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 18px}
+.tab{display:none;max-width:980px;margin:0 auto}.tab.on{display:block}
+nav{display:flex;background:#10051a;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;color:var(--dim);padding:10px 2px 9px;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:58px}
+nav button i{font-style:normal;font-size:22px;line-height:1}nav button.on{color:var(--pink2)}nav button.on i{filter:drop-shadow(0 0 8px var(--pink))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.card h2{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--pink2)}
+.note{color:var(--dim);font-size:13px;margin:8px 0 0}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.grid.g2{grid-template-columns:repeat(2,1fr)}.grid.g3{grid-template-columns:repeat(3,1fr)}
+button.b,.b{border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:14px;padding:14px 10px;font-size:16px;font-weight:650;min-height:56px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.b:active{transform:scale(.97);background:#3a1d54}.b.go{background:linear-gradient(135deg,#ff2f9e,#c2188a);border-color:#ff6cc0;box-shadow:0 4px 18px #ff2f9e55}
+.b.on{background:linear-gradient(135deg,#7a2bd6,#ff2f9e);border-color:#ff8fd0;box-shadow:0 0 16px #ff2f9e66}.b.warn{border-color:var(--warn);color:var(--warn)}.b.bad{border-color:var(--bad);color:var(--bad)}.b.sm{min-height:44px;padding:8px 12px;font-size:14px}
+.b small{display:block;font-weight:500;color:var(--dim);font-size:12px}
+input[type=text],input[type=number],input[type=password],select,textarea{width:100%;background:#180a25;border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:13px 12px;font-size:16px;min-height:50px;font-family:inherit}
+textarea{min-height:110px;resize:vertical}input:focus,textarea:focus,select:focus{outline:2px solid var(--pink);outline-offset:0}
+.row{display:flex;gap:10px;margin-bottom:10px;align-items:center}.row>*{flex:1}.row>.fit{flex:0 0 auto}
+label.l{font-size:13px;color:var(--dim);display:block;margin:2px 0 6px}
+input[type=range]{width:100%;height:44px;accent-color:var(--pink)}
+.sw{height:48px;border-radius:14px;border:2px solid transparent;font-weight:700}
+.sw.on{border-color:#fff;box-shadow:0 0 14px currentColor}
+.person{display:flex;align-items:center;gap:12px;padding:10px 6px;border-bottom:1px solid var(--line);min-height:60px}.person:last-child{border-bottom:0}
+.av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0b0410;flex:0 0 42px}
+.av.kick{background:var(--kick)}.av.x{background:var(--x)}.av.tiktok{background:var(--tt)}.av.none{background:#999}
+.person .nm{font-weight:700}.person .meta{font-size:12px;color:var(--dim)}.tag{font-size:11px;padding:3px 8px;border-radius:99px;background:var(--card2);margin-left:6px;color:var(--pink2);font-weight:700}
+.tag.vip{background:#4a3200;color:#ffd35a}.tag.ok{color:var(--ok)}
+.sheet{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;z-index:20}.sheet.on{display:flex}
+.sheet>div{background:var(--card);width:100%;border-radius:22px 22px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));max-width:700px;margin:0 auto;border:1px solid var(--line)}
+.sheet h3{margin:0 0 12px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;background:#000d;border:1px solid var(--line);padding:10px 16px;border-radius:99px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;max-width:90vw}
+#toast.on{opacity:1}#toast.bad{border-color:var(--bad);color:#ff9aab}#toast.ok{border-color:var(--ok)}
+iframe#sty{width:100%;height:calc(100vh - 330px);min-height:620px;border:1px solid var(--line);border-radius:var(--r);background:#0e0416}
+pre#log{background:#0e0416;border-radius:12px;padding:10px;font-size:12px;max-height:200px;overflow:auto;color:#cdb;white-space:pre-wrap;margin:0}
+.big{font-size:34px;font-weight:800;line-height:1}.stat{text-align:center;background:var(--card2);border-radius:14px;padding:12px 6px}.stat span{display:block;font-size:12px;color:var(--dim);margin-top:4px}
+@media (min-width:900px){.grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}}
+</style></head><body>
+<header><h1>NICKI <b>NIGHT</b> control</h1>
+<span class="pill"><i class="dot" id="d1"></i><span id="s1">Connecting…</span></span>
+<span class="pill"><i class="dot" id="d2"></i><span id="s2">Chat</span></span>
+<div class="chips" id="chips"></div></header>
+<main>
+<section class="tab on" id="t-show">
+ <div class="card"><h2>Nicki</h2><div class="grid g3"><button class="b go" data-c="nicki.rehearse">Rehearse entrance</button><button class="b" data-c="nicki.out">Walks out</button><button class="b warn" data-c="show.new">New show<small>resets counts</small></button></div><p class="note" id="nstat"></p></div>
+ <div class="card"><h2>Top 5 stage</h2><button class="b" id="top5" style="width:100%">Top 5 chatters dance in the middle</button><div id="toplist" class="note"></div></div>
+ <div class="card"><h2>Now playing</h2><div class="row"><input type="text" id="npa" placeholder="Artist"><input type="text" id="npt" placeholder="Song"></div><div class="row"><button class="b go" id="npset">Show it</button><button class="b" id="npclr">Clear</button></div></div>
+ <div class="card"><h2>Shout to the room</h2><div class="row"><input type="text" id="bn" placeholder="Big text (e.g. DRINK SPECIAL)"><input type="text" id="bs" placeholder="Small text"></div><button class="b go" id="bnsend" style="width:100%">Show banner</button></div>
+</section>
+<section class="tab" id="t-light">
+ <div class="card"><h2>Moods</h2><div class="grid" id="presets"></div></div>
+ <div class="card"><h2>Effects</h2><div class="grid" id="fx"></div><p class="note">Strobe is capped at 3 flashes a second.</p></div>
+ <div class="card"><h2>Color wash</h2><div class="grid" id="washes"></div></div>
+ <div class="card"><h2>Intensity &amp; tempo</h2><label class="l">Intensity</label><input type="range" id="inten" min="10" max="100"><div class="row"><div><label class="l">BPM</label><input type="number" id="bpm" min="60" max="200"></div><button class="b fit" id="tap" style="min-width:140px;margin-top:22px">Tap tempo</button></div></div>
+</section>
+<section class="tab" id="t-crowd">
+ <div class="card"><h2>Who is in</h2><div class="grid g3" id="stats"></div><label class="l" style="margin-top:12px">Avatar size</label><input type="range" id="scale" min="50" max="130"></div>
+ <div class="card"><h2>People</h2><input type="text" id="find" placeholder="Search name…" style="margin-bottom:8px"><div id="people"></div></div>
+</section>
+<section class="tab" id="t-look">
+ <div class="card"><h2>Dress someone</h2>
+  <div class="row"><input type="text" id="lh" placeholder="@handle" autocapitalize="off" autocorrect="off"><select id="lp" class="fit" style="max-width:130px"><option value="x">X</option><option value="kick">Kick</option><option value="tiktok">TikTok</option></select></div>
+  <div class="row"><button class="b go" id="lapply">Apply look</button><button class="b" id="lgrant">Unlock all for them</button></div>
+  <div class="row"><button class="b sm" data-nk="nicki">Nicki: silver + fur</button><button class="b sm" data-nk="nicki2">Nicki: green trench</button><button class="b sm" data-nk="nicki3">Nicki: burgundy</button><button class="b sm" data-nk="nicki4">Nicki: pink latex</button></div>
+  <p class="note" id="lcur">Pick a look below, then Apply.</p></div>
+ <iframe id="sty" src="" title="Look picker"></iframe>
+</section>
+<section class="tab" id="t-set">
+ <div class="card"><h2>Connection</h2><label class="l">Session ID (same one the overlay uses)</label><input type="text" id="sess" autocapitalize="off" autocorrect="off"><label class="l" style="margin-top:10px">Optional PIN (must match the overlay)</label><input type="text" id="pin" autocapitalize="off"><label class="l" style="margin-top:10px">Relay (leave empty for the default)</label><input type="text" id="relay" placeholder="wss://io.socialstream.ninja"><div class="row" style="margin-top:12px"><button class="b go" id="conn">Connect</button><button class="b" id="test">Test</button></div><p class="note" id="cnote"></p></div>
+ <div class="card"><h2>VIP list (X handles)</h2><textarea id="vips" placeholder="@jaylux&#10;@someone"></textarea><button class="b go" id="vipsave" style="margin-top:10px;width:100%">Save VIP list</button><p class="note">Listed handles go straight to VIP when they type !enter.</p></div>
+ <div class="card"><h2>Mods (X handles)</h2><textarea id="mods" style="min-height:80px"></textarea><button class="b" id="modsave" style="margin-top:10px;width:100%">Save mods</button></div>
+ <div class="card"><h2>Unlock rules &amp; limits</h2><div class="row"><div><label class="l">Dances needed</label><input type="number" id="needd"></div><div><label class="l">Chats needed</label><input type="number" id="needc"></div><div><label class="l">Hard cap</label><input type="number" id="maxs"></div></div><button class="b go" id="rules" style="width:100%">Save rules</button></div>
+ <div class="card"><h2>Rehearsal tools</h2><div class="grid"><button class="b" data-bots="10">+10 guests</button><button class="b" data-bots="50">+50 guests</button><button class="b" data-bots="200">+200 guests</button><button class="b" data-c="botschat">Random chat</button><button class="b" data-bots="10:bar">+10 at bar</button><button class="b" data-bots="10:vip">+10 in VIP</button><button class="b bad" id="clr">Clear room</button></div>
+  <div class="row" style="margin-top:12px"><input type="text" id="sh" placeholder="@handle"><input type="text" id="sm" placeholder="!enter"></div><button class="b" id="ssend" style="width:100%">Send as chat</button></div>
+ <div class="card"><h2>Overlay log</h2><pre id="log"></pre></div>
+</section>
+</main>
+<nav id="nav"><button data-t="show" class="on"><i>🎤</i>Show</button><button data-t="light"><i>💡</i>Lights</button><button data-t="crowd"><i>👥</i>Crowd</button><button data-t="look"><i>👗</i>Looks</button><button data-t="set"><i>⚙️</i>Setup</button></nav>
+<div class="sheet" id="sheet"><div id="sheetin"></div></div><div id="toast"></div>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},LS=window.localStorage;
+function ld(k,d){try{var v=LS.getItem('vnnctl_'+k);return v==null?d:v}catch(e){return d}}function sv(k,v){try{LS.setItem('vnnctl_'+k,v)}catch(e){}}
+var Q=new URLSearchParams(location.search);
+var C={session:Q.get('session')||ld('session',''),pin:Q.get('pin')||ld('pin',''),relay:Q.get('relay')||ld('relay','')};
+var me=Math.random().toString(36).slice(2,8),ws=null,bc=null,up=false,tries=0,T=null,st=null,lastSeen=0,pend={},seq=0;
+function room(){return 'vnn-'+(C.session||'local')+(C.pin?'-'+C.pin:'')}
+function toast(t,k){var e=$('toast');e.textContent=t;e.className='on '+(k||'');clearTimeout(toast.t);toast.t=setTimeout(function(){e.className=''},2200)}
+function raw(o){o.from=me;var s=JSON.stringify({vnn:o});if(ws&&ws.readyState===1)try{ws.send(s)}catch(e){}if(bc)try{bc.postMessage(s)}catch(e){}}
+function cmd(c,a){return new Promise(function(res){var id=++seq+'-'+me;pend[id]=res;raw({t:'cmd',c:c,a:a||{},id:id});setTimeout(function(){if(pend[id]){delete pend[id];res({ok:false,msg:'No answer from the overlay'});toast('No answer from the overlay','bad')}},4500)}).then(function(r){if(r&&r.ok===false&&r.msg&&r.msg!=='No answer from the overlay')toast(r.msg,'bad');return r})}
+function recv(d){var x=d,p=null;(function w(o,n){if(!o||n>5||p)return;if(o.vnn){p=o.vnn;return}if(Array.isArray(o))return o.forEach(function(y){w(y,n+1)});['overlayNinja','dataReceived','contents'].forEach(function(k){if(o[k])w(o[k],n+1)})})(x,0);
+ if(!p||p.from===me)return;if(p.t==='state'){st=p;lastSeen=Date.now();render()}else if(p.t==='ack'&&pend[p.id]){var f=pend[p.id];delete pend[p.id];f(p)}}
+function parse(s){try{return JSON.parse(s)}catch(e){return null}}
+function start(){clearTimeout(T);try{if(!bc&&window.BroadcastChannel){bc=new BroadcastChannel(room());bc.onmessage=function(e){recv(parse(e.data))}}}catch(e){}
+ if(ws){try{ws.onclose=null;ws.close()}catch(e){}ws=null}
+ if(!C.session&&!C.relay){setConn(null,'Add your session ID in Setup');return}
+ var url=C.relay||'wss://io.socialstream.ninja';try{ws=new WebSocket(url)}catch(e){setConn(false,'Bad relay address');return}
+ setConn(null,'Connecting…');
+ ws.onopen=function(){tries=0;up=true;ws.send(JSON.stringify({join:room(),in:6,out:5}));raw({t:'hello'});setConn(null,'Waiting for the overlay…')};
+ ws.onmessage=function(e){recv(parse(e.data))};
+ ws.onclose=function(){up=false;tries++;setConn(false,'Reconnecting…');T=setTimeout(start,Math.min(12000,1200*tries))};ws.onerror=function(){}}
+function setConn(ok,t){window._cs=[ok,t];paint()}
+function paint(){var cs=window._cs||[null,''],live=st&&Date.now()-lastSeen<20000;
+ var d1=$('d1'),s1=$('s1');if(live){d1.className='dot ok';s1.textContent='Overlay connected'}else if(cs[0]===false){d1.className='dot';s1.textContent=cs[1]}else{d1.className='dot warn';s1.textContent=cs[1]||'Waiting for the overlay…'}
+ var d2=$('d2');d2.className='dot '+(live&&st.ssn?'ok':(live?'':'warn'));$('s2').textContent=live?(st.ssn?'Chat flowing':'Chat not connected'):'Chat'}
+setInterval(function(){paint();if(up&&Date.now()-lastSeen>9000)raw({t:'hello'})},3000);
+/* nav */
+document.getElementById('nav').onclick=function(e){var b=e.target.closest('button');if(!b)return;Array.prototype.forEach.call(document.querySelectorAll('nav button'),function(x){x.classList.toggle('on',x===b)});Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(x){x.classList.toggle('on',x.id==='t-'+b.dataset.t)});if(b.dataset.t==='look'&&!$('sty').getAttribute('src'))$('sty').src='styler.html?mod=1'};
+/* generic data-c buttons */
+document.body.addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(b&&!b.dataset.n){cmd(b.dataset.c).then(function(r){if(r.ok)toast('Done','ok')})}
+ var bb=e.target.closest('[data-bots]');if(bb){var p=bb.dataset.bots.split(':');cmd('bots',{n:+p[0],mode:p[1]}).then(function(r){if(r.ok)toast('Added','ok')})}});
+/* lights */
+var PRE=[['chill','Chill'],['party','Party'],['drop','The drop (8s)'],['dark','Dark + spot'],['off','Lights off']],FX=[['beams','Beams'],['lasers','Lasers'],['ball','Sparkles'],['pulse','Beat pulse'],['strobe','Strobe'],['fog','Fog'],['spot','Spotlight'],['dark','Blackout'],['glow','Glows'],['led','LED strips']],WS=[['none','No wash','#555'],['pink','Pink','#ff2f9e'],['blue','Blue','#2f6bff'],['purple','Purple','#8a3cff'],['cyan','Cyan','#20d8ff'],['amber','Amber','#ff9a2f'],['rainbow','Rainbow','linear-gradient(90deg,#f33,#fc3,#3f6,#3cf,#93f)']];
+$('presets').innerHTML=PRE.map(function(p,i){return '<button class="b '+(i<3?'go':'')+'" data-l="'+p[0]+'">'+p[1]+'</button>'}).join('');
+$('fx').innerHTML=FX.map(function(p){return '<button class="b" data-f="'+p[0]+'">'+p[1]+'</button>'}).join('');
+$('washes').innerHTML=WS.map(function(p){return '<button class="b sw" data-w="'+p[0]+'" style="background:'+p[2]+';color:#fff;text-shadow:0 1px 3px #000a">'+p[1]+'</button>'}).join('');
+$('presets').onclick=function(e){var b=e.target.closest('[data-l]');if(b)cmd('light',{n:b.dataset.l})};$('fx').onclick=function(e){var b=e.target.closest('[data-f]');if(b)cmd('light',{n:b.dataset.f})};$('washes').onclick=function(e){var b=e.target.closest('[data-w]');if(b)cmd('wash',{n:b.dataset.w})};
+var it;$('inten').oninput=function(){clearTimeout(it);var v=+this.value;it=setTimeout(function(){cmd('inten',{v:v})},120)};$('bpm').onchange=function(){cmd('bpm',{v:+this.value})};
+var taps=[];$('tap').onclick=function(){var n=Date.now();taps=taps.filter(function(t){return n-t<2500});taps.push(n);if(taps.length>2){var av=(taps[taps.length-1]-taps[0])/(taps.length-1),b=Math.max(60,Math.min(200,Math.round(60000/av)));$('bpm').value=b;cmd('bpm',{v:b})}else toast('Keep tapping')};
+/* show */
+$('top5').onclick=function(){cmd('top5',{on:!(st&&st.top5)})};
+$('npset').onclick=function(){cmd('np',{a:$('npa').value,t:$('npt').value}).then(function(r){if(r.ok)toast('Now playing updated','ok')})};$('npclr').onclick=function(){$('npa').value='';$('npt').value='';cmd('np',{a:'',t:''})};
+$('bnsend').onclick=function(){cmd('banner',{t:$('bn').value,s:$('bs').value}).then(function(r){if(r.ok)toast('Sent','ok')})};
+/* crowd */
+var ZN={floor:'Floor',bar:'Bar',vip:'VIP',stage:'Top 5'};
+$('scale').oninput=function(){var v=+this.value;clearTimeout($('scale')._t);$('scale')._t=setTimeout(function(){cmd('scale',{v:v})},150)};
+$('find').oninput=function(){people()};
+function people(){if(!st)return;var q=$('find').value.toLowerCase();var L=st.people.filter(function(p){return !q||(p.n+' '+p.h).toLowerCase().indexOf(q)>=0});
+ $('people').innerHTML=L.length?L.map(function(p){return '<div class="person" data-k="'+esc(p.k)+'"><div class="av '+p.p+'">'+esc((p.n||'?').charAt(0).toUpperCase())+'</div><div style="flex:1;min-width:0"><div class="nm">'+esc(p.n)+(p.v?'<span class="tag vip">VIP</span>':'')+(p.e?'<span class="tag ok">unlocked</span>':'')+'</div><div class="meta">'+ZN[p.z]+' · '+p.c+' chats · '+p.d+' dances</div></div><div style="color:var(--dim)">›</div></div>'}).join(''):'<p class="note">Nobody here yet.</p>'}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+$('people').onclick=function(e){var r=e.target.closest('.person');if(!r)return;var p=st.people.filter(function(x){return x.k===r.dataset.k})[0];if(!p)return;sheet(p)};
+function sheet(p){var k={key:p.k};$('sheetin').innerHTML='<h3>'+esc(p.n)+' <span class="tag">'+p.p+'</span></h3><div class="grid g2"><button class="b" data-a="spot">Spotlight</button><button class="b" data-a="say">Say hi</button><button class="b" data-a="'+(p.z==='bar'?'floor':'bar')+'">'+(p.z==='bar'?'Back to floor':'Send to bar')+'</button><button class="b" data-a="'+(p.v?'unvip':'vip')+'">'+(p.v?'Remove VIP':'Make VIP')+'</button><button class="b" data-a="grant">Unlock all looks</button><button class="b" data-a="look">Change look</button><button class="b bad" data-a="kick">Remove</button><button class="b" data-a="close">Close</button></div>';
+ $('sheet').classList.add('on');$('sheetin').onclick=function(e){var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a;$('sheet').classList.remove('on');if(a==='close')return;if(a==='look'){$('lh').value=p.h;$('lp').value=p.p;document.querySelector('nav [data-t=look]').click();return}
+  var m={spot:'user.spot',bar:'user.bar',floor:'user.floor',vip:'user.vip',unvip:'user.unvip',grant:'user.grant',kick:'user.kick',say:'user.say'}[a];var args={key:p.k,h:p.h,p:p.p};if(a==='say')args.t='Welcome!';cmd(m,args).then(function(r){if(r.ok)toast('Done','ok')})}}
+$('sheet').onclick=function(e){if(e.target===this)this.classList.remove('on')};
+/* looks */
+var cur=null;window.addEventListener('message',function(e){var d=e.data;if(d&&d.vnnLook){cur=d.vnnLook;$('lcur').textContent='Selected: !look '+(cur.look||'(default)')+(cur.dance?'  ·  !dance '+cur.dance:'')}});
+function target(){var h=$('lh').value.trim().replace(/^@/,'');if(!h){toast('Type their @handle first','bad');return null}return {h:h,p:$('lp').value}}
+$('lapply').onclick=function(){var t=target();if(!t)return;if(!cur){toast('Pick a look first','bad');return}t.look=cur.look;t.dance=cur.dance;cmd('user.look',t).then(function(r){if(r.ok)toast(r.msg?'Applied ('+r.msg+')':'Look applied','ok')})};
+$('lgrant').onclick=function(){var t=target();if(!t)return;cmd('user.grant',t).then(function(r){if(r.ok)toast('Unlocked for @'+t.h,'ok')})};
+Array.prototype.forEach.call(document.querySelectorAll('[data-nk]'),function(b){b.onclick=function(){cmd('user.look',{h:'nickiminaj',p:'x',look:b.dataset.nk}).then(function(r){if(r.ok)toast('Nicki outfit set','ok')})}});
+/* setup */
+$('sess').value=C.session;$('pin').value=C.pin;$('relay').value=C.relay;
+$('conn').onclick=function(){C.session=$('sess').value.trim();C.pin=$('pin').value.trim();C.relay=$('relay').value.trim();sv('session',C.session);sv('pin',C.pin);sv('relay',C.relay);if(bc){try{bc.close()}catch(e){}bc=null}st=null;start();toast('Connecting…')};
+$('test').onclick=function(){var t0=Date.now();$('cnote').textContent='Testing…';var w=setInterval(function(){},1e9);cmd('ping').then(function(r){clearInterval(w);$('cnote').textContent=r.ok?'The overlay answered in '+(Date.now()-t0)+' ms. All good.':'No answer. Check the session ID matches the overlay, the overlay is open in OBS, and the PIN matches.'})};
+$('vipsave').onclick=function(){cmd('vip.set',{list:$('vips').value.split(/[\s,]+/).filter(Boolean)}).then(function(r){if(r.ok)toast('VIP list saved','ok')})};
+$('modsave').onclick=function(){cmd('mods.set',{list:$('mods').value.split(/[\s,]+/).filter(Boolean)}).then(function(r){if(r.ok)toast('Mods saved','ok')})};
+$('rules').onclick=function(){cmd('rules',{d:+$('needd').value,c:+$('needc').value,max:+$('maxs').value}).then(function(r){if(r.ok)toast('Rules saved','ok')})};
+$('clr').onclick=function(){if(confirm('Clear everyone from the room?'))cmd('crowd.clear')};
+$('ssend').onclick=function(){cmd('chat',{h:$('sh').value||'@tester',m:$('sm').value||'!enter'})};
+/* render */
+var sticky={};function setv(id,v){var e=$(id);if(document.activeElement!==e)e.value=v}
+function render(){paint();if(!st)return;
+ $('chips').innerHTML='<span class="chip"><b>'+st.cnt.total+'</b> inside</span><span class="chip">Floor <b>'+st.cnt.floor+'</b></span><span class="chip">Bar <b>'+st.cnt.bar+'</b></span><span class="chip">VIP <b>'+st.cnt.vip+'</b></span>';
+ $('top5').classList.toggle('on',st.top5);$('top5').textContent=st.top5?'Top 5 is ON (tap to stop)':'Top 5 chatters dance in the middle';
+ $('toplist').textContent=st.top5&&st.top.length?st.top.map(function(t,i){return '#'+(i+1)+' '+t.n+' ('+t.s+')'}).join('  ·  '):'';
+ $('nstat').textContent=st.nicki.inside?'Nicki is in the club.':(st.nicki.done?'Entrance already played this show.':'Her entrance is ready for when she chats.');
+ Array.prototype.forEach.call(document.querySelectorAll('[data-f]'),function(b){b.classList.toggle('on',!!st.light[b.dataset.f])});
+ Array.prototype.forEach.call(document.querySelectorAll('[data-w]'),function(b){b.classList.toggle('on',st.light.wash===b.dataset.w)});
+ setv('inten',Math.round(st.light.inten*100));setv('bpm',st.light.bpm);setv('scale',Math.round(st.scale*100));
+ if(!(document.activeElement&&/npa|npt/.test(document.activeElement.id))){setv('npa',st.np.a);setv('npt',st.np.t)}
+ $('stats').innerHTML=[['Total',st.cnt.total],['Floor',st.cnt.floor],['Bar',st.cnt.bar],['VIP',st.cnt.vip],['Top 5',st.cnt.stage],['Avatar scale',Math.round(st.k*100)+'%']].map(function(s){return '<div class="stat"><div class="big">'+s[1]+'</div><span>'+s[0]+'</span></div>'}).join('');
+ people();
+ if(document.activeElement!==$('vips'))$('vips').value=st.vip.join('\n');if(document.activeElement!==$('mods'))$('mods').value=st.mods.map(function(m){return '@'+m}).join('\n');
+ setv('needd',st.need.d);setv('needc',st.need.c);setv('maxs',st.maxOn);$('log').textContent=st.log.join('\n')}
+if(window.navigator.standalone===undefined){}start();render();
+})();
+</script></body></html>
