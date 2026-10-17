@@ -106,7 +106,7 @@ var RIG = (function () {
     function drawFoot(gl) {
       var sq0 = ST['sx' + gl.sd];
       if (!sq0 || sq0.cur !== gl.view) ST['sx' + gl.sd] = sq0 = { cur: gl.view, prev: sq0 ? sq0.cur : null, t0: NOW };
-      var sf = clamp((NOW - sq0.t0) / 0.12, 0, 1);
+      var sf = clamp((NOW - sq0.t0) / 0.08, 0, 1);
       if (sq0.prev && sf < 1 && PART[sq0.prev]) { var pp = PART[sq0.prev], TT = tier(pp, px), ddy = FOOTH - (pp.h - pp.ank[1]); ctx.save(); ctx.translate(gl.A[0], gl.A[1] + ddy); ctx.rotate(gl.psi); ctx.scale(gl.flip ? -1 : 1, 1); blit(ctx, pp, TT, 0, 0, pp.w, pp.h, -pp.ank[0], -pp.ank[1]); ctx.restore(); }
       var order = PART[gl.view] ? [gl.view] : [];
       order.forEach(function (n, i) {
@@ -114,11 +114,11 @@ var RIG = (function () {
         ctx.save(); ctx.globalAlpha = base0 * ((sq0.prev && sf < 1) ? sf : 1); ctx.translate(gl.A[0], gl.A[1] + dy); ctx.rotate(gl.psi); ctx.scale(gl.flip ? -1 : 1, 1); blit(ctx, pt, T, 0, 0, pt.w, pt.h, -pt.ank[0], -pt.ank[1]); ctx.restore();
       });
     }
-    legs.forEach(function (gl) {
+    function drawLegs() { legs.forEach(function (gl) {
       drawLimb(ctx, 'shin', gl.ik.K[0], gl.ik.K[1], gl.ik.d2, gl.sd < 0, gl.ik.f2, px);
       drawLimb(ctx, 'thigh', gl.H[0], gl.H[1], gl.ik.d1, gl.sd < 0, gl.ik.f1, px);
       drawFoot(gl);
-    });
+    }); }
     /* hair back */
     var hasHair = o.hair !== false && PART.hairb;
     var head = g('Head'), hang = Math.atan2(head[0] - NK[0], head[1] - NK[1]);
@@ -161,26 +161,35 @@ var RIG = (function () {
         if (PART.wacc) { var pw = PART.wacc, wk = 0.9; ctx.save(); ctx.translate(a.Wp[0], a.Wp[1] - 8); ctx.rotate(a.a2); ctx.scale(wk, a.f2 * 0.9 + 0.1); blit(ctx, pw, tier(pw, px), 0, 0, pw.w, pw.h, -pw.piv[0], -pw.piv[1]); ctx.restore(); }
         var hn = (a.curl && PART.fist) ? 'fist' : a.hand, hq = ST['hs' + a.ak];
         if (!hq || hq.cur !== hn) ST['hs' + a.ak] = hq = { cur: hn, prev: hq ? hq.cur : null, t0: NOW };
-        var hf = clamp((NOW - hq.t0) / 0.13, 0, 1), hsc = 0.65 + 0.35 * a.f2;
+        var hf = clamp((NOW - hq.t0) / 0.09, 0, 1), hsc = 0.65 + 0.35 * a.f2;
         if (hq.prev && hf < 1 && PART[hq.prev]) drawRot(ctx, hq.prev, a.Wp[0], a.Wp[1], a.a2, fl, hsc, px);
         ctx.globalAlpha = base0 * ((hq.prev && hf < 1) ? hf : 1); drawRot(ctx, hn, a.Wp[0], a.Wp[1], a.a2, fl, hsc, px); ctx.globalAlpha = base0; }
     }
     arms.forEach(function (a) { if (!a.front) drawArm(a); });
     function drawPelvis(name, alpha, mir) { ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr); ctx.scale((mir ? -1 : 1) * rp * PK, 1); ctx.translate(-pelC[0], -pelC[1]); drawRot(ctx, name, pelC[0], pelC[1], 0, false, 1, px); ctx.restore(); }
-    var bH = clamp((wH - 0.36) / 0.04, 0, 1); if (bH < 1) drawPelvis('pelvis', 1, false); if (bH > 0) drawPelvis('pelvis34', bH, mirH);
+    function pelvisBlock() {
+    bH = clamp((wH - 0.36) / 0.04, 0, 1); if (bH < 1) drawPelvis('pelvis', 1, false); if (bH > 0) drawPelvis('pelvis34', bH, mirH);
     if (PART.skirt) {
       var dsp = legs[0].ik.d1 - legs[1].ik.d1, fl = 1 + 0.32 * Math.min(1.4, Math.abs(dsp)), swy = clamp((legs[0].ik.d1 + legs[1].ik.d1) * 0.4, -0.35, 0.35);
       var drawSk = function (name, alpha, mir) { var pt = PART[name]; ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr + swy); ctx.scale((mir ? -1 : 1) * rp * PK * fl, 1); blit(ctx, pt, tier(pt, px), 0, 0, pt.w, pt.h, -pt.piv[0], CFG.skTop); ctx.restore(); };
       if (bH < 1 || !PART.skirt34) drawSk('skirt', 1, false); if (bH > 0 && PART.skirt34) drawSk('skirt34', bH, mirH);
     }
+    }
+    var bH;
+    if (o.under) { pelvisBlock(); drawLegs(); } else { drawLegs(); pelvisBlock(); }
     if (PART.gacc) { legs.forEach(function (gl, gi) { if (gi) return; var pt = PART.gacc; ctx.save(); ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr); ctx.translate((mirH ? -1 : 1) * 118, -20); ctx.scale(0.75, 0.75); blit(ctx, pt, tier(pt, px * 0.75), 0, 0, pt.w, pt.h, -pt.piv[0], -pt.piv[1]); ctx.restore(); }); }
+    var SXC = []; for (i = 0; i < NS; i++) SXC.push((STRIP[i] + STRIP[i + 1]) / 2);
+    function sxAt(y) { if (!CURVY) return 1; for (var q = 0; q < NS - 1; q++) { if (y <= SXC[q] && y >= SXC[q + 1]) { var f = (SXC[q] - y) / (SXC[q] - SXC[q + 1]); return SX[q] + (SX[q + 1] - SX[q]) * f; } } return y > SXC[0] ? SX[0] : SX[NS - 1]; }
     function drawStrips(name, alpha, mir) {
       var tp = PART[name], T2 = tier(tp, px), fy = tp.h / 466;
       for (i = 0; i < NS; i++) {
-        var sy0 = STRIP[i + 1], sy1 = STRIP[i], top = Math.max(0, sy0 - (i === NS - 1 ? 0 : 10)), bot = Math.min(466, sy1);
-        ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(nodes[i].p[0], nodes[i].p[1]); ctx.rotate(nodes[i].a); ctx.scale((mir ? -1 : 1) * cy * SX[i], sq);
-        blit(ctx, tp, T2, 0, top * fy, tp.w, (bot - top) * fy, -tp.piv[0], top - NODE[i]);
-        ctx.restore();
+        var sy0 = STRIP[i + 1], sy1 = STRIP[i], top = Math.max(0, sy0 - (i === NS - 1 ? 0 : 10)), bot = Math.min(466, sy1), nb2 = CURVY ? Math.max(1, Math.round((bot - top) / 14)) : 1, kq;
+        for (kq = 0; kq < nb2; kq++) {
+          var t0 = top + (bot - top) * kq / nb2, t1 = top + (bot - top) * (kq + 1) / nb2, tt0 = kq ? t0 - 1 : t0;
+          ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(nodes[i].p[0], nodes[i].p[1]); ctx.rotate(nodes[i].a); ctx.scale((mir ? -1 : 1) * cy * (CURVY ? sxAt((t0 + t1) / 2) : 1), sq);
+          blit(ctx, tp, T2, 0, tt0 * fy, tp.w, (t1 - tt0) * fy, -tp.piv[0], tt0 - NODE[i]);
+          ctx.restore();
+        }
       }
     }
     var bT = clamp((wT - 0.36) / 0.04, 0, 1); if (bT < 1) drawStrips('torso', 1, false); if (bT > 0) drawStrips('torso34', bT, mirT);

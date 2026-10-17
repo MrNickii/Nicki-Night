@@ -189,6 +189,7 @@ var VNNA = (function () {
   var SCX = { uarm: 0.94, farm: 0.96, thigh: 0.9, shin: 0.93 }, SCU = { hand_open: 1.1, hand_relax: 1.1, fist: 1.08 };
   function composePart(key, S) {
     var layers = [{ sheet: 'BODY-' + S.skinSheet + '-' + BKEY[key], key: key, skin: S.skinRatio }];
+    if ((key === 'thigh' || key === 'shin') && S.bottom && !S.bottom.skirt && /PANTS-/.test(S.bottom.sheet || '')) layers.shift();
     if (S.top && TOPK[key]) layers.push({ sheet: S.top.sheet, key: TOPK[key], v: S.top.v, col: S.top.col, garment: true });
     if (S.nails && NAILK[key]) layers.push({ sheet: 'ACC-HANDS', key: NAILK[key], col: S.nails });
     if (S.bottom && BOTK[key] && !S.bottom.skirt) layers.push({ sheet: S.bottom.sheet, key: BOTK[key], v: S.bottom.v, col: S.bottom.col, garment: true, big: key !== 'pelvis34' });
@@ -218,6 +219,13 @@ var VNNA = (function () {
           }
           gx.putImageData(id, 0, 0);
         } catch (e) { }
+      }
+      if ((key === 'pelvis' || key === 'pelvis34') && S.bottom && /PANTS-[35]$/.test(S.bottom.sheet || '')) {
+        var px2 = c.getContext('2d'); px2.globalCompositeOperation = 'destination-in'; var pg = px2.createLinearGradient(0, 0, 0, c.height); pg.addColorStop(0, 'rgba(0,0,0,1)'); pg.addColorStop(0.7, 'rgba(0,0,0,1)'); pg.addColorStop(1, 'rgba(0,0,0,0)'); px2.fillStyle = pg; px2.fillRect(0, 0, c.width, c.height);
+      }
+      if (key === 'thigh' && (!S.bottom || S.bottom.skirt || /SHORTS|PANTS-[124]$/.test(S.bottom.sheet || ''))) {
+        var pantsT = !!(S.bottom && !S.bottom.skirt && /PANTS-[124]$/.test(S.bottom.sheet || ''));
+        var tx = c.getContext('2d'); tx.globalCompositeOperation = 'destination-in'; var tg = tx.createLinearGradient(0, 0, 0, c.height); tg.addColorStop(0, pantsT ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,1)'); tg.addColorStop(pantsT ? 0.09 : 0.2, 'rgba(0,0,0,1)'); tg.addColorStop(0.87, 'rgba(0,0,0,1)'); tg.addColorStop(1, 'rgba(0,0,0,0)'); tx.fillStyle = tg; tx.fillRect(0, 0, c.width, c.height);
       }
       var res = { canvas: c, def: d };
       if (key === 'uarm' && S.top && lyr(S.top.sheet, 'sleeveU', S.top.v)) {
@@ -322,7 +330,7 @@ var VNNA = (function () {
   function draw(ctx, set, S, o) {
     var s = o.h / 1700 * (o.useHs === false ? 1 : 1), P2 = RIG.pose(o.clip, o.t, { beat: o.beat || 0.5, ph: o.ph || 0, amp: o.amp || 1 });
     ctx.save(); ctx.translate(o.x, o.y); ctx.translate(0, -805 * s); ctx.scale(s, s); RIG.use(set);
-    RIG.figure(ctx, { pose: P2, px: s, fronthair: true, body: S.body, legk: S.legk, sway: o.sway || 0, dbg: o.dbg, st: o.st, now: o.now != null ? o.now : o.t }, o.head); ctx.restore();
+    RIG.figure(ctx, { pose: P2, px: s, fronthair: true, body: S.body, legk: S.legk, sway: o.sway || 0, dbg: o.dbg, st: o.st, under: !!(S.bottom && !S.bottom.skirt && /PANTS-[124]$/.test(S.bottom.sheet || '')), now: o.now != null ? o.now : o.t }, o.head); ctx.restore();
   }
   function clipOf(id) { var d = byId(CATALOG.dances, id) || byId(CATALOG.dances, CATALOG.danceAlias[id]); return d ? d.clip : 'hh1'; }
   return { CATALOG: CATALOG, init: init, build: build, spec: spec, draw: draw, clipOf: clipOf, byId: byId, hex2: hex2, lib: function () { return LIB; }, Q: function () { return Q; }, cacheSize: function () { return CORDER.length; }, setCache: function (n) { MAXC = n; } };
