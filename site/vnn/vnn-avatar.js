@@ -206,6 +206,19 @@ var VNNA = (function () {
       });
       var d = { piv: [def.piv[0] - minx, def.piv[1] - miny], bone: def.bone }, sx = SCX[key] || SCU[key] || 1, sy = SCU[key] || 1;
       if (sx !== 1 || sy !== 1) { var c2 = document.createElement('canvas'); c2.width = Math.max(1, Math.round(c.width * sx)); c2.height = Math.max(1, Math.round(c.height * sy)); var x2 = c2.getContext('2d'); x2.imageSmoothingQuality = 'high'; x2.drawImage(c, 0, 0, c2.width, c2.height); c = c2; d.piv = [d.piv[0] * sx, d.piv[1] * sy]; if (d.bone) d.bone = [d.bone[0] * sx, d.bone[1] * sy]; }
+      if ((key === 'torso' || key === 'torso34') && S.top && lyr(S.top.sheet, 'sleeveU', S.top.v)) {
+        /* sleeved tops: the baked armhole interior is near-black; recolour it to a darkened shirt tone so exposed armholes look like fabric */
+        try {
+          var gx = c.getContext('2d'), W2 = c.width, H2 = c.height, id = gx.getImageData(0, 0, W2, H2), D = id.data, i, n = 0, rr = [], gg = [], bb = [];
+          for (i = 0; i < D.length; i += 4 * 37) { if (D[i + 3] > 250 && D[i] + D[i + 1] + D[i + 2] > 150) { rr.push(D[i]); gg.push(D[i + 1]); bb.push(D[i + 2]); } }
+          var md = function (q) { q.sort(function (a, b) { return a - b; }); return q[q.length >> 1] || 0; }, mr = md(rr), mg = md(gg), mb = md(bb);
+          for (var yy = Math.floor(H2 * 0.04); yy < H2 * 0.6; yy++) for (var xx = 0; xx < W2; xx++) {
+            if (xx > W2 * 0.3 && xx < W2 * 0.7) continue; i = (yy * W2 + xx) * 4;
+            if (D[i + 3] > 200 && D[i] + D[i + 1] + D[i + 2] < 150) { D[i] = mr * 0.55; D[i + 1] = mg * 0.55; D[i + 2] = mb * 0.55; }
+          }
+          gx.putImageData(id, 0, 0);
+        } catch (e) { }
+      }
       var res = { canvas: c, def: d };
       if (key === 'uarm' && S.top && lyr(S.top.sheet, 'sleeveU', S.top.v)) {
         var ch = Math.round(120 * Q * sy), cw = c.width, cc = document.createElement('canvas'); cc.width = Math.round(cw * 1.08); cc.height = ch; var cx = cc.getContext('2d'); cx.imageSmoothingQuality = 'high';
