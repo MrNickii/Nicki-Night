@@ -42,7 +42,7 @@ var RIG = (function () {
   function tier(p, px) { var t = p.tiers[0], i; for (i = 0; i < p.tiers.length; i++) if (p.tiers[i].k >= px * 0.9) t = p.tiers[i]; return t; }
   function blit(ctx, p, T, sx, sy, sw, sh, dx, dy) { ctx.drawImage(T.c, sx * T.k, sy * T.k, Math.max(1, sw * T.k), Math.max(1, sh * T.k), dx, dy, sw, sh); }
   function drawRot(ctx, name, x, y, a, flip, sy, px, sx) {
-    var p = PART[name], T = tier(p, px); ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.scale((flip ? -1 : 1) * (sx || 1), sy || 1); blit(ctx, p, T, 0, 0, p.w, p.h, -p.piv[0], -p.piv[1]); ctx.restore();
+    var p = PART[name], T = tier(p, px), pv = p.piv; if (name === 'hand_open') { pv = [p.w * 0.49, p.h - 3]; a += Math.PI; } ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.scale((flip ? -1 : 1) * (sx || 1), sy || 1); blit(ctx, p, T, 0, 0, p.w, p.h, -pv[0], -pv[1]); ctx.restore();
   }
   function drawDir(ctx, name, x, y, dir, flip, px) {
     var p = PART[name], bx = flip ? -p.bone[0] : p.bone[0]; drawRot(ctx, name, x, y, dir - Math.atan2(p.bone[1], bx), flip, 1, px);
@@ -162,8 +162,8 @@ var RIG = (function () {
         var hn = (a.curl && PART.fist) ? 'fist' : a.hand, hq = ST['hs' + a.ak];
         if (!hq || hq.cur !== hn) ST['hs' + a.ak] = hq = { cur: hn, prev: hq ? hq.cur : null, t0: NOW };
         var hf = clamp((NOW - hq.t0) / 0.09, 0, 1), hsc = 0.65 + 0.35 * a.f2;
-        if (hq.prev && hf < 1 && PART[hq.prev]) drawRot(ctx, hq.prev, a.Wp[0], a.Wp[1], a.a2 + (hq.prev === 'hand_open' ? Math.PI : 0), fl, hsc, px);
-        ctx.globalAlpha = base0 * ((hq.prev && hf < 1) ? hf : 1); drawRot(ctx, hn, a.Wp[0], a.Wp[1], a.a2 + (hn === 'hand_open' ? Math.PI : 0), fl, hsc, px); ctx.globalAlpha = base0; }
+        if (hq.prev && hf < 1 && PART[hq.prev]) drawRot(ctx, hq.prev, a.Wp[0], a.Wp[1], a.a2, fl, hsc, px);
+        ctx.globalAlpha = base0 * ((hq.prev && hf < 1) ? hf : 1); drawRot(ctx, hn, a.Wp[0], a.Wp[1], a.a2, fl, hsc, px); ctx.globalAlpha = base0; }
     }
     arms.forEach(function (a) { if (!a.front) drawArm(a); });
     function drawPelvis(name, alpha, mir) { ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr); ctx.scale((mir ? -1 : 1) * rp * PK, 1); ctx.translate(-pelC[0], -pelC[1]); drawRot(ctx, name, pelC[0], pelC[1], 0, false, 1, px); ctx.restore(); }
