@@ -61,8 +61,9 @@ input:focus,select:focus{outline:2px solid var(--pink)}
 <div id="how"></div>
 <div id="bar"><div id="cmd"></div><button class="btn go" id="copy">Copy command</button><button class="btn" id="copyd">Copy !dance</button></div>
 <div id="toast"></div>
-<script>(function(){var t=Date.now();document.write('<script src="vnn/rig8.js?t='+t+'"><\/script><script src="vnn/vnn-avatar.js?t='+t+'"><\/script>');})();</script>
+<script>(function(){var t=Date.now();document.write('<script src="vnn/rig8.js?t='+t+'"><\/script><script src="vnn/vnn-avatar.js?t='+t+'"><\/script><script src="vnn/guide.js?t='+t+'"><\/script>');})();</script>
 <script>
+var STG = {};
 (function () {
   /* ================= Style Studio (layered avatars) ================= */
   var CAT = VNNA.CATALOG, byId = VNNA.byId;
@@ -97,7 +98,7 @@ input:focus,select:focus{outline:2px solid var(--pink)}
     if (cur) {
       cx.clearRect(0, 0, cvs.width, cvs.height);
       var s = 840 / 2010, t = danceOn ? (now - t0) / 1000 : frozen;
-      VNNA.draw(cx, cur.set, cur.spec, { x: 230, y: 2005 * s, h: 1700 * s * cur.spec.hs, clip: VNNA.clipOf(sel.dance), t: t, beat: 0.5, ph: 0, amp: 1, head: headFn });
+      VNNA.draw(cx, cur.set, cur.spec, { st: STG, now: performance.now() / 1000, x: 230, y: 2005 * s, h: 1700 * s * cur.spec.hs, clip: VNNA.clipOf(sel.dance), t: t, beat: 0.5, ph: 0, amp: 1, head: headFn });
     }
     requestAnimationFrame(frame);
   }

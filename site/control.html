@@ -29,6 +29,7 @@ button.b,.b{border:1px solid var(--line);background:var(--card2);color:var(--txt
 .b small{display:block;font-weight:500;color:var(--dim);font-size:12px}
 input[type=text],input[type=number],input[type=password],select,textarea{width:100%;background:#180a25;border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:13px 12px;font-size:16px;min-height:50px;font-family:inherit}
 textarea{min-height:110px;resize:vertical}input:focus,textarea:focus,select:focus{outline:2px solid var(--pink);outline-offset:0}
+.ck{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid #ffffff12}.ck:first-child{border-top:0}.ck input{width:22px;height:22px;margin-top:2px;flex:none;accent-color:#ff2f9e}.ck b{display:block}.ck small{display:block;color:var(--dim);line-height:1.35;margin-top:2px}
 .row{display:flex;gap:10px;margin-bottom:10px;align-items:center}.row>*{flex:1}.row>.fit{flex:0 0 auto}
 label.l{font-size:13px;color:var(--dim);display:block;margin:2px 0 6px}
 input[type=range]{width:100%;height:44px;accent-color:var(--pink)}
@@ -95,6 +96,7 @@ pre#log{background:#0e0416;border-radius:12px;padding:10px;font-size:12px;max-he
   <div class="row" style="margin-top:12px"><select id="dall"></select><button class="b fit" id="dallgo">Everyone dances this</button></div></div>
  <div class="card"><h2>Guests &amp; free message</h2><div class="grid"><button class="b" data-bots="10">+10 guests</button><button class="b" data-bots="50">+50 guests</button><button class="b" data-bots="200">+200 guests</button><button class="b" data-c="botschat">Random chat</button><button class="b" data-bots="10:bar">+10 at bar</button><button class="b" data-bots="10:vip">+10 in VIP</button><button class="b bad" id="clr">Clear room</button></div>
   <div class="row" style="margin-top:12px"><input type="text" id="sh" placeholder="@handle"><input type="text" id="sm" placeholder="!enter"></div><button class="b" id="ssend" style="width:100%">Send as chat</button></div>
+ <div class="card"><h2>Feature checklist</h2><p class="note" style="margin-top:0">Tick each one off as you test it. Your ticks are saved on this device.</p><div id="chk"></div><button class="b" id="chkreset" style="width:100%;margin-top:10px">Reset ticks</button></div>
 </section>
 <section class="tab" id="t-set">
  <div class="card"><h2>Connection</h2><label class="l">Session ID (same one the overlay uses)</label><input type="text" id="sess" autocapitalize="off" autocorrect="off"><label class="l" style="margin-top:10px">Optional PIN (must match the overlay)</label><input type="text" id="pin" autocapitalize="off"><label class="l" style="margin-top:10px">Relay (leave empty for the default)</label><input type="text" id="relay" placeholder="wss://io.socialstream.ninja"><div class="row" style="margin-top:12px"><button class="b go" id="conn">Connect</button><button class="b" id="test">Test</button></div><p class="note" id="cnote"></p></div>
@@ -193,6 +195,12 @@ $('tsend').onclick=function(){var m=$('tm').value.trim();if(!m){toast('Type a me
 $('tm').onkeydown=function(e){if(e.key==='Enter')$('tsend').click()};
 $('demo').onclick=function(){cmd('demo.run').then(function(r){if(r.ok)toast('Demo running…','ok')})};
 $('demostop').onclick=function(){cmd('demo.stop').then(function(r){if(r.ok)toast('Cleared','ok')})};
+/* checklist */
+var CHK=[['Join &amp; leave','Act as a viewer: Enter, then Leave'],['Dances','Dances list as the viewer, then "Everyone dances this"'],['Looks','Looks tab, or "Try a look" under Viewer commands'],['Locked looks','As the viewer send !look varsity. It says locked until unlocked'],['Chat bubbles','Chat bubbles: "Say something". Color, name and glow ring appear'],['Emoji pop-up','Chat bubbles: "Single emoji" and "Emoji burst"'],['Commands never bubble','Send !dance or !bar. No bubble should show'],['Links hidden','Chat bubbles: "Link (hidden)". No bubble'],['Word filter','Setup: add a word. Send it as the viewer. No bubble'],['Packed-room rules','Guests +50, Chat storm, then +200: bubbles shrink, then front half only'],['Bar &amp; drinks','Bar drinks: try all six'],['Cheers','Viewer commands: Cheers'],['Round on the house','Whole room: Round of drinks + cheers (needs guests at the bar)'],['VIP','Guests: +10 in VIP, or Crowd tab: person, Make VIP'],['Top 5 stage','Whole room: Top 5 demo, or Show tab: Top 5'],['Nicki entrance','Show tab: Rehearse entrance, or act as Nicki and chat'],['Mod commands','Pick Mod, then try the mod commands'],['Lights','Lights tab: moods, effects, color wash, BPM tap'],['Now playing &amp; banner','Show tab: set a song, send a banner'],['Person actions','Crowd tab: tap a person for spotlight, bar, VIP, remove'],['Demo reel','Run the demo and watch it start to finish']];
+var chk={};try{chk=JSON.parse(ld('chk','{}'))||{}}catch(e){chk={}}
+function chkDraw(){$('chk').innerHTML=CHK.map(function(c,i){return '<label class="ck"><input type="checkbox" data-i="'+i+'"'+(chk[i]?' checked':'')+'><span><b>'+c[0]+'</b><small>'+c[1]+'</small></span></label>'}).join('')}
+$('chk').onchange=function(e){var t=e.target;if(t.dataset.i==null)return;chk[t.dataset.i]=t.checked?1:0;sv('chk',JSON.stringify(chk))};
+$('chkreset').onclick=function(){chk={};sv('chk','{}');chkDraw()};chkDraw();
 /* setup */
 $('sess').value=C.session;$('pin').value=C.pin;$('relay').value=C.relay;
 $('conn').onclick=function(){C.session=$('sess').value.trim();C.pin=$('pin').value.trim();C.relay=$('relay').value.trim();sv('session',C.session);sv('pin',C.pin);sv('relay',C.relay);if(bc){try{bc.close()}catch(e){}bc=null}st=null;start();toast('Connecting…')};
