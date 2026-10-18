@@ -24,8 +24,9 @@
   var ART = '__ART__';
 
   /* ---------- saved state ---------- */
-  var S = { session: '__SESSION__', ws: '', vip: [], mods: ['kildadj_', 'mrnicki'], room: null, need: { d: 5, c: 20 }, maxOn: 400, top5: false, np: { a: '', t: '' }, npUrl: '', nickiDone: false, users: {}, light: null, bg: true };
+  var S = { session: '__SESSION__', ws: '', vip: [], mods: ['kildadj_', 'mrnicki'], room: null, need: { d: 5, c: 20 }, maxOn: 400, top5: false, np: { a: '', t: '' }, npUrl: '', nickiDone: false, users: {}, light: null, bg: true, bub: { on: true, words: [] } };
   try { var raw = localStorage.getItem(KEY); if (raw) { var sv = JSON.parse(raw); Object.keys(sv).forEach(function (k) { S[k] = sv[k]; }); } } catch (e) {}
+  S.bub = Object.assign({ on: true, words: [] }, S.bub || {}); if (!Array.isArray(S.bub.words)) S.bub.words = [];
   if (Q.get('session')) S.session = Q.get('session');
   if (Q.get('ws')) S.ws = Q.get('ws');
   var R = clone(DEFROOM);
@@ -259,8 +260,8 @@
     u.x = x; u.y = y;
     var el = u.el;
     el.style.transitionDuration = dur + 's, .6s';
-    el.style.transform = 'translate(' + (x - (u.cw || u.d) / 2 + (u.ox || 0)) + 'px,' + (y - u.h) + 'px) scale(' + (u.sc || 1) + ')';
-    el.style.zIndex = Math.round(y) + ((u.top || (u.stage && S.top5)) ? 5000 : 0);
+    el.style.transform = 'translate(' + (x - (u.cw || u.d) / 2 + (u.ox || 0)) + 'px,' + (y - u.h) + 'px) scale(' + ((u.sc || 1) * (u.pop ? 1.12 : 1)) + ')';
+    el.style.zIndex = Math.round(y) + ((u.top || (u.stage && S.top5)) ? 5000 : 0) + (u.pop ? 4000 : 0);
     if (dur > 0.05 && !noWalk) {
       el.classList.add('walk'); u.walkUntil = performance.now() + dur * 1000 + 60; clearTimeout(u.wt);
       u.wt = setTimeout(function () { el.classList.remove('walk'); }, dur * 1000);
@@ -411,12 +412,12 @@
     if (seat(u, false)) say(u, (u.vip ? 'VIP ' : '') + u.name, 3500, u.vip); else overflowUI();
     overflowUI(); save(); scheduleFit();
   }
-  function leave(u) { if (!u.inside) return; u.inside = false; unseat(u, true); overflowUI(); save(); scheduleFit(); }
+  function leave(u) { if (!u.inside) return; u.inside = false; bubEnd(BUB.map[u.key]); unseat(u, true); overflowUI(); save(); scheduleFit(); }
   function handle(u, text) {
     var t = text.trim(), tl = t.toLowerCase(), cmd = tl.split(/\s+/)[0], rest = t.slice(cmd.length).trim();
     u.chats++; u.show = (u.show || 0) + 1; activate(u);
     if (isNicki(u) && !S.nickiDone && !nickiBusy) { nickiEntrance(u, false); }
-    if (cmd.charAt(0) !== '!') { if (u.inside && u.slot) bumpFront(u); save(); return; }
+    if (cmd.charAt(0) !== '!') { if (u.inside) bumpFront(u, t); save(); return; }
     var mod = isMod(u);
     if (cmd === '!enter') { if (isNicki(u) && !u.inside) { nickiEntrance(u, false); return; } enter(u); return; }
     if (!u.inside && !(mod && /^!(vip|unvip|light|top5|np|nicki)$/.test(cmd))) { return; }
@@ -446,7 +447,7 @@
     if (mod && cmd === '!light') { lightCmd(rest.toLowerCase().split(/\s+/)[0]); return; }
     if (mod && cmd === '!nicki' && /test/i.test(rest)) { nickiRehearse(); return; }
   }
-  function bumpFront(u) { /* chatting keeps you from drifting to the back */ }
+  function bumpFront(u, text) { bubble(u, text); }
   setInterval(function () {
     /* idle drift: people who have gone quiet slide to the smaller back rows, freeing the front */
     var now = Date.now(), idleMs = 5 * 60 * 1000;
@@ -662,6 +663,124 @@
     clearInterval(npPoll); if (!S.npUrl) return;
     var go = function () { fetch(S.npUrl, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) { var a = j.artist || j.a || '', t2 = j.title || j.t || ''; if (a !== S.np.a || t2 !== S.np.t) setNP(a, t2); }).catch(function () {}); };
     go(); npPoll = setInterval(go, 5000);
+  }
+
+  /* ---------- chat bubbles ---------- */
+  /* Rules: quiet club = everyone gets a bubble and it stays up longer. Busy club = shorter, smaller, solid-colour bubbles.
+     Packed club = only the front half of the room (plus VIPs and Nicki), newest messages win, capped. */
+  var BUBK = { deep: 12, packed: 24 };
+  var BUB = { map: {}, list: [], run: false };
+  var BAD_AUTO = /(https?:\/\/|www\.|\b[a-z0-9-]{2,}\.(com|net|org|io|gg|tv|ly|co|me|xyz|live|ru|cn|info|shop|store)\b|\d[\d\s().-]{8,}\d)/i;
+  var LEET = { '0': 'o', '1': 'i', '!': 'i', '3': 'e', '4': 'a', '@': 'a', '5': 's', '$': 's', '7': 't' };
+  function leet(s) { return String(s).toLowerCase().replace(/[01!345@$7]/g, function (c) { return LEET[c]; }); }
+  function badWord(t) {
+    var ws = S.bub.words; if (!ws || !ws.length) return false;
+    var toks = leet(t).split(/[^a-z0-9]+/).filter(Boolean), joined = leet(t).replace(/[^a-z]/g, ''), i, j, w;
+    for (i = 0; i < ws.length; i++) {
+      w = leet(ws[i]).replace(/[^a-z]/g, ''); if (!w) continue;
+      for (j = 0; j < toks.length; j++) { if (toks[j] === w || (w.length >= 4 && toks[j].indexOf(w) === 0) || (w.length >= 5 && toks[j].indexOf(w) >= 0)) return true; }
+      if (w.length >= 6 && joined.indexOf(w) >= 0) return true;
+    }
+    return false;
+  }
+  function bubText(raw, max) {
+    var t = String(raw || '').replace(/\s+/g, ' ').trim();
+    if (!t || t.charAt(0) === '!' || BAD_AUTO.test(t) || badWord(t)) return '';
+    t = t.replace(/(.)\1{4,}/g, '$1$1$1');
+    var ch = Array.from(t);
+    if (ch.length > max) { var c = ch.slice(0, max).join(''), sp = c.lastIndexOf(' '); t = (sp > max * 0.55 ? c.slice(0, sp) : c) + '…'; }
+    return t;
+  }
+  var BUBH = [338, 18, 46, 84, 140, 170, 196, 216, 250, 276, 302, 2];
+  function bubColor(u, skip) {
+    if (isNicki(u)) return { c: '#ffd86b', g: 'rgba(255,216,107,.5)' };
+    /* each person keeps their own colour; if someone speaking right now already has it, borrow the nearest free one */
+    var used = {}; BUB.list.forEach(function (x) { if (x.u !== u && !x.fading && x.hi != null) used[x.hi] = 1; });
+    var i = (u.h32 || 0) % BUBH.length, n;
+    for (n = 0; n < BUBH.length && used[i]; n++) i = (i + 1) % BUBH.length;
+    var hue = BUBH[i]; return { c: 'hsl(' + hue + ' 92% 68%)', g: 'hsl(' + hue + ' 92% 68% / .5)', i: i };
+  }
+  function bubRule() {
+    var n = 0, ys = [];
+    order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.slot) { n++; ys.push(u.y || 0); } });
+    ys.sort(function (a, b) { return a - b; });
+    return { n: n, hold: Math.max(3200, Math.min(10000, 10600 - n * 260)), cap: n < BUBK.deep ? 14 : n < BUBK.packed ? 10 : 7, solid: n >= BUBK.deep, dense: n >= BUBK.deep, packed: n >= BUBK.packed, cut: ys.length ? ys[Math.floor(ys.length / 2)] : 0 };
+  }
+  function talk(u, col, on) {
+    var el = u.el; if (!el) return;
+    var moving = u.walkUntil && u.walkUntil > performance.now();
+    if (on) {
+      el.style.setProperty('--c', col.c); el.style.setProperty('--cg', col.g);
+      if (!u.ring) { u.ring = document.createElement('i'); u.ring.className = 'ring'; el.insertBefore(u.ring, el.firstChild); }
+      el.classList.add('talk');
+      if (!u.pop) { u.pop = 1; if (!moving && u.x != null) put(u, u.x, u.y, 0.35, true); }
+    } else {
+      el.classList.remove('talk');
+      if (u.pop) { u.pop = 0; if (!moving && u.x != null) put(u, u.x, u.y, 0.5, true); }
+    }
+  }
+  function bubble(u, text) {
+    if (!S.bub || S.bub.on === false || !$('bubs')) return;
+    var nk = isNicki(u);
+    if (!(u.inside && u.el && u.x != null && (u.slot || nk))) return;
+    var rl = bubRule(), t = bubText(text, rl.packed ? 32 : rl.dense ? 40 : 56);
+    if (!t) return;
+    if (rl.packed && !nk && !u.vip && (u.y || 0) < rl.cut) return;
+    var b = BUB.map[u.key], now = performance.now(), col = bubColor(u);
+    if (!b) {
+      b = BUB.map[u.key] = { u: u, el: document.createElement('div'), w: 0, h: 0 };
+      b.el.className = 'bub'; b.el.innerHTML = '<div class="bbox"><b class="bn"></b><span class="bt"></span></div><i class="bstem"></i>';
+      b.box = b.el.firstChild; b.nm = b.box.firstChild; b.tx = b.nm.nextSibling; b.stem = b.box.nextSibling;
+      $('bubs').appendChild(b.el); BUB.list.push(b);
+    } else { clearTimeout(b.rm); b.fading = 0; b.box.style.animation = 'none'; void b.box.offsetWidth; b.box.style.animation = ''; }
+    b.el.className = 'bub' + (rl.solid ? ' solid' : '') + (rl.dense ? ' dense' : '') + (nk ? ' gold' : '');
+    b.el.style.setProperty('--c', col.c); b.el.style.setProperty('--cg', col.g);
+    b.nm.textContent = (u.vip && !nk ? '★ ' : '') + String(u.name || '').slice(0, 22);
+    b.hi = col.i; b.tx.textContent = t; b.born = now; b.until = now + rl.hold * (nk ? 1.6 : 1); b.w = 0;
+    var act = BUB.list.filter(function (x) { return !x.fading; });
+    while (act.length > rl.cap) {
+      var old = null; act.forEach(function (x) { if (x !== b && !isNicki(x.u) && (!old || x.born < old.born)) old = x; });
+      if (!old) break; bubEnd(old); act.splice(act.indexOf(old), 1);
+    }
+    talk(u, col, true); bubKick();
+  }
+  function bubEnd(b) {
+    if (!b || b.fading) return; b.fading = 1; b.el.classList.add('out'); talk(b.u, null, false);
+    b.rm = setTimeout(function () { bubDrop(b); }, 340);
+  }
+  function bubDrop(b) {
+    clearTimeout(b.rm); if (b.el.parentNode) b.el.parentNode.removeChild(b.el);
+    var i = BUB.list.indexOf(b); if (i >= 0) BUB.list.splice(i, 1); if (BUB.map[b.u.key] === b) delete BUB.map[b.u.key];
+  }
+  function bubClear() { BUB.list.slice().forEach(function (b) { talk(b.u, null, false); bubDrop(b); }); }
+  function bubKick() { if (BUB.run) return; BUB.run = true; requestAnimationFrame(bubTick); }
+  function bubTick() {
+    if (!BUB.list.length) { BUB.run = false; return; }
+    requestAnimationFrame(bubTick);
+    var now = performance.now(), sr = $('stage').getBoundingClientRect(), k = (sr.width / W) || 1, items = [];
+    BUB.list.slice().forEach(function (b) { if (!b.fading && (now > b.until || !b.u.inside)) bubEnd(b); });
+    BUB.list.forEach(function (b) {
+      var u = b.u, el = u.el; if (!el || !u.cw) return;
+      var r = el.getBoundingClientRect(); if (!r.width) return;
+      var ratio = r.height / (u.ch || r.height), headTop = r.top + (2005 * u.s0 - u.fh * 0.88) * ratio;
+      if (!b.w) { b.w = b.el.offsetWidth; b.h = b.box.offsetHeight; }
+      items.push({ b: b, ax: (r.left + r.width / 2 - sr.left) / k, ay: (headTop - sr.top) / k - 4 });
+      if (u.ring && now - (u.rgT || 0) > 500) { u.rgT = now; var rw = Math.max(50, Math.round(u.d * 1.2)), rh = Math.round(rw * 0.3); u.ring.style.cssText = 'top:' + Math.round(2005 * u.s0 - 2) + 'px;width:' + rw + 'px;height:' + rh + 'px;margin:' + (-rh / 2) + 'px 0 0 ' + (-rw / 2) + 'px'; }
+    });
+    items.sort(function (a, b) { return b.ay - a.ay; });
+    var placed = [];
+    items.forEach(function (it) {
+      var b = it.b, w = b.w, h = b.h, bx = Math.max(8, Math.min(W - w - 8, it.ax - w / 2)), by = it.ay - 14 - h, n, j, hit;
+      for (n = 0; n < 14; n++) {
+        hit = null;
+        for (j = 0; j < placed.length; j++) { var p = placed[j]; if (bx < p.x + p.w + 6 && bx + w + 6 > p.x && by < p.y + p.h + 6 && by + h + 6 > p.y) { hit = p; break; } }
+        if (!hit) break; by = hit.y - h - 8;
+      }
+      if (by < 4) by = 4;
+      placed.push({ x: bx, y: by, w: w, h: h });
+      b.el.style.transform = 'translate3d(' + Math.round(bx) + 'px,' + Math.round(by) + 'px,0)'; b.el.style.zIndex = String(Math.round(it.ay) + 100);
+      b.stem.style.cssText = 'left:' + Math.round(Math.max(10, Math.min(w - 10, it.ax - bx))) + 'px;top:' + (h - 1) + 'px;height:' + Math.max(8, Math.round(it.ay - (by + h)) + 1) + 'px';
+    });
   }
 
   /* ---------- chat in ---------- */
@@ -935,6 +1054,11 @@
     np: function (a) { setNP(String(a.a || ''), String(a.t || '')); },
     banner: function (a) { banner(String(a.t || '').slice(0, 60), String(a.s || '').slice(0, 80), 4200); },
     'crowd.clear': function () { RCMD_clear(); },
+    'bub.set': function (a) {
+      if (a.on !== undefined) { S.bub.on = !!a.on; if (!S.bub.on) bubClear(); }
+      if (a.words !== undefined) S.bub.words = String(Array.isArray(a.words) ? a.words.join(',') : a.words).toLowerCase().split(/[\s,;]+/).map(function (w) { return w.replace(/[^a-z0-9]/g, ''); }).filter(function (w) { return w.length > 1; }).slice(0, 300);
+      save();
+    },
     bots: function (a) { addBots(Math.min(300, Number(a.n) || 1), a.mode); },
     botschat: function () { botsChat(); },
     chat: function (a) { var h = String(a.h || 'tester').replace(/^@/, ''), p = a.p || 'x'; onMessage({ type: p === 'x' ? 'twitter' : p, userid: h, chatname: h, chatmessage: String(a.m || '!enter') }); },
@@ -958,7 +1082,7 @@
       return notes.length ? notes.join(' · ') : '';
     }
   };
-  function RCMD_clear() { order.slice().forEach(function (k) { var u = users[k]; u.inside = false; unseat(u, false); }); order = []; Object.keys(users).forEach(function (k) { delete users[k]; }); S.users = {}; overflowUI(); save(); }
+  function RCMD_clear() { bubClear(); order.slice().forEach(function (k) { var u = users[k]; u.inside = false; unseat(u, false); }); order = []; Object.keys(users).forEach(function (k) { delete users[k]; }); S.users = {}; overflowUI(); save(); }
   function rcRecv(d) {
     var p = d && d.vnn; if (!p || p.from === RC.id) return;
     if (p.t === 'hello') { rcSnap(true); return; }
@@ -979,7 +1103,7 @@
     people.sort(function (a, b) { return b.la - a.la; });
     var top = []; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.stage && S.top5) top[u.rank || 0] = { n: u.name, s: u.show }; });
     var L = {}; Object.keys(LT).forEach(function (k) { if (k.charAt(0) !== '_') L[k] = LT[k]; });
-    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
+    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, bub: { on: S.bub.on !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
     var sig = JSON.stringify(snap); if (!force && sig === RC.lastSnap) return; RC.lastSnap = sig; rcSend(snap);
   }
   function rcStart() {
@@ -1000,7 +1124,7 @@
   buildSlots(); placeFixed(); buildGlows(); buildLed(); buildBartenders(); setBg(); buildPanel(); setNP(S.np.a, S.np.t); npStart(); vipUI(); lightUI(); tip(); setInterval(tip, 8000); connect(); rcStart();
   Object.keys(S.users || {}).forEach(function (k) { var sv = S.users[k]; if (sv.inside) { var u = newUser(k, sv.name, sv.plat, sv.photo); u.hnd = k.split(':')[1]; u.inside = true; refreshVip(u); order.push(k); } });
   relayout();
-  window.__vnn = { perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap };
+  window.__vnn = { perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap, bub: bubble, bubs: BUB, bubRule: bubRule };
 })();
 </script>
 </body>

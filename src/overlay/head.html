@@ -22,6 +22,25 @@ body.preview { background: #05020a; }
 .pill { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 4px); white-space: nowrap; padding: 3px 9px; border-radius: 99px; background: rgba(18,10,27,.88); border: 1px solid var(--ln); font: 600 15px/1.2 system-ui, Arial, sans-serif; color: #fff; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 5; }
 .pill.show { opacity: 1; transform: translate(-50%, -2px); }
 .pill.gold { border-color: var(--gold); color: var(--gold); }
+/* ---- chat bubbles ---- */
+#bubs { position: absolute; inset: 0; pointer-events: none; z-index: 20000; }
+.bub { position: absolute; left: 0; top: 0; will-change: transform; opacity: 1; transition: opacity .3s; }
+.bub.out { opacity: 0; }
+.bub .bbox { position: relative; max-width: 300px; min-width: 56px; padding: 6px 12px 7px; border-radius: 14px; background: rgba(16,8,26,.92); border: 2px solid var(--c); box-shadow: 0 5px 16px rgba(0,0,0,.5), 0 0 16px var(--cg); color: #fff; animation: bubIn .28s cubic-bezier(.2,1.3,.4,1) both; transform-origin: 50% 100%; }
+.bub .bn { display: block; font: 800 13px/1.15 system-ui, Arial, sans-serif; letter-spacing: .03em; color: var(--c); margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 276px; }
+.bub .bt { display: block; font: 600 19px/1.22 system-ui, Arial, sans-serif; word-break: break-word; overflow-wrap: anywhere; }
+.bub.solid .bbox { background: var(--c); border-color: rgba(255,255,255,.9); color: #170a22; }
+.bub.solid .bn { color: #170a22; opacity: .72; }
+.bub.dense .bt { font-size: 16px; }
+.bub.dense .bn { font-size: 12px; }
+.bub.gold .bbox { border-color: var(--gold); }
+.bub .bstem { position: absolute; width: 3px; margin-left: -1px; border-radius: 2px; background: var(--c); box-shadow: 0 0 8px var(--cg); }
+.bub .bstem::after { content: ''; position: absolute; left: 50%; bottom: -4px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
+@keyframes bubIn { from { opacity: 0; transform: translateY(10px) scale(.88); } to { opacity: 1; transform: none; } }
+.p .ring { position: absolute; left: 50%; width: 120px; height: 36px; margin: -18px 0 0 -60px; border-radius: 50%; border: 3px solid var(--c); box-shadow: 0 0 14px var(--c), inset 0 0 12px var(--cg); opacity: 0; transition: opacity .25s; pointer-events: none; }
+.p.talk .ring { opacity: 1; animation: ringp 1.3s ease-in-out infinite; }
+.p.talk .in2 { filter: drop-shadow(0 0 7px var(--c)); }
+@keyframes ringp { 0%,100% { transform: scale(.94); } 50% { transform: scale(1.06); } }
 .drink { position: absolute; right: -4%; top: 50%; width: 22%; pointer-events: none; }
 .sil { position: absolute; left: 0; top: 0; pointer-events: none; opacity: .5; }
 .sil i { display: block; background: #0a0510; border-radius: 50%; }
@@ -159,6 +178,7 @@ body.pan #panel { display: block; }
   <div id="zones" class="layer"></div>
   <div id="strobe"></div>
   <div id="dark"></div>
+  <div id="bubs"></div>
 </div>
 <div id="hot" title="Operator panel"></div>
 <div id="panel">
