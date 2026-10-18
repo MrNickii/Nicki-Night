@@ -218,7 +218,7 @@ body.pan #panel { display: block; }
 <script>
 /* paper-doll rig v6 (multi-view hands, shoes, 3/4 torso/pelvis): puppet driven by real motion-capture joints (CMU mocap, free to use), 3D->2D retarget with foreshortening, depth-sorted arms */
 var RIG = (function () {
-  var PART = {}, CFG = { hk: 1.09, ak: 1.16, skTop: -100, nOff: 18 }, MOC = null, D2R = Math.PI / 180, U = 1, NS = 5;
+  var PART = {}, CFG = { armK: 0.86, hk: 1.09, ak: 1.16, skTop: -100, nOff: 18 }, MOC = null, D2R = Math.PI / 180, U = 1, NS = 5;
   var HIP = [104, 78], WAIST = [0, -110], SHO_Y = -255, SHO_X = 138, NECKB_Y = -318, GROUND = 740, HEADR = 116, HEADUP = 70, FOOTH = 128;
   var STRIP = [466, 306, 224, 142, 60, 0], NODE = [382, 306, 224, 142, 60];
   var JI = {}, CL = {};
@@ -359,8 +359,8 @@ var RIG = (function () {
       var v1 = [E0[0] - A0[0], -(E0[1] - A0[1])], v2 = [W0[0] - E0[0], -(W0[1] - E0[1])], l1 = len3(sub(E0, A0)), l2 = len3(sub(W0, E0));
       var f1 = clamp(Math.hypot(v1[0], v1[1]) / l1, 0.34, 1), f2 = clamp(Math.hypot(v2[0], v2[1]) / l2, 0.3, 1);
       var a1 = Math.atan2(-v1[0], v1[1]), a2 = Math.atan2(-v2[0], v2[1]);
-      var Ep = rot([0, ua.len * f1], a1); Ep = [Sh[0] + Ep[0], Sh[1] + Ep[1]];
-      var Wp = rot([0, fm.len * f2], a2); Wp = [Ep[0] + Wp[0], Ep[1] + Wp[1]];
+      var AK = CFG.armK, Ep = rot([0, ua.len * f1 * AK], a1); Ep = [Sh[0] + Ep[0], Sh[1] + Ep[1]];
+      var Wp = rot([0, fm.len * f2 * AK], a2); Wp = [Ep[0] + Wp[0], Ep[1] + Wp[1]];
       var z2 = ((E0[2] + W0[2]) / 2) - SP1[2], dz = W0[2] - E0[2], rise = W0[1] - A0[1];
       var towards = ST['tw' + ak] ? dz > -0.03 : dz > 0.03; ST['tw' + ak] = towards;
       var fullF = towards && (ST['ff' + ak] ? f2 < 0.5 : f2 < 0.38); ST['ff' + ak] = fullF;
@@ -373,9 +373,9 @@ var RIG = (function () {
     if (o.dbg) o.dbg.push({ hc: hc.slice(), arms: arms.map(function (q) { return { h: q.fist ? 'ffarm' : (q.curl ? 'fist' : q.hand), fr: q.front, Wp: q.Wp.slice(), Ep: q.Ep.slice() }; }), foot: legs.map(function (gl) { return gl.view; }), bH: bH0(), wT: wT });
     function drawArm(a) {
       var fl = a.sd < 0;
-      drawRot(ctx, 'uarm', a.Sh[0], a.Sh[1], a.a1, fl, a.f1, px);
-      if (a.fist) drawRot(ctx, 'ffarm', a.Ep[0], a.Ep[1], a.a2, fl, clamp(a.f2 * 1.15, 0.5, 0.85), px);
-      else { drawRot(ctx, 'farm', a.Ep[0], a.Ep[1], a.a2, fl, a.f2, px);
+      drawRot(ctx, 'uarm', a.Sh[0], a.Sh[1], a.a1, fl, a.f1 * CFG.armK, px, 0.97);
+      if (a.fist) drawRot(ctx, 'ffarm', a.Ep[0], a.Ep[1], a.a2, fl, clamp(a.f2 * 1.15, 0.5, 0.85) * CFG.armK, px);
+      else { drawRot(ctx, 'farm', a.Ep[0], a.Ep[1], a.a2, fl, a.f2 * CFG.armK, px, 0.97);
         if (PART.wacc) { var pw = PART.wacc, wk = 0.9; ctx.save(); ctx.translate(a.Wp[0], a.Wp[1] - 8); ctx.rotate(a.a2); ctx.scale(wk, a.f2 * 0.9 + 0.1); blit(ctx, pw, tier(pw, px), 0, 0, pw.w, pw.h, -pw.piv[0], -pw.piv[1]); ctx.restore(); }
         var hn = (a.curl && PART.fist) ? 'fist' : a.hand, hq = ST['hs' + a.ak];
         if (!hq || hq.cur !== hn) ST['hs' + a.ak] = hq = { cur: hn, prev: hq ? hq.cur : null, t0: NOW };
