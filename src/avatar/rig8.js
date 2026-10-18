@@ -162,8 +162,8 @@ var RIG = (function () {
         var hn = (a.curl && PART.fist) ? 'fist' : a.hand, hq = ST['hs' + a.ak];
         if (!hq || hq.cur !== hn) ST['hs' + a.ak] = hq = { cur: hn, prev: hq ? hq.cur : null, t0: NOW };
         var hf = clamp((NOW - hq.t0) / 0.09, 0, 1), hsc = 0.65 + 0.35 * a.f2;
-        if (hq.prev && hf < 1 && PART[hq.prev]) drawRot(ctx, hq.prev, a.Wp[0], a.Wp[1], a.a2, fl, hsc, px);
-        ctx.globalAlpha = base0 * ((hq.prev && hf < 1) ? hf : 1); drawRot(ctx, hn, a.Wp[0], a.Wp[1], a.a2, fl, hsc, px); ctx.globalAlpha = base0; }
+        if (hq.prev && hf < 1 && PART[hq.prev]) drawRot(ctx, hq.prev, a.Wp[0], a.Wp[1], a.a2 + (hq.prev === 'hand_open' ? Math.PI : 0), fl, hsc, px);
+        ctx.globalAlpha = base0 * ((hq.prev && hf < 1) ? hf : 1); drawRot(ctx, hn, a.Wp[0], a.Wp[1], a.a2 + (hn === 'hand_open' ? Math.PI : 0), fl, hsc, px); ctx.globalAlpha = base0; }
     }
     arms.forEach(function (a) { if (!a.front) drawArm(a); });
     function drawPelvis(name, alpha, mir) { ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr); ctx.scale((mir ? -1 : 1) * rp * PK, 1); ctx.translate(-pelC[0], -pelC[1]); drawRot(ctx, name, pelC[0], pelC[1], 0, false, 1, px); ctx.restore(); }

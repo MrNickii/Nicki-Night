@@ -227,6 +227,7 @@ var VNNA = (function () {
         var pantsT = !!(S.bottom && !S.bottom.skirt && /PANTS-[1-5]$/.test(S.bottom.sheet || ''));
         var tx = c.getContext('2d'); tx.globalCompositeOperation = 'destination-in'; var tg = tx.createLinearGradient(0, 0, 0, c.height); tg.addColorStop(0, pantsT ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,1)'); tg.addColorStop(pantsT ? 0.09 : 0.2, 'rgba(0,0,0,1)'); tg.addColorStop(0.94, 'rgba(0,0,0,1)'); tg.addColorStop(1, 'rgba(0,0,0,0)'); tx.fillStyle = tg; tx.fillRect(0, 0, c.width, c.height);
       }
+      if (key === 'hand_open') d.piv = [c.width * 0.49, c.height - 3];
       var res = { canvas: c, def: d };
       if (key === 'uarm' && S.top && lyr(S.top.sheet, 'sleeveU', S.top.v)) {
         var ch = Math.round(120 * Q * sy), cw = c.width, cc = document.createElement('canvas'); cc.width = Math.round(cw * 1.08); cc.height = ch; var cx = cc.getContext('2d'); cx.imageSmoothingQuality = 'high';
