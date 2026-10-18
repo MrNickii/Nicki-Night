@@ -24,9 +24,9 @@
   var ART = '__ART__';
 
   /* ---------- saved state ---------- */
-  var S = { session: '__SESSION__', ws: '', vip: [], mods: ['kildadj_', 'mrnicki'], room: null, need: { d: 5, c: 20 }, maxOn: 400, top5: false, np: { a: '', t: '' }, npUrl: '', nickiDone: false, users: {}, light: null, bg: true, bub: { on: true, words: [] } };
+  var S = { session: '__SESSION__', ws: '', vip: [], mods: ['kildadj_', 'mrnicki'], room: null, need: { d: 5, c: 20 }, maxOn: 400, top5: false, np: { a: '', t: '' }, npUrl: '', nickiDone: false, users: {}, light: null, bg: true, bub: { on: true, words: [], emoji: true } };
   try { var raw = localStorage.getItem(KEY); if (raw) { var sv = JSON.parse(raw); Object.keys(sv).forEach(function (k) { S[k] = sv[k]; }); } } catch (e) {}
-  S.bub = Object.assign({ on: true, words: [] }, S.bub || {}); if (!Array.isArray(S.bub.words)) S.bub.words = [];
+  S.bub = Object.assign({ on: true, words: [], emoji: true }, S.bub || {}); if (!Array.isArray(S.bub.words)) S.bub.words = [];
   if (Q.get('session')) S.session = Q.get('session');
   if (Q.get('ws')) S.ws = Q.get('ws');
   var R = clone(DEFROOM);
@@ -447,7 +447,7 @@
     if (mod && cmd === '!light') { lightCmd(rest.toLowerCase().split(/\s+/)[0]); return; }
     if (mod && cmd === '!nicki' && /test/i.test(rest)) { nickiRehearse(); return; }
   }
-  function bumpFront(u, text) { bubble(u, text); }
+  function bumpFront(u, text) { if (!emojiPop(u, text)) bubble(u, text); }
   setInterval(function () {
     /* idle drift: people who have gone quiet slide to the smaller back rows, freeing the front */
     var now = Date.now(), idleMs = 5 * 60 * 1000;
@@ -685,7 +685,7 @@
   }
   function bubText(raw, max) {
     var t = String(raw || '').replace(/\s+/g, ' ').trim();
-    if (!t || t.charAt(0) === '!' || BAD_AUTO.test(t) || badWord(t)) return '';
+    if (!t || /^[!\/]/.test(t) || BAD_AUTO.test(t) || badWord(t)) return '';
     t = t.replace(/(.)\1{4,}/g, '$1$1$1');
     var ch = Array.from(t);
     if (ch.length > max) { var c = ch.slice(0, max).join(''), sp = c.lastIndexOf(' '); t = (sp > max * 0.55 ? c.slice(0, sp) : c) + '…'; }
@@ -781,6 +781,49 @@
       b.el.style.transform = 'translate3d(' + Math.round(bx) + 'px,' + Math.round(by) + 'px,0)'; b.el.style.zIndex = String(Math.round(it.ay) + 100);
       b.stem.style.cssText = 'left:' + Math.round(Math.max(10, Math.min(w - 10, it.ax - bx))) + 'px;top:' + (h - 1) + 'px;height:' + Math.max(8, Math.round(it.ay - (by + h)) + 1) + 'px';
     });
+  }
+
+  /* ---------- emoji pop-ups: a message that is only emoji shoots up from the character instead of showing a bubble ---------- */
+  var EMO = { n: 0 };
+  var EMO_RE = /(?:\p{Regional_Indicator}{2}|\p{Extended_Pictographic}(?:️|[\u{1F3FB}-\u{1F3FF}])?(?:‍\p{Extended_Pictographic}(?:️|[\u{1F3FB}-\u{1F3FF}])?)*)/gu;
+  function emojiOnly(text) {
+    var t = String(text || '').replace(/[\s️]+/g, ''); if (!t) return null;
+    var m = String(text).replace(/\s+/g, '').match(EMO_RE);
+    if (!m || m.join('').replace(/️/g, '').length !== t.length) return null;
+    return m;
+  }
+  function headPos(u) {
+    var el = u.el; if (!el || !u.cw || u.s0 == null) return null;
+    var sr = $('stage').getBoundingClientRect(), k = (sr.width / W) || 1, r = el.getBoundingClientRect(); if (!r.width) return null;
+    var ratio = r.height / (u.ch || r.height), headTop = r.top + (2005 * u.s0 - u.fh * 0.88) * ratio;
+    return { x: (r.left + r.width / 2 - sr.left) / k, y: (headTop - sr.top) / k };
+  }
+  function emojiPop(u, text) {
+    var em = emojiOnly(text); if (!em) return false;
+    /* emoji-only chats never become text bubbles, whether or not the pop-up shows */
+    if (S.bub.emoji === false) return true;
+    if (!(u.inside && u.el && u.x != null && (u.slot || isNicki(u)))) return true;
+    var now = performance.now(); if (u.emoAt && now - u.emoAt < 900) return true; u.emoAt = now;
+    var rl = bubRule(), cap = rl.packed ? 10 : rl.dense ? 18 : 28, hp = headPos(u); if (!hp) return true;
+    var list = em.length === 1 ? [em[0], em[0], em[0]] : em.slice(0, 5);
+    list.forEach(function (ch, i) {
+      if (EMO.n >= cap) return; EMO.n++;
+      var echo = em.length === 1 && i > 0, sz = Math.max(30, Math.min(62, u.d * 0.42)) * (echo ? 0.62 : 1.12);
+      var rise = Math.max(150, Math.min(330, u.d * 2.4)) * (echo ? 0.8 : 1) * (0.9 + Math.random() * 0.25);
+      var x0 = em.length === 1 ? (echo ? (i === 1 ? -1 : 1) * sz * 1.1 : 0) : (i - (list.length - 1) / 2) * sz * 1.0;
+      var dx = (Math.random() - 0.5) * 70, rot = (Math.random() - 0.5) * 50, el = document.createElement('span');
+      el.className = 'emo'; el.textContent = ch; el.style.cssText = 'left:' + Math.round(hp.x) + 'px;top:' + Math.round(hp.y - 6) + 'px;font-size:' + Math.round(sz) + 'px';
+      $('bubs').appendChild(el);
+      var tr = function (px, py, sc, r) { return 'translate(-50%,-50%) translate(' + Math.round(px) + 'px,' + Math.round(py) + 'px) scale(' + sc + ') rotate(' + Math.round(r) + 'deg)'; };
+      var an = el.animate([
+        { transform: tr(x0, 0, 0.3, 0), opacity: 0, offset: 0 },
+        { transform: tr(x0 + dx * 0.2, -rise * 0.18, 1.28, rot * 0.3), opacity: 1, offset: 0.15 },
+        { transform: tr(x0 + dx * 0.8, -rise * 0.86, 1, rot * 0.8), opacity: 1, offset: 0.72 },
+        { transform: tr(x0 + dx, -rise, 0.9, rot), opacity: 0, offset: 1 }
+      ], { duration: 1500 + Math.random() * 500, delay: i * 140, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both' });
+      an.onfinish = function () { if (el.parentNode) el.parentNode.removeChild(el); EMO.n = Math.max(0, EMO.n - 1); };
+    });
+    return true;
   }
 
   /* ---------- chat in ---------- */
@@ -1056,6 +1099,7 @@
     'crowd.clear': function () { RCMD_clear(); },
     'bub.set': function (a) {
       if (a.on !== undefined) { S.bub.on = !!a.on; if (!S.bub.on) bubClear(); }
+      if (a.emoji !== undefined) S.bub.emoji = !!a.emoji;
       if (a.words !== undefined) S.bub.words = String(Array.isArray(a.words) ? a.words.join(',') : a.words).toLowerCase().split(/[\s,;]+/).map(function (w) { return w.replace(/[^a-z0-9]/g, ''); }).filter(function (w) { return w.length > 1; }).slice(0, 300);
       save();
     },
@@ -1103,7 +1147,7 @@
     people.sort(function (a, b) { return b.la - a.la; });
     var top = []; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.stage && S.top5) top[u.rank || 0] = { n: u.name, s: u.show }; });
     var L = {}; Object.keys(LT).forEach(function (k) { if (k.charAt(0) !== '_') L[k] = LT[k]; });
-    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, bub: { on: S.bub.on !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
+    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
     var sig = JSON.stringify(snap); if (!force && sig === RC.lastSnap) return; RC.lastSnap = sig; rcSend(snap);
   }
   function rcStart() {
@@ -1124,7 +1168,7 @@
   buildSlots(); placeFixed(); buildGlows(); buildLed(); buildBartenders(); setBg(); buildPanel(); setNP(S.np.a, S.np.t); npStart(); vipUI(); lightUI(); tip(); setInterval(tip, 8000); connect(); rcStart();
   Object.keys(S.users || {}).forEach(function (k) { var sv = S.users[k]; if (sv.inside) { var u = newUser(k, sv.name, sv.plat, sv.photo); u.hnd = k.split(':')[1]; u.inside = true; refreshVip(u); order.push(k); } });
   relayout();
-  window.__vnn = { perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap, bub: bubble, bubs: BUB, bubRule: bubRule };
+  window.__vnn = { perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap, emo: emojiOnly, bub: bubble, bubs: BUB, bubRule: bubRule };
 })();
 </script>
 </body>
