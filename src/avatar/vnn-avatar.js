@@ -330,7 +330,7 @@ var VNNA = (function () {
   function draw(ctx, set, S, o) {
     var s = o.h / 1700 * (o.useHs === false ? 1 : 1), P2 = RIG.pose(o.clip, o.t, { beat: o.beat || 0.5, ph: o.ph || 0, amp: o.amp || 1 });
     ctx.save(); ctx.translate(o.x, o.y); ctx.translate(0, -805 * s); ctx.scale(s, s); RIG.use(set);
-    RIG.figure(ctx, { pose: P2, px: s, fronthair: true, body: S.body, legk: S.legk, sway: o.sway || 0, dbg: o.dbg, st: o.st, under: !!(S.bottom && !S.bottom.skirt && /PANTS-[1-5]$/.test(S.bottom.sheet || '')), now: o.now != null ? o.now : o.t }, o.head); ctx.restore();
+    RIG.figure(ctx, { pose: P2, px: s, fronthair: true, body: S.body, legk: S.legk, sway: o.sway || 0, dbg: o.dbg, st: o.st, hold: o.hold, under: !!(S.bottom && !S.bottom.skirt && /PANTS-[1-5]$/.test(S.bottom.sheet || '')), now: o.now != null ? o.now : o.t }, o.head); ctx.restore();
   }
   function clipOf(id) { var d = byId(CATALOG.dances, id) || byId(CATALOG.dances, CATALOG.danceAlias[id]); return d ? d.clip : 'hh1'; }
   return { CATALOG: CATALOG, init: init, build: build, spec: spec, draw: draw, clipOf: clipOf, byId: byId, hex2: hex2, lib: function () { return LIB; }, Q: function () { return Q; }, cacheSize: function () { return CORDER.length; }, setCache: function (n) { MAXC = n; } };

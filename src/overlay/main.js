@@ -242,11 +242,11 @@
     if (dtAvg > 26 && STRIDE < 6) STRIDE = Math.min(6, Math.max(STRIDE, base) + 1); else if (dtAvg < 19 && STRIDE > base) STRIDE--; else if (STRIDE < base) STRIDE = base;
     var t0 = performance.now();
     for (var i = 0; i < list.length; i++) {
-      var u = list[i], walking = u.walkUntil > now, hot = u.stage || u.top || walking, st = hot ? 1 : STRIDE;
+      var u = list[i], walking = u.walkUntil > now, hot = u.stage || u.top || walking || (u.dr && (u.dr.act || u.dr.born > performance.now() / 1000 - 0.5)), st = hot ? 1 : STRIDE;
       if (!u.dirty && st > 1 && ((frameN + (u.h32 % st)) % st)) continue;
       var cx = u.cx; cx.clearRect(0, 0, u.cw, u.ch); u.dirty = 0;
       try {
-        VNNA.draw(cx, u.set, u.spec, { st: u.rst || (u.rst = {}), now: performance.now() / 1000, x: u.cw / 2, y: 2005 * u.s0, h: u.fh, clip: walking ? 'idle' : VNNA.clipOf(u.dance), t: bclk * 0.5, beat: 0.5, ph: (u.h32 % 16) / 4, amp: (u.stage && S.top5) ? 1.25 : (u.bt ? 0.7 : 1), head: headFor(u) });
+        VNNA.draw(cx, u.set, u.spec, { st: u.rst || (u.rst = {}), now: performance.now() / 1000, x: u.cw / 2, y: 2005 * u.s0, h: u.fh, clip: walking ? 'idle' : VNNA.clipOf(u.dance), t: bclk * 0.5, beat: 0.5, ph: (u.h32 % 16) / 4, amp: (u.stage && S.top5) ? 1.25 : (u.bt ? 0.7 : (u.dr ? 0.8 : 1)), hold: u.dr ? holdOf(u, performance.now() / 1000) : null, head: headFor(u) });
       } catch (e) { if (!u.err) { u.err = 1; console.error('draw', u.key, e); } }
       if (performance.now() - t0 > (u.dirty ? 34 : 14)) break;
     }
@@ -274,13 +274,7 @@
     u.pill.textContent = text; u.pill.className = 'pill show' + (gold ? ' gold' : '');
     clearTimeout(u.pt); u.pt = setTimeout(function () { u.pill.className = 'pill'; }, ms || 3200);
   }
-  function drink(u, on) {
-    var ex = u.inner.querySelector('.drink'); if (ex) ex.remove();
-    if (!on) return;
-    var g = document.createElement('div'); g.className = 'drink';
-    g.innerHTML = '<svg viewBox="0 0 24 30"><path d="M3 3h18l-8 11v10h4v3H7v-3h4V14z" fill="#ffd86b" fill-opacity=".35" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 6h12l-4 5h-4z" fill="#ff4fb0"/></svg>';
-    g.style.right = '27%'; u.inner.appendChild(g);
-  }
+  /* drink(): see the bar drinks section below */
 
   function zoneFor(u) { return u.stage && S.top5 ? 'stage' : (u.atBar ? 'bar' : (u.vip && !isNicki(u) ? 'vip' : 'floor')); }
   function seatedCount() { var n = 0; order.forEach(function (k) { var u = users[k]; if (u.inside && u.slot) n++; }); return n; }
@@ -313,7 +307,7 @@
     u.el.classList.add('in');
     var dur = instant ? 0 : walkTime(u, s.x, s.y);
     put(u, s.x, s.y, dur);
-    drink(u, u.atBar && s.z === 'bar');
+    drink(u, u.atBar && s.z === 'bar', dur);
     rankTag(u, s.z === 'stage');
     return true;
   }
@@ -432,7 +426,17 @@
       var notes = applyLook(u, rest); u.d = 0; seat(u, true);
       say(u, notes.length ? notes.join(' · ') : 'new look', 3200); save(); return;
     }
-    if (cmd === '!bar') { if (u.atBar) { say(u, 'already at the bar', 2000); return; } u.atBar = true; seat(u, false); say(u, 'cheers', 2400); save(); return; }
+    if (cmd === '!drink' || cmd === '!order' || DRINKS[cmd.slice(1)]) {
+      var dw = (cmd === '!drink' || cmd === '!order') ? rest.split(/\s+/)[0] : cmd.slice(1), dk = dw ? drinkKind(dw) : null;
+      if (dw && !dk) { say(u, 'try: ' + DRINK_IDS.join(' \u00b7 '), 3600); return; }
+      if (!orderDrink(u, dk, dk === 'shot' ? 'shot' : null)) say(u, 'the bar is full', 2400);
+      return;
+    }
+    if (cmd === '!cheers') {
+      if (!u.dr) { say(u, 'grab a drink first: !bar', 2800); return; }
+      startAct(u, 'cheers', Math.max(0, u.dr.born - nowS()) + 0.1); say(u, '\uD83E\uDD42 cheers', 2400); emojiPop(u, '\uD83E\uDD42'); return;
+    }
+    if (cmd === '!bar') { if (u.atBar) { say(u, 'already at the bar \u00b7 try !drink', 2400); return; } u.atBar = true; seat(u, false); say(u, (u.dr ? DRINKS[u.dr.kind] + ' ' : '') + 'cheers', 2400); save(); return; }
     if (cmd === '!floor' || cmd === '!dancefloor') { if (!u.atBar && !u.vipFloor) { say(u, 'already on the floor', 2000); return; } u.atBar = false; seat(u, false); say(u, 'let\'s dance', 2400); save(); return; }
     if (mod && (cmd === '!vip' || cmd === '!unvip')) {
       var target = norm(rest.split(/\s+/)[0]); if (!target) return;
@@ -826,6 +830,95 @@
     return true;
   }
 
+  /* ---------- bar drinks: a drink in the hand, sips, shots and cheers ---------- */
+  var DRINKS = { martini: '🍸', shot: '🥃', beer: '🍺', cocktail: '🍹', champagne: '🥂', wine: '🍷' };
+  var DRINK_IDS = Object.keys(DRINKS);
+  var DRINK_ALIAS = { cosmo: 'martini', martinis: 'martini', shots: 'shot', tequila: 'shot', whiskey: 'shot', beers: 'beer', pint: 'beer', cocktails: 'cocktail', mojito: 'cocktail', margarita: 'cocktail', tropical: 'cocktail', bubbly: 'champagne', champ: 'champagne', prosecco: 'champagne', flute: 'champagne', red: 'wine' };
+  var ACTS = { sip: 2.4, shot: 1.9, cheers: 2.7 };
+  function drinkKind(w) { w = String(w || '').toLowerCase().replace(/[^a-z]/g, ''); if (DRINKS[w]) return w; return DRINK_ALIAS[w] || null; }
+  function nowS() { return performance.now() / 1000; }
+  function sstep(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
+  function newDrink(u, kind, delay) {
+    var t = nowS() + (delay || 0), k = kind || DRINK_IDS[Math.floor(Math.random() * DRINK_IDS.length)];
+    return { kind: k, hand: (u.h32 % 2) ? 'Left' : 'Right', born: t, act: null, t0: 0, dur: 0, next: t + 4 + Math.random() * 7, lv: 1, from: 1, to: 1, refillAt: 0, last: 'sip' };
+  }
+  function drink(u, on, delay) {
+    if (on) { if (!u.dr) { if (!u.drKind) u.drKind = DRINK_IDS[(u.h32 || 0) % DRINK_IDS.length]; u.dr = newDrink(u, u.drKind, delay); } }
+    else if (u.dr) u.dr = null;
+    u.dirty = 1;
+  }
+  function startAct(u, act, delay) {
+    var d = u.dr; if (!d) return false; var t = nowS();
+    if (d.act && t < d.t0 + d.dur) return false;
+    d.act = act; d.last = act; d.t0 = t + (delay || 0); d.dur = ACTS[act]; d.from = d.lv;
+    d.to = act === 'shot' ? 0 : act === 'sip' ? Math.max(0.15, d.lv - 0.28) : d.lv; u.dirty = 1; return true;
+  }
+  /* what the rig draws this frame: glass size, liquid, how far the arm has lifted, tilt */
+  function holdOf(u, t) {
+    var d = u.dr; if (!d) return null;
+    var pop = (t - d.born) / 0.4; if (pop <= 0) return null;
+    var sc = pop >= 1 ? 1 : 1 + 2.70158 * Math.pow(pop - 1, 3) + 1.70158 * Math.pow(pop - 1, 2);
+    var arm = 0, tilt = 0, aim = 0, over = 0, to = 'mouth', lvl = d.lv;
+    if (d.act) {
+      var p = (t - d.t0) / d.dur;
+      if (p >= 1) { d.act = null; d.lv = d.to; lvl = d.lv; if (d.lv < 0.2) d.refillAt = t + (d.last === 'shot' ? 5 : 3.5); d.next = t + (d.last === 'shot' ? 14 : 6) + Math.random() * 9; }
+      else if (p >= 0) {
+        if (d.act === 'sip') { arm = sstep(p / 0.28) - sstep((p - 0.62) / 0.38); aim = sstep((p - 0.2) / 0.2) * (1 - sstep((p - 0.6) / 0.2)); lvl = d.from + (d.to - d.from) * sstep((p - 0.35) / 0.3); }
+        else if (d.act === 'shot') { arm = sstep(p / 0.22) - sstep((p - 0.72) / 0.28); aim = sstep((p - 0.2) / 0.2) * (1 - sstep((p - 0.55) / 0.2)); over = 0.55; lvl = d.from + (d.to - d.from) * sstep((p - 0.3) / 0.25); }
+        else { to = 'up'; arm = sstep(p / 0.3) - sstep((p - 0.78) / 0.22); tilt = Math.sin(p * 20) * 0.12 * arm; }
+        u.dirty = 1;
+      }
+    } else if (t >= d.next) startAct(u, d.kind === 'shot' ? 'shot' : 'sip');
+    if (!d.act && d.lv < 0.2 && d.refillAt && t > d.refillAt) { d.lv = 1; d.from = d.to = 1; d.refillAt = 0; d.born = t - 0.02; }
+    return { kind: d.kind, hand: d.hand, arm: Math.max(0, arm), to: to, tilt: tilt, aim: aim, over: over, s: sc, lvl: lvl };
+  }
+  function orderDrink(u, kind, then) {
+    var k = kind;
+    if (!k) { var others = DRINK_IDS.filter(function (x) { return x !== u.drKind; }); k = others[Math.floor(Math.random() * others.length)]; }
+    u.drKind = k;
+    var wasBar = !!(u.atBar && u.slot && u.slot.z === 'bar' && u.dr);
+    if (!wasBar) { u.atBar = true; seat(u, false); }
+    if (!u.dr) return false;
+    if (wasBar) u.dr = newDrink(u, k, 0.0);
+    u.dirty = 1; say(u, DRINKS[k] + ' ' + k, 2600);
+    if (then) startAct(u, then, Math.max(0, u.dr.born - nowS()) + 0.5);
+    save(); return true;
+  }
+  function barRound() {
+    var bar = order.map(function (k) { return users[k]; }).filter(function (u) { return u && u.inside && u.dr; });
+    if (!bar.length) throw new Error('Nobody is at the bar. Add guests at the bar first.');
+    bar.forEach(function (u, i) { var k = DRINK_IDS[Math.floor(Math.random() * DRINK_IDS.length)]; u.drKind = k; u.dr = newDrink(u, k, i * 0.05); u.dirty = 1; say(u, DRINKS[k] + ' ' + k, 2200); startAct(u, 'cheers', 1.0 + Math.random() * 0.9); });
+    banner('ROUND ON THE HOUSE', 'cheers!', 3200);
+  }
+
+  /* ---------- test helpers (control panel rehearsal tools) ---------- */
+  var CHATTER = ['this song is fire', 'who is the DJ tonight??', 'hiii from tiktok', 'turn it up!', 'best club ever', 'where is the bar', 'I love this track so much omg play it again', 'lol yes', 'LETS GOOO', 'love the outfits in here', 'this is so cool', 'can we get a drink round', 'vibes immaculate', 'first time here, wow'];
+  var EMO_POOL = ['🔥', '❤️', '😍', '👏', '😂', '🎉', '💃', '🥂', '✨', '💖', '🙌', '😎'];
+  function insideUsers() { return order.map(function (k) { return users[k]; }).filter(function (u) { return u && u.inside && u.slot && !isNicki(u); }); }
+  function shuffled(a) { var b = a.slice(), i, j, t; for (i = b.length - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = b[i]; b[i] = b[j]; b[j] = t; } return b; }
+  function chatAs(u, m) { onMessage({ type: u.plat === 'x' ? 'twitter' : u.plat, userid: u.hnd, chatname: u.name, chatmessage: m }); }
+  function botsTalk(n) { shuffled(insideUsers()).slice(0, n).forEach(function (u, i) { setTimeout(function () { chatAs(u, pick(CHATTER)); }, i * 170); }); }
+  function botsEmoji(n) { shuffled(insideUsers()).slice(0, n).forEach(function (u, i) { setTimeout(function () { var m = pick(EMO_POOL); if (Math.random() < 0.3) m += pick(EMO_POOL) + (Math.random() < 0.5 ? pick(EMO_POOL) : ''); chatAs(u, m); }, i * 220); }); }
+  function botsRank() { insideUsers().forEach(function (u) { u.show = 1 + Math.floor(Math.random() * 60); }); S.top5 = false; setTop5(true); top5Update(true); }
+  var demoT = [];
+  function demoStop() { demoT.forEach(clearTimeout); demoT = []; bubClear(); RCMD_clear(); if (S.top5) setTop5(false); lightCmd('chill'); }
+  function demoRun() {
+    demoStop();
+    var at = function (sec, fn) { demoT.push(setTimeout(function () { try { fn(); } catch (e) { log('demo: ' + e.message); } }, sec * 1000)); };
+    at(0.3, function () { applyPreset('party'); banner('DEMO REEL', 'every feature, about a minute', 3000); addBots(14); addBots(8, 'bar'); addBots(3, 'vip'); });
+    at(7, function () { botsTalk(6); });
+    at(11, function () { botsEmoji(5); });
+    at(15, function () { barRound(); });
+    at(22, function () { botsRank(); });
+    at(28, function () { lightCmd('drop'); botsEmoji(8); });
+    at(36, function () { botsTalk(8); });
+    at(41, function () { order.forEach(function (k) { var u = users[k]; if (u && u.inside) { u.dance = pick(DANCES); u.dirty = 1; } }); });
+    at(46, function () { addBots(40); });
+    at(54, function () { botsTalk(12); botsEmoji(6); });
+    at(62, function () { barRound(); });
+    at(72, function () { lightCmd('chill'); });
+  }
+
   /* ---------- chat in ---------- */
   var seen = [], logEl = $('log');
   function log(s) { logEl.textContent = (s + '\n' + logEl.textContent).slice(0, 4000); }
@@ -963,7 +1056,7 @@
   }
 
   /* ---------- tips strip ---------- */
-  var TIPS = [['Type', '!enter', 'to join the club'], ['Pick a move:', '!dance', 'groove · pump · wave · shuffle · bboy · twerk · snake'], ['Change your fit:', '!look', 'varsity black cargo green ankle'], ['Grab a drink:', '!bar', '· back to dancing: !floor · !leave any time']], ti = 0;
+  var TIPS = [['Type', '!enter', 'to join the club'], ['Pick a move:', '!dance', 'groove · pump · wave · shuffle · bboy · twerk · snake'], ['Change your fit:', '!look', 'varsity black cargo green ankle'], ['Grab a drink:', '!bar', '· then !drink martini · shot · beer · !cheers'], ['Back to dancing:', '!floor', '· !leave any time']], ti = 0;
   function tip() {
     var c = $('cmd'), t = TIPS[ti++ % TIPS.length]; c.innerHTML = '<span>' + t[0] + ' <b>' + t[1] + '</b> ' + t[2] + '</span>';
   }
@@ -1096,6 +1189,16 @@
     top5: function (a) { setTop5(a.on === undefined ? !S.top5 : !!a.on); },
     np: function (a) { setNP(String(a.a || ''), String(a.t || '')); },
     banner: function (a) { banner(String(a.t || '').slice(0, 60), String(a.s || '').slice(0, 80), 4200); },
+    'user.drink': function (a) { var u = rcFind(a); if (!u || !u.inside) throw new Error('not inside'); var k = drinkKind(a.kind); if (!orderDrink(u, k, k === 'shot' ? 'shot' : null)) throw new Error('the bar is full'); },
+    'user.cheers': function (a) { var u = rcFind(a); if (!u || !u.inside) throw new Error('not inside'); if (!u.dr) throw new Error('not at the bar'); startAct(u, 'cheers', 0.05); say(u, '\uD83E\uDD42 cheers', 2400); emojiPop(u, '\uD83E\uDD42'); },
+    'user.dance': function (a) { var u = rcFind(a); if (!u || !u.inside) throw new Error('not inside'); u.dance = normD(a.dance) || pick(DANCES); u.dances++; u.dirty = 1; say(u, byId(CATALOG.dances, u.dance).name.toLowerCase(), 2200); save(); },
+    'crowd.dance': function (a) { var d = a.d && a.d !== 'random' ? normD(a.d) : null; var n = 0; order.forEach(function (k) { var u = users[k]; if (u && u.inside) { u.dance = d || pick(DANCES); u.dirty = 1; n++; } }); if (!n) throw new Error('nobody is inside'); save(); },
+    'bar.round': function () { barRound(); },
+    'bots.talk': function (a) { if (!insideUsers().length) throw new Error('add guests first'); botsTalk(Math.min(16, Number(a.n) || 6)); },
+    'bots.emoji': function (a) { if (!insideUsers().length) throw new Error('add guests first'); botsEmoji(Math.min(16, Number(a.n) || 6)); },
+    'bots.rank': function () { if (!insideUsers().length) throw new Error('add guests first'); botsRank(); },
+    'demo.run': function () { demoRun(); },
+    'demo.stop': function () { demoStop(); },
     'crowd.clear': function () { RCMD_clear(); },
     'bub.set': function (a) {
       if (a.on !== undefined) { S.bub.on = !!a.on; if (!S.bub.on) bubClear(); }
@@ -1168,7 +1271,7 @@
   buildSlots(); placeFixed(); buildGlows(); buildLed(); buildBartenders(); setBg(); buildPanel(); setNP(S.np.a, S.np.t); npStart(); vipUI(); lightUI(); tip(); setInterval(tip, 8000); connect(); rcStart();
   Object.keys(S.users || {}).forEach(function (k) { var sv = S.users[k]; if (sv.inside) { var u = newUser(k, sv.name, sv.plat, sv.photo); u.hnd = k.split(':')[1]; u.inside = true; refreshVip(u); order.push(k); } });
   relayout();
-  window.__vnn = { perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap, emo: emojiOnly, bub: bubble, bubs: BUB, bubRule: bubRule };
+  window.__vnn = { perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap, drinks: { order: orderDrink, round: barRound, act: startAct, hold: holdOf }, demo: demoRun, emo: emojiOnly, bub: bubble, bubs: BUB, bubRule: bubRule };
 })();
 </script>
 </body>

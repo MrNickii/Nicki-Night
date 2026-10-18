@@ -79,18 +79,33 @@ pre#log{background:#0e0416;border-radius:12px;padding:10px;font-size:12px;max-he
   <p class="note" id="lcur">Pick a look below, then Apply.</p></div>
  <iframe id="sty" src="" title="Look picker"></iframe>
 </section>
+ 
+<section class="tab" id="t-test">
+ <div class="card"><h2>Demo reel</h2><p class="note" style="margin-top:0">Fills the club and runs every feature for about a minute: chat bubbles, emoji, bar drinks and a toast, top 5, lights, dances and a packed room.</p><div class="row"><button class="b go" id="demo">&#9654; Run the demo</button><button class="b bad" id="demostop">&#9632; Stop &amp; clear</button></div></div>
+ <div class="card"><h2>Act as a viewer</h2><p class="note" style="margin-top:0">Sends real chat messages as this person, so you test exactly what a viewer would type. They enter the club automatically.</p>
+  <div class="row"><input type="text" id="th" value="@testviewer" autocapitalize="off" autocorrect="off"><select id="tp"><option value="x">X</option><option value="tiktok">TikTok</option><option value="kick">Kick</option></select></div>
+  <div class="grid g3" id="tpers"><button class="b on" data-h="@testviewer">Viewer</button><button class="b" data-h="@mrnicki">Mod</button><button class="b" data-h="@NickiMinaj">Nicki</button></div>
+  <label class="l" style="margin-top:12px">Viewer commands</label><div class="grid g3" id="tcmds"></div>
+  <label class="l" style="margin-top:12px">Dances</label><div class="grid g3" id="tdances"></div>
+  <label class="l" style="margin-top:12px">Bar drinks</label><div class="grid g3" id="tdrinks"></div>
+  <label class="l" style="margin-top:12px">Chat bubbles &amp; emoji</label><div class="grid g2" id="tchat"></div>
+  <label class="l" style="margin-top:12px">Mod commands (use the Mod button above)</label><div class="grid g2" id="tmod"></div>
+  <div class="row" style="margin-top:12px"><input type="text" id="tm" placeholder="Type any message or command"><button class="b go fit" id="tsend">Send</button></div></div>
+ <div class="card"><h2>Whole room</h2><div class="grid g2"><button class="b" data-c="bots.talk">Chat storm (6 people)</button><button class="b" data-c="bots.emoji">Emoji storm</button><button class="b go" data-c="bar.round">Round of drinks + cheers</button><button class="b" data-c="bots.rank">Top 5 demo</button></div>
+  <div class="row" style="margin-top:12px"><select id="dall"></select><button class="b fit" id="dallgo">Everyone dances this</button></div></div>
+ <div class="card"><h2>Guests &amp; free message</h2><div class="grid"><button class="b" data-bots="10">+10 guests</button><button class="b" data-bots="50">+50 guests</button><button class="b" data-bots="200">+200 guests</button><button class="b" data-c="botschat">Random chat</button><button class="b" data-bots="10:bar">+10 at bar</button><button class="b" data-bots="10:vip">+10 in VIP</button><button class="b bad" id="clr">Clear room</button></div>
+  <div class="row" style="margin-top:12px"><input type="text" id="sh" placeholder="@handle"><input type="text" id="sm" placeholder="!enter"></div><button class="b" id="ssend" style="width:100%">Send as chat</button></div>
+</section>
 <section class="tab" id="t-set">
  <div class="card"><h2>Connection</h2><label class="l">Session ID (same one the overlay uses)</label><input type="text" id="sess" autocapitalize="off" autocorrect="off"><label class="l" style="margin-top:10px">Optional PIN (must match the overlay)</label><input type="text" id="pin" autocapitalize="off"><label class="l" style="margin-top:10px">Relay (leave empty for the default)</label><input type="text" id="relay" placeholder="wss://io.socialstream.ninja"><div class="row" style="margin-top:12px"><button class="b go" id="conn">Connect</button><button class="b" id="test">Test</button></div><p class="note" id="cnote"></p></div>
  <div class="card"><h2>VIP list (X handles)</h2><textarea id="vips" placeholder="@jaylux&#10;@someone"></textarea><button class="b go" id="vipsave" style="margin-top:10px;width:100%">Save VIP list</button><p class="note">Listed handles go straight to VIP when they type !enter.</p></div>
  <div class="card"><h2>Mods (X handles)</h2><textarea id="mods" style="min-height:80px"></textarea><button class="b" id="modsave" style="margin-top:10px;width:100%">Save mods</button></div>
  <div class="card"><h2>Bubble word filter</h2><textarea id="bubw" style="min-height:80px" placeholder="one word per line"></textarea><button class="b go" id="bubsave" style="margin-top:10px;width:100%">Save blocked words</button><p class="note">A chat containing any of these words never shows as a bubble. Links and phone numbers are always hidden.</p></div>
  <div class="card"><h2>Unlock rules &amp; limits</h2><div class="row"><div><label class="l">Dances needed</label><input type="number" id="needd"></div><div><label class="l">Chats needed</label><input type="number" id="needc"></div><div><label class="l">Hard cap</label><input type="number" id="maxs"></div></div><button class="b go" id="rules" style="width:100%">Save rules</button></div>
- <div class="card"><h2>Rehearsal tools</h2><div class="grid"><button class="b" data-bots="10">+10 guests</button><button class="b" data-bots="50">+50 guests</button><button class="b" data-bots="200">+200 guests</button><button class="b" data-c="botschat">Random chat</button><button class="b" data-bots="10:bar">+10 at bar</button><button class="b" data-bots="10:vip">+10 in VIP</button><button class="b bad" id="clr">Clear room</button></div>
-  <div class="row" style="margin-top:12px"><input type="text" id="sh" placeholder="@handle"><input type="text" id="sm" placeholder="!enter"></div><button class="b" id="ssend" style="width:100%">Send as chat</button></div>
  <div class="card"><h2>Overlay log</h2><pre id="log"></pre></div>
 </section>
 </main>
-<nav id="nav"><button data-t="show" class="on"><i>🎤</i>Show</button><button data-t="light"><i>💡</i>Lights</button><button data-t="crowd"><i>👥</i>Crowd</button><button data-t="look"><i>👗</i>Looks</button><button data-t="set"><i>⚙️</i>Setup</button></nav>
+<nav id="nav"><button data-t="show" class="on"><i>🎤</i>Show</button><button data-t="light"><i>💡</i>Lights</button><button data-t="crowd"><i>👥</i>Crowd</button><button data-t="look"><i>👗</i>Looks</button><button data-t="test"><i>🧪</i>Test</button><button data-t="set"><i>⚙️</i>Setup</button></nav>
 <div class="sheet" id="sheet"><div id="sheetin"></div></div><div id="toast"></div>
 <script>
 (function(){
@@ -147,8 +162,8 @@ function people(){if(!st)return;var q=$('find').value.toLowerCase();var L=st.peo
  $('people').innerHTML=L.length?L.map(function(p){return '<div class="person" data-k="'+esc(p.k)+'"><div class="av '+p.p+'">'+esc((p.n||'?').charAt(0).toUpperCase())+'</div><div style="flex:1;min-width:0"><div class="nm">'+esc(p.n)+(p.v?'<span class="tag vip">VIP</span>':'')+(p.e?'<span class="tag ok">unlocked</span>':'')+'</div><div class="meta">'+ZN[p.z]+' · '+p.c+' chats · '+p.d+' dances</div></div><div style="color:var(--dim)">›</div></div>'}).join(''):'<p class="note">Nobody here yet.</p>'}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 $('people').onclick=function(e){var r=e.target.closest('.person');if(!r)return;var p=st.people.filter(function(x){return x.k===r.dataset.k})[0];if(!p)return;sheet(p)};
-function sheet(p){var k={key:p.k};$('sheetin').innerHTML='<h3>'+esc(p.n)+' <span class="tag">'+p.p+'</span></h3><div class="grid g2"><button class="b" data-a="spot">Spotlight</button><button class="b" data-a="say">Say hi</button><button class="b" data-a="'+(p.z==='bar'?'floor':'bar')+'">'+(p.z==='bar'?'Back to floor':'Send to bar')+'</button><button class="b" data-a="'+(p.v?'unvip':'vip')+'">'+(p.v?'Remove VIP':'Make VIP')+'</button><button class="b" data-a="grant">Unlock all looks</button><button class="b" data-a="look">Change look</button><button class="b bad" data-a="kick">Remove</button><button class="b" data-a="close">Close</button></div>';
- $('sheet').classList.add('on');$('sheetin').onclick=function(e){var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a;$('sheet').classList.remove('on');if(a==='close')return;if(a==='look'){$('lh').value=p.h;$('lp').value=p.p;document.querySelector('nav [data-t=look]').click();return}
+function sheet(p){var k={key:p.k};$('sheetin').innerHTML='<h3>'+esc(p.n)+' <span class="tag">'+p.p+'</span></h3><div class="grid g2"><button class="b" data-a="spot">Spotlight</button><button class="b" data-a="say">Say hi</button><button class="b" data-a="'+(p.z==='bar'?'floor':'bar')+'">'+(p.z==='bar'?'Back to floor':'Send to bar')+'</button><button class="b" data-a="'+(p.v?'unvip':'vip')+'">'+(p.v?'Remove VIP':'Make VIP')+'</button><button class="b" data-a="grant">Unlock all looks</button><button class="b" data-a="look">Change look</button><button class="b" data-a="talk">Chat bubble</button><button class="b" data-a="emoji">Emoji</button><button class="b" data-a="cheers">Cheers</button><button class="b bad" data-a="kick">Remove</button></div><label class="l" style="margin-top:12px">Dance</label><div class="grid g3">'+DANCE_LIST.map(function(d){return '<button class="b" data-dn="'+d[0]+'">'+d[1]+'</button>'}).join('')+'</div><label class="l" style="margin-top:12px">Drink (sends them to the bar)</label><div class="grid g3">'+DRINK_LIST.map(function(d){return '<button class="b" data-dk="'+d[0]+'">'+d[1]+'</button>'}).join('')+'</div><button class="b" data-a="close" style="width:100%;margin-top:12px">Close</button>';
+ $('sheet').classList.add('on');$('sheetin').onclick=function(e){var dn=e.target.closest('[data-dn]'),dk=e.target.closest('[data-dk]');if(dn){$('sheet').classList.remove('on');cmd('user.dance',{key:p.k,h:p.h,p:p.p,dance:dn.dataset.dn}).then(function(r){if(r.ok)toast('Done','ok')});return}if(dk){$('sheet').classList.remove('on');cmd('user.drink',{key:p.k,h:p.h,p:p.p,kind:dk.dataset.dk}).then(function(r){if(r.ok)toast('Done','ok')});return}var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a;$('sheet').classList.remove('on');if(a==='talk'||a==='emoji'){cmd('chat',{h:p.h,p:p.p,m:a==='talk'?'this song is fire':'🔥'}).then(function(r){if(r.ok)toast('Sent','ok')});return}if(a==='cheers'){cmd('user.cheers',{key:p.k,h:p.h,p:p.p}).then(function(r){if(r.ok)toast('Cheers!','ok')});return}if(a==='close')return;if(a==='look'){$('lh').value=p.h;$('lp').value=p.p;document.querySelector('nav [data-t=look]').click();return}
   var m={spot:'user.spot',bar:'user.bar',floor:'user.floor',vip:'user.vip',unvip:'user.unvip',grant:'user.grant',kick:'user.kick',say:'user.say'}[a];var args={key:p.k,h:p.h,p:p.p};if(a==='say')args.t='Welcome!';cmd(m,args).then(function(r){if(r.ok)toast('Done','ok')})}}
 $('sheet').onclick=function(e){if(e.target===this)this.classList.remove('on')};
 /* looks */
@@ -157,6 +172,27 @@ function target(){var h=$('lh').value.trim().replace(/^@/,'');if(!h){toast('Type
 $('lapply').onclick=function(){var t=target();if(!t)return;if(!cur){toast('Pick a look first','bad');return}t.look=cur.look;t.dance=cur.dance;cmd('user.look',t).then(function(r){if(r.ok)toast(r.msg?'Applied ('+r.msg+')':'Look applied','ok')})};
 $('lgrant').onclick=function(){var t=target();if(!t)return;cmd('user.grant',t).then(function(r){if(r.ok)toast('Unlocked for @'+t.h,'ok')})};
 Array.prototype.forEach.call(document.querySelectorAll('[data-nk]'),function(b){b.onclick=function(){cmd('user.look',{h:'nickiminaj',p:'x',look:b.dataset.nk}).then(function(r){if(r.ok)toast('Nicki outfit set','ok')})}});
+/* test lab */
+var DANCE_LIST=[['groove','Groove'],['bounce','Bounce'],['rock','Rock'],['shuffle','Shuffle'],['pump','Pump'],['wave','Wave'],['bboy','B-boy'],['twerk','Twerk'],['snake','Snake']];
+var DRINK_LIST=[['martini','🍸 Martini'],['shot','🥃 Shot'],['beer','🍺 Beer'],['cocktail','🍹 Cocktail'],['champagne','🥂 Champagne'],['wine','🍷 Wine']];
+var VCMDS=[['!enter','Enter'],['!leave','Leave'],['!bar','Go to bar'],['!floor','Back to floor'],['!drink','New drink'],['!cheers','Cheers'],['!dance','Random dance'],['!look varsity pink cargo black hoops gold','Try a look'],['!look chrome pink shades gold','Another look']];
+var CHATS=[['this song is fire','Say something'],['🔥','Single emoji'],['😍😍😍','Emoji burst'],['I love this track so much omg play it again and again','Long message'],['check out www.spam.com','Link (hidden)'],['lol the dj is crazy','Short chat']];
+var MODC=[['!top5','!top5 on/off'],['!light party','!light party'],['!light dark','!light dark'],['!np Nicki Minaj - Super Bass','!np song'],['!vip @testviewer','!vip viewer'],['!unvip @testviewer','!unvip viewer'],['!nicki test','!nicki test']];
+function mk(id,list,attr){$(id).innerHTML=list.map(function(x){return '<button class="b" data-'+attr+'="'+esc(x[0])+'">'+esc(x[1])+'</button>'}).join('')}
+mk('tcmds',VCMDS,'m');mk('tdances',DANCE_LIST.map(function(d){return ['!dance '+d[0],d[1]]}),'m');mk('tdrinks',DRINK_LIST.map(function(d){return ['!drink '+d[0],d[1]]}),'m');mk('tchat',CHATS,'m');mk('tmod',MODC,'m');
+$('dall').innerHTML='<option value="random">Random dance</option>'+DANCE_LIST.map(function(d){return '<option value="'+d[0]+'">'+d[1]+'</option>'}).join('');
+$('dallgo').onclick=function(){cmd('crowd.dance',{d:$('dall').value}).then(function(r){if(r.ok)toast('Everyone is dancing','ok')})};
+$('tpers').onclick=function(e){var b=e.target.closest('button');if(!b)return;$('th').value=b.dataset.h;$('tp').value='x';Array.prototype.forEach.call($('tpers').children,function(x){x.classList.toggle('on',x===b)})};
+function persona(){var h=$('th').value.trim().replace(/^@/,'');if(!h){toast('Type a handle first','bad');return null}return {h:h,p:$('tp').value}}
+function isIn(t){if(!st)return false;var k=t.p+':'+t.h.toLowerCase();return st.people.some(function(x){return x.k===k||(x.h===t.h.toLowerCase()&&x.p===t.p)})}
+function sendAs(m){var t=persona();if(!t)return;var go=function(){cmd('chat',{h:t.h,p:t.p,m:m})};
+ if(/^!(enter|vip|unvip|top5|light|np|nicki)\b/i.test(m)||isIn(t)||t.h.toLowerCase()==='nickiminaj'){go();return}
+ cmd('chat',{h:t.h,p:t.p,m:'!enter'}).then(function(){setTimeout(go,900)})}
+['tcmds','tdances','tdrinks','tchat','tmod'].forEach(function(id){$(id).onclick=function(e){var b=e.target.closest('[data-m]');if(b)sendAs(b.dataset.m)}});
+$('tsend').onclick=function(){var m=$('tm').value.trim();if(!m){toast('Type a message first','bad');return}sendAs(m);$('tm').value=''};
+$('tm').onkeydown=function(e){if(e.key==='Enter')$('tsend').click()};
+$('demo').onclick=function(){cmd('demo.run').then(function(r){if(r.ok)toast('Demo running…','ok')})};
+$('demostop').onclick=function(){cmd('demo.stop').then(function(r){if(r.ok)toast('Cleared','ok')})};
 /* setup */
 $('sess').value=C.session;$('pin').value=C.pin;$('relay').value=C.relay;
 $('conn').onclick=function(){C.session=$('sess').value.trim();C.pin=$('pin').value.trim();C.relay=$('relay').value.trim();sv('session',C.session);sv('pin',C.pin);sv('relay',C.relay);if(bc){try{bc.close()}catch(e){}bc=null}st=null;start();toast('Connecting…')};

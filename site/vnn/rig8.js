@@ -57,6 +57,58 @@ var RIG = (function () {
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
   function len3(v) { return Math.hypot(v[0], v[1], v[2]); }
+  /* ---- held drinks: vector sprites drawn in the hand, units match the rig (head radius = 116) ---- */
+  function glassPath(c, pts) { c.beginPath(); pts.forEach(function (q, i) { if (i) c.lineTo(q[0], q[1]); else c.moveTo(q[0], q[1]); }); c.closePath(); }
+  var PROPK = 1.6, RIMS = { martini: 92, beer: 84, shot: 52, cocktail: 112, champagne: 128, wine: 96 };
+  function drawProp(ctx, H, a, mouth) {
+    var kind = H.kind, S0 = (H.s == null ? 1 : H.s); if (S0 <= 0.01) return;
+    var gl = 30, gx = a.Wp[0] - Math.sin(a.a2) * gl, gy = a.Wp[1] + Math.cos(a.a2) * gl, lv = H.lvl == null ? 1 : H.lvl;
+    var tl = H.tilt || 0;
+    if (H.to !== 'up' && H.aim > 0) { /* tip the glass so its rim meets the mouth */
+      var R = (RIMS[kind] || 100) * PROPK, sgn = a.sd > 0 ? -1 : 1; sgn = (gx >= mouth[0]) ? 1 : -1;
+      var th = Math.asin(clamp((mouth[0] - gx) / R, -0.95, 0.95)); tl = th * H.aim - sgn * (H.over || 0) * H.aim;
+    }
+    ctx.save(); ctx.translate(gx, gy); ctx.rotate(tl); ctx.scale(S0 * PROPK, S0 * PROPK); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    var OUT = 'rgba(255,255,255,.92)', GLASS = 'rgba(235,245,255,.22)', c = ctx, y;
+    function liquid(clipFn, top, bot, c1, c2) { c.save(); clipFn(); c.clip(); var yy = bot - (bot - top) * lv; var g = c.createLinearGradient(0, yy, 0, bot); g.addColorStop(0, c1); g.addColorStop(1, c2); c.fillStyle = g; c.fillRect(-80, yy, 160, bot - yy + 2); c.restore(); }
+    if (kind === 'martini') {
+      var bowl = function () { glassPath(c, [[-50, -92], [50, -92], [0, -24]]); };
+      c.strokeStyle = OUT; c.lineWidth = 7; c.beginPath(); c.moveTo(0, -24); c.lineTo(0, 34); c.stroke(); c.beginPath(); c.moveTo(-30, 36); c.lineTo(30, 36); c.stroke();
+      bowl(); c.fillStyle = GLASS; c.fill(); liquid(bowl, -92, -24, '#ff8cc6', '#ff3f9f');
+      bowl(); c.lineWidth = 7; c.stroke();
+      if (lv > 0.3) { c.strokeStyle = '#d9c36a'; c.lineWidth = 4; c.beginPath(); c.moveTo(34, -112); c.lineTo(-14, -56); c.stroke(); c.fillStyle = '#7ccf3c'; c.beginPath(); c.arc(-12, -58, 10, 0, 7); c.fill(); c.fillStyle = '#e0452f'; c.beginPath(); c.arc(-10, -60, 3.5, 0, 7); c.fill(); }
+    } else if (kind === 'beer') {
+      var mug = function () { glassPath(c, [[-36, -84], [32, -84], [28, 34], [-32, 34]]); };
+      c.strokeStyle = OUT; c.lineWidth = 7; c.beginPath(); c.moveTo(32, -58); c.bezierCurveTo(72, -62, 72, 8, 30, 10); c.stroke();
+      mug(); c.fillStyle = GLASS; c.fill(); liquid(mug, -84, 34, '#ffd24a', '#e88a00');
+      mug(); c.lineWidth = 7; c.stroke();
+      if (lv > 0.15) { c.fillStyle = '#fff8e6'; var fy = -84 - 12; c.beginPath(); c.arc(-24, fy + 8, 14, 0, 7); c.arc(-4, fy, 17, 0, 7); c.arc(18, fy + 6, 15, 0, 7); c.arc(30, fy + 14, 9, 0, 7); c.fill(); c.fillRect(-36, -90, 68, 14); }
+    } else if (kind === 'shot') {
+      var sh = function () { glassPath(c, [[-26, -52], [26, -52], [20, 30], [-20, 30]]); };
+      sh(); c.fillStyle = GLASS; c.fill(); liquid(sh, -52, 30, '#ffd36b', '#ff9a1f'); sh(); c.strokeStyle = OUT; c.lineWidth = 7; c.stroke();
+      c.fillStyle = 'rgba(255,255,255,.9)'; c.fillRect(-22, 20, 44, 8);
+      if (lv > 0.3) { c.fillStyle = '#8ed13a'; c.beginPath(); c.moveTo(14, -60); c.lineTo(34, -48); c.lineTo(10, -46); c.closePath(); c.fill(); }
+    } else if (kind === 'cocktail') {
+      var hb = function () { glassPath(c, [[-34, -112], [34, -112], [26, 34], [-26, 34]]); };
+      c.strokeStyle = '#ff4f6a'; c.lineWidth = 7; c.beginPath(); c.moveTo(12, -40); c.lineTo(38, -150); c.stroke(); c.strokeStyle = '#fff'; c.lineWidth = 3; c.setLineDash([9, 9]); c.beginPath(); c.moveTo(12, -40); c.lineTo(38, -150); c.stroke(); c.setLineDash([]);
+      hb(); c.fillStyle = GLASS; c.fill(); liquid(hb, -112, 34, '#ffb347', '#ff3f9f');
+      c.fillStyle = 'rgba(255,255,255,.55)'; [[-12, -50, 14], [8, -20, 13], [-8, 4, 12]].forEach(function (q) { c.save(); c.translate(q[0], q[1]); c.rotate(0.4); c.fillRect(-q[2] / 2, -q[2] / 2, q[2], q[2]); c.restore(); });
+      hb(); c.strokeStyle = OUT; c.lineWidth = 7; c.stroke();
+      c.fillStyle = '#ff9a1f'; c.beginPath(); c.arc(-34, -112, 20, 0, 7); c.fill(); c.strokeStyle = '#fff3c4'; c.lineWidth = 4; c.beginPath(); c.arc(-34, -112, 14, 0, 7); c.stroke();
+      c.fillStyle = '#d6203a'; c.beginPath(); c.arc(26, -118, 9, 0, 7); c.fill();
+    } else if (kind === 'champagne') {
+      var fl = function () { c.beginPath(); c.moveTo(-19, -128); c.lineTo(19, -128); c.bezierCurveTo(22, -84, 12, -46, 3, -22); c.lineTo(-3, -22); c.bezierCurveTo(-12, -46, -22, -84, -19, -128); c.closePath(); };
+      c.strokeStyle = OUT; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -22); c.lineTo(0, 34); c.stroke(); c.beginPath(); c.moveTo(-24, 36); c.lineTo(24, 36); c.stroke();
+      fl(); c.fillStyle = GLASS; c.fill(); liquid(fl, -128, -22, '#fff0a8', '#f2c14e'); c.fillStyle = 'rgba(255,255,255,.85)';
+      [[-5, -52, 3], [5, -78, 3.5], [-3, -98, 3], [6, -112, 3]].forEach(function (q) { c.beginPath(); c.arc(q[0], q[1], q[2], 0, 7); c.fill(); });
+      fl(); c.strokeStyle = OUT; c.lineWidth = 6; c.stroke();
+    } else if (kind === 'wine') {
+      var bw = function () { c.beginPath(); c.moveTo(-36, -96); c.bezierCurveTo(-44, -30, -22, -14, 0, -14); c.bezierCurveTo(22, -14, 44, -30, 36, -96); c.closePath(); };
+      c.strokeStyle = OUT; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -14); c.lineTo(0, 34); c.stroke(); c.beginPath(); c.moveTo(-28, 36); c.lineTo(28, 36); c.stroke();
+      bw(); c.fillStyle = GLASS; c.fill(); liquid(bw, -96, -14, '#b3264f', '#6e0f2e'); bw(); c.strokeStyle = OUT; c.lineWidth = 7; c.stroke();
+    }
+    ctx.restore();
+  }
   function figure(ctx, o, headFn) {
     var P = o.pose, J = P.j, px = o.px || 0.3, base0 = ctx.globalAlpha, ST = o.st || {}, NOW = o.now || 0;
     function g(n) { var i = JI[n] * 3; return [J[i], J[i + 1], J[i + 2]]; }
@@ -141,6 +193,20 @@ var RIG = (function () {
       var v1 = [E0[0] - A0[0], -(E0[1] - A0[1])], v2 = [W0[0] - E0[0], -(W0[1] - E0[1])], l1 = len3(sub(E0, A0)), l2 = len3(sub(W0, E0));
       var f1 = clamp(Math.hypot(v1[0], v1[1]) / l1, 0.34, 1), f2 = clamp(Math.hypot(v2[0], v2[1]) / l2, 0.3, 1);
       var a1 = Math.atan2(-v1[0], v1[1]), a2 = Math.atan2(-v2[0], v2[1]);
+      var HO = o.hold, ho = !!(HO && HO.hand === ak);
+      if (ho && HO.arm > 0.002) {
+        /* two-bone IK: bring the hand to the mouth (sip) or up beside the head (cheers) */
+        var L1 = ua.len * CFG.armK, L2 = fm.len * CFG.armK, sg = Sh[0] >= hc[0] ? 1 : -1;
+        var RIM = (RIMS[HO.kind] || 100) * PROPK;
+        var T = HO.to === 'up' ? [Sh[0] + sg * HEADR * 0.95, hc[1] - HEADR * 0.35] : [hc[0] + sg * HEADR * 0.9, hc[1] + HEADR * 0.5 + 30 + 0.55 * RIM];
+        var dx = T[0] - Sh[0], dy = T[1] - Sh[1], D = clamp(Math.hypot(dx, dy), Math.abs(L1 - L2) + 4, L1 + L2 - 2), ph = Math.atan2(dy, dx);
+        var cA = clamp((L1 * L1 + D * D - L2 * L2) / (2 * L1 * D), -1, 1), A = Math.acos(cA);
+        var e1 = [Sh[0] + L1 * Math.cos(ph + A), Sh[1] + L1 * Math.sin(ph + A)], e2 = [Sh[0] + L1 * Math.cos(ph - A), Sh[1] + L1 * Math.sin(ph - A)];
+        var E = e1[1] > e2[1] ? e1 : e2, W2 = [Sh[0] + D * Math.cos(ph), Sh[1] + D * Math.sin(ph)];
+        var ia1 = Math.atan2(-(E[0] - Sh[0]), E[1] - Sh[1]), ia2 = Math.atan2(-(W2[0] - E[0]), W2[1] - E[1]), w = clamp(HO.arm, 0, 1);
+        var la = function (x, y, t) { var d = ((y - x + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI; return x + d * t; };
+        a1 = la(a1, ia1, w); a2 = la(a2, ia2, w); f1 += (1 - f1) * w; f2 += (1 - f2) * w;
+      }
       var AK = CFG.armK, Ep = rot([0, ua.len * f1 * AK], a1); Ep = [Sh[0] + Ep[0], Sh[1] + Ep[1]];
       var Wp = rot([0, fm.len * f2 * AK], a2); Wp = [Ep[0] + Wp[0], Ep[1] + Wp[1]];
       var z2 = ((E0[2] + W0[2]) / 2) - SP1[2], dz = W0[2] - E0[2], rise = W0[1] - A0[1];
@@ -149,7 +215,7 @@ var RIG = (function () {
       var curlF = towards && (ST['cf' + ak] ? f2 < 0.86 : f2 < 0.76); ST['cf' + ak] = curlF;
       var openH = ST['oh' + ak] ? rise > 0.06 : rise > 0.14; ST['oh' + ak] = openH;
       var frontF = ST['fr' + ak] ? z2 > 0.06 : z2 > 0.16; ST['fr' + ak] = frontF;
-      return { ak: ak, hand: openH ? 'hand_open' : 'hand_relax', sd: sd, Sh: Sh, Ep: Ep, Wp: Wp, a1: a1, a2: a2, f1: f1, f2: f2, front: frontF, fist: fullF, curl: curlF };
+      return { ak: ak, hand: (openH && !ho) ? 'hand_open' : 'hand_relax', sd: sd, Sh: Sh, Ep: Ep, Wp: Wp, a1: a1, a2: a2, f1: f1, f2: f2, front: frontF, fist: ho ? false : fullF, curl: ho ? true : curlF, hold: ho };
     });
     function bH0() { return clamp((wH - 0.36) / 0.04, 0, 1); }
     if (o.dbg) o.dbg.push({ hc: hc.slice(), arms: arms.map(function (q) { return { h: q.fist ? 'ffarm' : (q.curl ? 'fist' : q.hand), fr: q.front, Wp: q.Wp.slice(), Ep: q.Ep.slice() }; }), foot: legs.map(function (gl) { return gl.view; }), bH: bH0(), wT: wT });
@@ -200,6 +266,7 @@ var RIG = (function () {
     if (PART.scap) arms.forEach(function (a) { drawRot(ctx, 'scap', a.Sh[0] + (a.sd > 0 ? -2 : 2), a.Sh[1] - 30, clamp(a.a1 * 0.6, -0.5, 0.5) + torsoTop * 0.4, a.sd < 0, 1, px); });
     headFn(ctx, hc[0], hc[1], hrot, HEADR, px);
     hair(true);
+    if (o.hold) arms.forEach(function (a) { if (a.hold) drawProp(ctx, o.hold, a, [hc[0], hc[1] + HEADR * 0.5]); });
     if (PART.hacc) { var ph = PART.hacc, kk = CFG.ak; ctx.save(); ctx.translate(hc[0], hc[1]); ctx.rotate(hrot); ctx.scale(kk, kk); blit(ctx, ph, tier(ph, px * kk), 0, 0, ph.w, ph.h, -ph.disc[0], -ph.disc[1]); ctx.restore(); }
   }
   function pose(name, t, o) {
