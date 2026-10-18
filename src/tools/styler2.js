@@ -157,15 +157,13 @@ var STG = {};
     handle = $('h').value.trim().replace(/^@/, ''); plat = $('pl').value;
     if (!handle) { setPhoto(null); paint(); return; }
     var prov = plat === 'x' ? 'twitter' : (plat === 'tiktok' ? 'tiktok' : null);
-    if (!prov) { toast('Kick photos cannot be looked up. Tap "Use my photo"'); setPhoto(null); paint(); return; }
+    if (!prov) { toast('Kick photos cannot be looked up, so Kick shows initials'); setPhoto(null); paint(); return; }
     var url = 'https://unavatar.io/' + prov + '/' + encodeURIComponent(handle) + '?fallback=false', im = new Image();
     im.crossOrigin = 'anonymous';
-    im.onload = function () { photoImg = im; photoURL = url; paint(); toast('Found @' + handle); }; im.onerror = function () { setPhoto(null); paint(); toast('Could not find a photo. Tap "Use my photo"'); };
+    im.onload = function () { photoImg = im; photoURL = url; paint(); toast('Found @' + handle); }; im.onerror = function () { setPhoto(null); paint(); toast('Could not find a photo, so initials are shown'); };
     im.src = url;
   }
   $('h').onchange = lookup; $('pl').onchange = lookup; $('h').onkeydown = function (e) { if (e.key === 'Enter') { this.blur(); } };
-  $('up').onclick = function () { $('file').click(); };
-  $('file').onchange = function () { var f = this.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { var im = new Image(); im.onload = function () { var c = document.createElement('canvas'), s = Math.min(1, 256 / Math.max(im.width, im.height)); c.width = im.width * s; c.height = im.height * s; c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); var u = c.toDataURL('image/jpeg', .85), i2 = new Image(); i2.onload = function () { photoImg = i2; paint(); }; i2.src = u; }; im.src = r.result; }; r.readAsDataURL(f); };
   if (Q.get('h')) { $('h').value = Q.get('h'); if (Q.get('p')) $('pl').value = Q.get('p'); lookup(); }
   window.__sty = { sel: function () { return sel; }, set: function (o) { Object.assign(sel, o); all(); }, cmd: cmdText, cat: function (c) { cat = c; all(); }, ready: false };
   VNNA.setCache(36);
