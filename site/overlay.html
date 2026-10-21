@@ -763,7 +763,31 @@ var VNNA = (function () {
         { id: 'pixie', name: 'Pixie cut', fit: 'fem', sheet: 'HAIR-8', v: 'A' }, { id: 'puffs', name: 'Double puffs', fit: 'fem', sheet: 'HAIR-8', v: 'B' },
         { id: 'bantu', name: 'Bantu knots', fit: 'any', sheet: 'HAIR-9', v: 'A' }, { id: 'wolf', name: 'Wolf cut', fit: 'any', sheet: 'HAIR-9', v: 'B' },
         { id: 'pigtails', name: 'Pigtail braids', fit: 'fem', sheet: 'HAIR-10', v: 'A' }, { id: 'slickback', name: 'Slick-back wave', fit: 'masc', sheet: 'HAIR-10', v: 'B' },
-        { id: 'braidpony', name: 'Braided Ponytail', fit: 'any', unlock: 'vip', sheet: 'HAIR-11', v: 'A' }, { id: 'layeredcurls', name: 'Layered Curls', fit: 'any', unlock: 'earned', sheet: 'HAIR-11', v: 'B' }
+        { id: 'braidpony', name: 'Braided Ponytail', fit: 'any', unlock: 'vip', sheet: 'HAIR-11', v: 'A' }, { id: 'layeredcurls', name: 'Layered Curls', fit: 'any', unlock: 'earned', sheet: 'HAIR-11', v: 'B' },
+        { id: 'frenchbraid', name: 'French Braid', fit: 'fem', sheet: 'HAIR-12', v: 'A' },
+        { id: 'gibson', name: 'Gibson Roll', fit: 'fem', sheet: 'HAIR-12', v: 'B' },
+        { id: 'halfupknot', name: 'Half-up Knot', fit: 'fem', sheet: 'HAIR-13', v: 'A' },
+        { id: 'shoulderflip', name: 'Shoulder Flip', fit: 'fem', sheet: 'HAIR-13', v: 'B' },
+        { id: 'crimped', name: 'Crimped Cascade', fit: 'fem', unlock: 'earned', sheet: 'HAIR-14', v: 'A' },
+        { id: 'bubbletail', name: 'Bubble Tail', fit: 'fem', unlock: 'earned', sheet: 'HAIR-14', v: 'B' },
+        { id: 'jellyfish', name: 'Jellyfish Cut', fit: 'fem', unlock: 'earned', sheet: 'HAIR-15', v: 'A' },
+        { id: 'fulani', name: 'Fulani Sweep', fit: 'fem', unlock: 'earned', sheet: 'HAIR-15', v: 'B' },
+        { id: 'victoryrolls', name: 'Victory Rolls', fit: 'fem', unlock: 'vip', sheet: 'HAIR-16', v: 'A' },
+        { id: 'beehive', name: 'Sculpted Beehive', fit: 'fem', unlock: 'vip', sheet: 'HAIR-16', v: 'B' },
+        { id: 'crownbraid', name: 'Crown Braid', fit: 'fem', unlock: 'vip', sheet: 'HAIR-17', v: 'A' },
+        { id: 'ropechignon', name: 'Rope Chignon', fit: 'fem', unlock: 'vip', sheet: 'HAIR-17', v: 'B' },
+        { id: 'crewcut', name: 'Crew Cut', fit: 'masc', sheet: 'HAIR-18', v: 'A' },
+        { id: 'sidepart', name: 'Side Part', fit: 'masc', sheet: 'HAIR-18', v: 'B' },
+        { id: 'curtainpart', name: 'Curtain Part', fit: 'masc', sheet: 'HAIR-19', v: 'A' },
+        { id: 'brushup', name: 'Brush Up', fit: 'masc', sheet: 'HAIR-19', v: 'B' },
+        { id: 'curlymullet', name: 'Curly Mullet', fit: 'masc', unlock: 'earned', sheet: 'HAIR-20', v: 'A' },
+        { id: 'fauxhawk', name: 'Faux Hawk', fit: 'masc', unlock: 'earned', sheet: 'HAIR-20', v: 'B' },
+        { id: 'twoblock', name: 'Two Block', fit: 'masc', unlock: 'earned', sheet: 'HAIR-21', v: 'A' },
+        { id: 'angfringe', name: 'Angular Fringe', fit: 'masc', unlock: 'earned', sheet: 'HAIR-21', v: 'B' },
+        { id: 'libspikes', name: 'Liberty Spikes', fit: 'masc', unlock: 'vip', sheet: 'HAIR-22', v: 'A' },
+        { id: 'quiff', name: 'Rockabilly Quiff', fit: 'masc', unlock: 'vip', sheet: 'HAIR-22', v: 'B' },
+        { id: 'regencycurls', name: 'Regency Curls', fit: 'masc', unlock: 'vip', sheet: 'HAIR-23', v: 'A' },
+        { id: 'vikingplait', name: 'Viking Plait', fit: 'masc', unlock: 'vip', sheet: 'HAIR-23', v: 'B' }
       ],
       colors: [
         { id: 'black', name: 'Black', hex: '#0b0710' }, { id: 'brown', name: 'Brown', hex: '#5a3420' }, { id: 'auburn', name: 'Auburn', hex: '#8a3b1f' },
@@ -977,7 +1001,7 @@ var VNNA = (function () {
   }
   function clipOf(id) { var d = byId(CATALOG.dances, id) || byId(CATALOG.dances, CATALOG.danceAlias[id]); return d ? d.clip : 'hh1'; }
   var EARN = { tasks: {"dn3": "Never get stuck on one groove.", "dn7": "Know every move this room has to offer.", "lk2": "A fresh fit, then another fresh fit.", "lk8": "A new mood, a new you. Again and again.", "dr1": "Someone behind the bar is waiting on you.", "dr3": "The third round is where the magic happens.", "ch5": "The quiet ones never get noticed.", "ch25": "Keep the conversation loud.", "che3": "Lift your glass. More than once.", "st30": "Good things come to those who stay.", "early": "Doors open, early birds get in first.", "rwp": "Be seen under the lights.", "rww": "The crowd crowns one winner.", "t5": "Be one of the loudest five.", "lc": "Stay until the lights come up.", "reg": "Keep dancing and keep talking.", "x_barb": "Nicki will whisper a secret. Listen close.", "x_pf2": "Nicki will whisper a secret. Listen close.", "x_pink": "Nicki will whisper a secret. Listen close.", "x_gag": "Nicki will whisper a secret. Listen close."},
-    items: {"citysnap": "dn3", "cowboyhat": "dn3", "heartstud": "dn3", "airtrucker": "ch5", "nightshades": "ch5", "pinkbeanie": "dr1", "durag": "dr1", "fuzzybucket": "dr1", "fedora": "lk2", "cateye": "lk2", "satinscarf": "lk2", "crystalcat": "dr3", "miniskirt": "dr3", "resortshorts": "dr3", "trini": "dr3", "puffvest": "dr3", "midiskirt": "che3", "loafers": "che3", "roman": "early", "pleated": "dn7", "slipdress": "dn7", "whitebomber": "dn7", "fphightops": "dn7", "denimskirt": "ch25", "bodycon": "ch25", "airbrushjoggers": "ch25", "varsity": "ch25", "utilitymini": "st30", "skater": "st30", "layeredcurls": "st30", "letterman": "st30", "satindress": "lk8", "harajuku": "lk8", "pinkstarboots": "lk8", "queens": "t5", "crowntrainers": "t5", "cityletterman": "rwp", "nickitee": "rwp", "heartcrown": "rww", "resortmuscle": "lc", "pinkprintcrew": "reg", "nickicrew": "reg", "barbtee": "x_barb", "pf2bomber": "x_pf2", "pinkprintzip": "x_pink", "gagcargos": "x_gag"} };
+    items: {"citysnap": "dn3", "cowboyhat": "dn3", "heartstud": "dn3", "airtrucker": "ch5", "nightshades": "ch5", "pinkbeanie": "dr1", "durag": "dr1", "fuzzybucket": "dr1", "fedora": "lk2", "cateye": "lk2", "satinscarf": "lk2", "crystalcat": "dr3", "miniskirt": "dr3", "resortshorts": "dr3", "trini": "dr3", "puffvest": "dr3", "midiskirt": "che3", "loafers": "che3", "roman": "early", "pleated": "dn7", "slipdress": "dn7", "whitebomber": "dn7", "fphightops": "dn7", "denimskirt": "ch25", "bodycon": "ch25", "airbrushjoggers": "ch25", "varsity": "ch25", "utilitymini": "st30", "skater": "st30", "layeredcurls": "st30", "letterman": "st30", "satindress": "lk8", "harajuku": "lk8", "pinkstarboots": "lk8", "queens": "t5", "crowntrainers": "t5", "cityletterman": "rwp", "nickitee": "rwp", "heartcrown": "rww", "resortmuscle": "lc", "pinkprintcrew": "reg", "nickicrew": "reg", "barbtee": "x_barb", "pf2bomber": "x_pf2", "pinkprintzip": "x_pink", "gagcargos": "x_gag", "crimped": "lk2", "bubbletail": "dr3", "jellyfish": "ch5", "fulani": "ch25", "curlymullet": "dn7", "fauxhawk": "dr1", "twoblock": "che3", "angfringe": "lk8"} };
   return { CATALOG: CATALOG, EARN: EARN, init: init, build: build, spec: spec, draw: draw, clipOf: clipOf, byId: byId, hex2: hex2, lib: function () { return LIB; }, Q: function () { return Q; }, cacheSize: function () { return CORDER.length; }, setCache: function (n) { MAXC = n; } };
 })();
 
