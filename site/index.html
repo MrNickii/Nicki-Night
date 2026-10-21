@@ -37,6 +37,8 @@ input:focus,select:focus{outline:2px solid var(--pink)}
 .opt{position:relative;border:2px solid transparent;background:var(--card);border-radius:16px;padding:6px 6px 8px;text-align:center;cursor:pointer;color:var(--txt);font:inherit;display:flex;flex-direction:column;align-items:center;gap:4px}
 .opt:active{transform:scale(.97)}.opt.on{border-color:var(--pink2);background:#3a1650;box-shadow:0 0 16px #ff2f9e66}
 .opt .th{height:104px;display:flex;align-items:flex-end;justify-content:center;width:100%;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,#2e1642,#1f0d2e)}.opt .th img{max-height:100%;max-width:100%;display:block}.opt .th.ld{background:linear-gradient(110deg,#2e1642 30%,#3d1d57 50%,#2e1642 70%);background-size:200% 100%;animation:ld 1.2s infinite}@keyframes ld{to{background-position:-200% 0}}
+.sub .subn{font-weight:500;font-size:11px;color:#b9a8d6;letter-spacing:0;text-transform:none;margin-left:6px}
+.fx{font-size:12px;color:#b9a8d6;font-style:italic;margin:8px 2px}
 .opt .hn{font-size:10px;font-style:italic;color:#c9a6e8;margin-top:3px;line-height:1.15;font-weight:500}
 .opt .nm{font-size:13px;font-weight:700;line-height:1.1}
 .badge{position:absolute;top:6px;right:6px;font-size:11px;font-weight:800;padding:3px 7px;border-radius:99px;background:#000c;border:1px solid var(--gold);color:var(--gold);z-index:2}
@@ -126,10 +128,17 @@ var STG = {};
     });
   }
   var UNL = { earned: ['🔒 Earn it', ''], vip: ['👑 VIP', 'vip'] };
-  function eh(id, locked) { var e = window.VNNA && VNNA.EARN; return locked === 'earned' && e && e.items[id] ? e.tasks[e.items[id]].replace(/"/g, '&quot;') : ''; }
+  function eh(id, locked) { var e = (typeof VNNA !== 'undefined') && VNNA.EARN; return locked === 'earned' && e && e.items[id] ? e.tasks[e.items[id]].replace(/"/g, '&quot;') : ''; }
   function opt(id, name, patch, region, locked, on) {
     var hn = eh(id, locked);
     return '<button class="opt' + (on ? ' on' : '') + (locked ? ' locked' : '') + '" data-id="' + id + '">' + (locked ? '<span class="badge ' + UNL[locked][1] + '"' + (hn ? ' title="' + hn + '"' : '') + '>' + UNL[locked][0] + '</span>' : '') + '<div class="th ld" data-th=\'' + JSON.stringify({ patch: patch, region: region }) + '\'></div><div class="nm">' + name + '</div></button>';
+  }
+  function isFree(x) { return !x.unlock || x.unlock === 'free'; }
+  function tiered(items, make, first) {
+    var f = items.filter(isFree), e = items.filter(function (x) { return x.unlock === 'earned'; }), v = items.filter(function (x) { return x.unlock === 'vip'; });
+    return '<div class="grid">' + (first || '') + f.map(make).join('') + '</div>' +
+      (e.length ? '<div class="sub">\uD83D\uDD12 Earn it in the club <span class="subn">' + e.length + ' \u00b7 each has a riddle hint</span></div><div class="grid">' + e.map(make).join('') + '</div>' : '') +
+      (v.length ? '<div class="sub">\uD83D\uDC51 VIP list <span class="subn">' + v.length + '</span></div><div class="grid">' + v.map(make).join('') + '</div>' : '');
   }
   function swatches(list, cur, key, noneLabel) {
     return '<div class="sw">' + (noneLabel ? '<button class="none ' + (!cur ? 'on' : '') + '" data-sw="' + key + '" data-id="" title="Original"></button>' : '') + list.map(function (c) { var bg = c.ombre ? 'linear-gradient(135deg,' + c.ombre.join(',') + ')' : c.hex; return '<button class="' + (cur === c.id ? 'on' : '') + '" data-sw="' + key + '" data-id="' + c.id + '" title="' + (c.name || c.id) + '" style="background:' + bg + '"></button>'; }).join('') + '</div>';
@@ -141,18 +150,25 @@ var STG = {};
   function renderOpts() {
     var h = '', o = $('opts'), sc = o.scrollTop;
     if (cat === 'tops') {
-      var fr = LOOKS.filter(function (l) { return l.unlock === 'free'; }), lk = LOOKS.filter(function (l) { return l.unlock !== 'free'; });
-      h += '<div class="sub">Everyday fits</div><div class="grid">' + fr.map(function (l) { return opt(l.id, l.name, { top: l.id }, 'torso', null, sel.top === l.id); }).join('') + '</div>';
-      h += '<div class="sub">Unlockable (preview them now, earn them in the club)</div><div class="grid">' + lk.map(function (l) { return opt(l.id, l.name, { top: l.id }, l.dress ? 'full' : 'torso', l.unlock, sel.top === l.id); }).join('') + '</div>';
-      h += '<div class="sub">Top color (plain tops and dresses)</div>' + swatches(CLR, sel.topColor, 'topColor', true);
+      var selTop = byId(LOOKS, sel.top) || {};
+      h += '<div class="sub">Everyday fits</div>' + tiered(LOOKS, function (l) { return opt(l.id, l.name, { top: l.id }, l.dress ? 'full' : 'torso', isFree(l) ? null : l.unlock, sel.top === l.id); }).replace('<div class="grid">', '<div class="grid">');
+      if (!selTop.sig && !selTop.nk) h += '<div class="sub">Top color <span class="subn">plain tops and dresses</span></div>' + swatches(CLR, sel.topColor, 'topColor', true);
+      else h += '<p class="fx">This piece has its own full-color design, so there is no color to pick.</p>';
     } else if (cat === 'bottoms') {
-      h += '<div class="grid">' + CAT.bottoms.map(function (b) { return opt(b.id, b.name, { bottom: b.id, top: 'tank', topColor: 'white' }, 'legs', b.unlock === 'earned' || b.unlock === 'vip' ? b.unlock : null, sel.bottom === b.id); }).join('') + '</div><div class="sub">Bottom color</div>' + swatches(CLR, sel.bottomColor, 'bottomColor', true);
+      var selBot = byId(CAT.bottoms, sel.bottom) || {};
+      h += tiered(CAT.bottoms, function (b) { return opt(b.id, b.name, { bottom: b.id, top: 'tank', topColor: 'white' }, 'legs', isFree(b) ? null : b.unlock, sel.bottom === b.id); });
+      h += selBot.fixed ? '<p class="fx">This piece has its own full-color design, so there is no color to pick.</p>' : '<div class="sub">Bottom color</div>' + swatches(CLR, sel.bottomColor, 'bottomColor', true);
     } else if (cat === 'shoes') {
-      h += '<div class="grid">' + CAT.shoes.map(function (s) { return opt(s.id, s.name, { shoes: s.id }, s.shaft ? 'legs' : 'feet', s.unlock === 'earned' || s.unlock === 'vip' ? s.unlock : null, sel.shoes === s.id); }).join('') + '</div><div class="sub">Shoe color</div>' + swatches(CLR, sel.shoesColor, 'shoesColor', true);
+      var selSh = byId(CAT.shoes, sel.shoes) || {};
+      h += tiered(CAT.shoes, function (s) { return opt(s.id, s.name, { shoes: s.id }, s.shaft ? 'legs' : 'feet', isFree(s) ? null : s.unlock, sel.shoes === s.id); });
+      h += selSh.fixed ? '<p class="fx">This piece has its own full-color design, so there is no color to pick.</p>' : '<div class="sub">Shoe color</div>' + swatches(CLR, sel.shoesColor, 'shoesColor', true);
     } else if (cat === 'hair') {
-      h += '<div class="sub">Style</div><div class="grid"><button class="opt' + (!sel.hair ? ' on' : '') + '" data-id=""><div class="th ld" data-th=\'' + JSON.stringify({ patch: { hair: null, hairColor: null }, region: 'head' }) + '\'></div><div class="nm">No hair</div></button>' + CAT.hair.styles.map(function (s) { return opt(s.id, s.name, { hair: s.id }, 'head', s.unlock === 'earned' || s.unlock === 'vip' ? s.unlock : null, sel.hair === s.id); }).join('') + '</div><div class="sub">Hair color</div>' + swatches(HC, sel.hairColor, 'hairColor', false);
+      h += '<div class="sub">Style</div>' + tiered(CAT.hair.styles, function (s) { return opt(s.id, s.name, { hair: s.id }, 'head', isFree(s) ? null : s.unlock, sel.hair === s.id); }, '<button class="opt' + (!sel.hair ? ' on' : '') + '" data-id=""><div class="th ld" data-th=\'' + JSON.stringify({ patch: { hair: null, hairColor: null }, region: 'head' }) + '\'></div><div class="nm">No hair</div></button>');
+      h += '<div class="sub">Hair color</div>' + swatches(HC, sel.hairColor, 'hairColor', false);
     } else if (cat === 'acc') {
-      h += '<div class="sub">Pick any (tap again to remove)</div><div class="grid">' + ITEMS.map(function (a) { var on = sel.acc.indexOf(a.id) >= 0; return opt(a.id, a.name, accPatch(a), regionFor(a), a.unlock === 'earned' || a.unlock === 'vip' ? a.unlock : null, on); }).join('') + '</div><div class="sub">Accessory color</div>' + swatches(AC, sel.accColor, 'accColor', false);
+      var anyTint = sel.acc.some(function (id) { var x = byId(ITEMS, id); return x && !x.full; });
+      h += '<div class="sub">Pick any (tap again to remove)</div>' + tiered(ITEMS, function (a) { var on = sel.acc.indexOf(a.id) >= 0; return opt(a.id, a.name, accPatch(a), regionFor(a), isFree(a) ? null : a.unlock, on); });
+      if (anyTint || !sel.acc.length) h += '<div class="sub">Accessory color <span class="subn">full-color pieces ignore this</span></div>' + swatches(AC, sel.accColor, 'accColor', false);
     } else if (cat === 'skin') {
       h += '<div class="sub">Skin tone</div>' + swatches(CAT.skin, sel.skin, 'skin', false) + '<div class="swn">' + (byId(CAT.skin, sel.skin) || {}).name + '</div>';
     } else if (cat === 'body') {

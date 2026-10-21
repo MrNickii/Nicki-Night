@@ -78,32 +78,37 @@
       '<div class="dg"><span>🔥</span><span>😍</span><span>👏</span><span>🥂</span><span>💃</span><span>✨</span></div>' +
       '<h4>What never shows</h4><p>Commands (anything starting with <b>!</b>), links, phone numbers, and any message the host has filtered. Those still appear in normal chat.</p>' },
 
-    { id: 'perks', ic: '⭐', t: 'VIP, Top 5 & unlocks', h:
-      '<h4>⭐ VIP lounge</h4><p>The host keeps a VIP list. If you\'re on it, you walk into the <b>VIP lounge</b> (upper right) with a gold VIP welcome, and you can wear the VIP-only pieces.</p>' +
-      '<h4>🏆 Top 5 stage</h4><p>When the host turns on Top 5, the <b>five people who chat the most</b> that night step onto the center stage with #1 to #5 badges and bigger moves. It counts messages, so keep chatting to climb. It starts fresh every show.</p>' +
-      '<h4>🔓 Unlocking looks</h4><p>Dance and chat to earn the locked pieces. By default that is <b>5 dances plus 20 messages</b>. Once earned they stay unlocked.</p>' },
+    { id: 'perks', ic: '⭐', t: 'Unlocks, VIP & Top 5', h:
+      '<h4>🔓 Unlocking looks</h4><p>Some pieces are locked 🔒. Each one has its <b>own challenge</b> that you complete <b>during the live</b>, and the locked piece shows a riddle that hints at what it takes. Some are quick, some take real effort, and a few are secret. Unlocks start fresh every live, so everyone begins equal.</p>' +
+      '<div class="tbl">' + row('!earned', 'Your progress and a riddle for what is left') + row('!earned @name', 'See how many pieces someone has unlocked') + row('!code word', 'Enter a secret code if Nicki or a host shares one') + '</div>' +
+      '<p class="tip">Tip: trying to wear a locked piece shows its riddle. Everything else in your command still works.</p>' +
+      '<h4>👗 Runway</h4><p>The host can call a <b>runway</b>. A few guests walk onto the stage and you <b>vote by typing their number</b> (1, 2, 3...). The most votes wins <b>BEST DRESSED</b>. Plain-number votes only count while voting is open.</p>' +
+      '<h4>⭐ VIP lounge</h4><p>The host keeps a VIP list. If you are on it, you walk into the <b>VIP lounge</b> (upper right) with a gold welcome and can wear the VIP-only pieces.</p>' +
+      '<h4>🏆 Top 5 stage</h4><p>When the host turns on Top 5, the <b>five people who chat the most</b> step onto the center stage with gold, silver, bronze and pink medals. It counts messages, so keep chatting to climb. It starts fresh every show.</p>' +
+      '<h4>🌙 Last call</h4><p>At the end the lights go warm, everyone heads out the door and a thank-you card shows the night\'s top dancers, top chatters, best dressed and crowd size.</p>' },
 
     { id: 'show', ic: '👑', t: 'Nicki & the show', h:
-      '<ul><li><b>Nicki\'s entrance:</b> when Nicki first chats, she walks the red carpet to her throne. Her messages show in gold.</li>' +
-      '<li><b>The screen and the DJ:</b> the big screen shows the live video, the DJ booth is on the upper left, and a <b>Now Playing</b> strip sits under the screen.</li>' +
-      '<li><b>Lights:</b> the host runs beams, lasers, sparkles, fog and color washes. The drop gets a short burst of strobe.</li>' +
-      '<li><b>Banners:</b> the host can flash big announcements across the room.</li></ul>' +
+      '<ul><li><b>Nicki\'s entrance:</b> when Nicki first chats, she walks the red carpet to her throne with a big light show. Her messages show in gold.</li>' +
+      '<li><b>The screen and the DJ:</b> the big screen shows the live video, the DJ booth is on the upper left, and a <b>Now Playing</b> bar sits under the screen. The club speakers move with the beat.</li>' +
+      '<li><b>Bartenders:</b> five bartenders work the two bars. Type <b>!bar</b> to head over and <b>!drink</b> to get served. Every so often there is a round on the house.</li>' +
+      '<li><b>Lights:</b> beams, lasers, sparkles, fog and color washes. The drop gets a short burst of strobe.</li>' +
+      '<li><b>Banners:</b> big announcements flash across the room: last call, runway, secret codes and more.</li></ul>' +
       '<p class="tip">Heads up: the lights can flash. The host keeps strobe limited, but take care if flashing lights bother you.</p>' },
 
     { id: 'cheat', ic: '📋', t: 'All commands', h:
       '<div class="tbl">' +
       row('!enter', 'Join the club') + row('!leave', 'Leave the club') + row('!look …', 'Change what you wear') + row('!dance [name]', 'Dance, random or by name') +
       row('!bar', 'Go to a bar') + row('!floor', 'Back to the dance floor') + row('!drink [kind]', 'New drink (martini, shot, beer, cocktail, champagne, wine)') +
-      row('!cheers', 'Raise your glass') + '</div>' +
-      '<h4>Host and mod only</h4><div class="tbl">' + row('!vip @name', 'Add to the VIP list') + row('!unvip @name', 'Remove from VIP') + row('!top5 on', 'Top 5 stage on or off') + row('!np Artist - Song', 'Update Now Playing') + row('!light party', 'Light moods and effects') + '</div>' },
+      row('!cheers', 'Raise your glass') + row('!earned', 'Your unlock progress and a hint') + row('!earned @name', 'See what someone has unlocked') + row('!code word', 'Enter a secret code') + row('1 2 3 …', 'Vote by number when a runway is open') + '</div>' +
+      '<h4>Host and mod only</h4><div class="tbl">' + row('!vip @name', 'Add to the VIP list') + row('!unvip @name', 'Remove from VIP') + row('!top5 on', 'Top 5 stage on or off') + row('!np Artist - Song', 'Update Now Playing') + row('!light party', 'Light moods and effects') + row('!runway [n]', 'Start a best-dressed vote') + '</div>' },
 
     { id: 'faq', ic: '❓', t: 'Questions', h:
       '<details><summary>I typed !enter and nothing happened</summary><p>Make sure you typed it in the <b>live stream chat</b> (X, TikTok or Kick) while the show is on, and that it starts with the exclamation mark. If the club is completely full you\'ll appear as soon as a spot opens and you keep chatting.</p></details>' +
       '<details><summary>My face is a letter, not my picture</summary><p>Your platform didn\'t share your profile picture. Kick can\'t. Your initial shows instead.</p></details>' +
-      '<details><summary>It says a piece of my look is locked</summary><p>That piece is earned (dances and chats), VIP only, or Nicki only. Everything else in your command still goes through.</p></details>' +
+      '<details><summary>It says a piece of my look is locked</summary><p>That piece has to be earned during the live, is VIP only, or is Nicki only. Read the riddle, it hints at how. Everything else in your command still goes through.</p></details>' +
       '<details><summary>My bubble didn\'t show</summary><p>In a packed club only the front half gets bubbles. Commands, links and filtered words never show.</p></details>' +
       '<details><summary>I got moved to the back</summary><p>You were quiet for about 5 minutes. Chat again and you\'ll move up.</p></details>' +
-      '<details><summary>Will it remember my look?</summary><p>Yes. Your look, dance and unlocks are remembered between shows.</p></details>' +
+      '<details><summary>Will it remember my look?</summary><p>Yes. Your look and dance are remembered. Unlocks are earned fresh each live.</p></details>' +
       '<details><summary>Can I change my look while I\'m in?</summary><p>Any time. Paste a new <b>!look</b> command and your character updates on the spot.</p></details>' }
   ];
 

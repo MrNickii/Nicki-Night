@@ -18,7 +18,8 @@ body.preview { background: #05020a; }
 .p .in2 { position: relative; }
 .p.walk .av * { animation-play-state: paused !important; }
 @keyframes step { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-7px) rotate(1.5deg); } }
-.pill { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 4px); white-space: nowrap; box-sizing: border-box; border: .62em solid transparent; border-image: url(vnn/ui/tag.png) 32 fill / .62em stretch; padding: .02em .5em; background: none; font: 700 15px/1.15 system-ui, Arial, sans-serif; color: #fff; text-shadow: 0 0 6px rgba(255,79,176,.8); filter: drop-shadow(0 0 5px rgba(255,79,176,.8)) drop-shadow(0 0 12px rgba(255,79,176,.4)); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 5; }
+.pill { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 4px); white-space: nowrap; box-sizing: border-box; border: .62em solid transparent; border-image: url(vnn/ui/tag.png) 32 fill / .62em stretch; padding: .02em .5em; background: none; font: 700 15px/1.15 system-ui, Arial, sans-serif; color: #fff; text-shadow: 0 0 6px rgba(255,79,176,.8); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 5; }
+.pill.show { filter: drop-shadow(0 0 5px rgba(255,79,176,.8)) drop-shadow(0 0 12px rgba(255,79,176,.4)); }
 .pill.show { opacity: 1; transform: translate(-50%, -2px); }
 .pill.gold { border-color: var(--gold); color: var(--gold); }
 /* ---- chat bubbles ---- */
@@ -51,6 +52,8 @@ body.preview { background: #05020a; }
 #cmd { position: absolute; display: flex; align-items: center; justify-content: center; gap: 18px; background: linear-gradient(90deg, rgba(18,10,27,.0), rgba(18,10,27,.88) 12%, rgba(18,10,27,.88) 88%, rgba(18,10,27,0)); font: 700 26px/1 "Arial Black", system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; }
 #cmd b { color: var(--pink); }
 #cmd span { transition: opacity .4s; }
+#spk { position: absolute; inset: 0; pointer-events: none; }
+#spk img { position: absolute; transform-origin: 50% 100%; will-change: transform; filter: drop-shadow(0 0 8px rgba(255,79,176,.55)); }
 #recap { z-index: 30000; position: absolute; left: 410px; top: 436px; width: 1100px; height: 642px; box-sizing: border-box; padding: 74px 100px 70px; display: flex; flex-direction: column; justify-content: center; background: url(vnn/ui/card.png) 0 0 / 100% 100% no-repeat; filter: drop-shadow(0 0 18px rgba(255,79,176,.8)) drop-shadow(0 0 50px rgba(255,79,176,.5)) drop-shadow(0 0 90px rgba(255,216,107,.25)); color: #fff; text-align: center; opacity: 0; transform: translateY(14px) scale(.97); transition: opacity .8s, transform .8s; pointer-events: none; font-family: system-ui, Arial, sans-serif; }
 #recap.show { opacity: 1; transform: none; }
 #recap .rct { font: 900 54px/1 "Arial Black", system-ui; letter-spacing: .06em; text-shadow: 0 0 24px #ff4fb0, 0 0 50px #ff4fb0; margin-bottom: 26px; }
@@ -82,7 +85,7 @@ body.preview { background: #05020a; }
 #banner.show { opacity: 1; transform: scale(1); animation: bpulse 1.8s ease-in-out infinite; }
 #banner.show::after { animation: bshine 2.4s ease-in-out .3s infinite; }
 @keyframes bshine { 0% { background-position: -150% 0; } 60%, 100% { background-position: 250% 0; } }
-@keyframes bpulse { 0%, 100% { filter: drop-shadow(0 0 14px rgba(255,79,176,.85)) drop-shadow(0 0 38px rgba(255,79,176,.55)) drop-shadow(0 0 70px rgba(255,216,107,.25)); } 50% { filter: drop-shadow(0 0 22px rgba(255,79,176,1)) drop-shadow(0 0 54px rgba(255,79,176,.75)) drop-shadow(0 0 90px rgba(255,216,107,.4)); } }
+@keyframes bpulse { 0%, 100% { opacity: 1; } 50% { opacity: .86; } }
 #banner small { display: block; margin-top: 9px; font: 700 17px/1 system-ui, Arial, sans-serif; color: var(--gold); text-shadow: 0 0 10px rgba(255,216,107,.6); letter-spacing: .14em; white-space: nowrap; }
 #glows { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; transition: opacity .8s; }
 #glows i { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); animation: glo var(--t, 4s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
@@ -200,6 +203,7 @@ body.pan #panel { display: block; }
   <svg id="led" viewBox="0 0 1920 1080"></svg>
   <div id="fog"><i></i><i></i><i></i></div>
   <div id="stagefx"></div>
+  <div id="spk"></div>
   <div id="crowd"></div>
   <div id="badge"></div>
   <div id="wash"></div>
