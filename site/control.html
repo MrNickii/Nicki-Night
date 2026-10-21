@@ -49,6 +49,17 @@ iframe#sty{width:100%;height:calc(100vh - 330px);min-height:620px;border:1px sol
 pre#log{background:#0e0416;border-radius:12px;padding:10px;font-size:12px;max-height:200px;overflow:auto;color:#cdb;white-space:pre-wrap;margin:0}
 .big{font-size:34px;font-weight:800;line-height:1}.stat{text-align:center;background:var(--card2);border-radius:14px;padding:12px 6px}.stat span{display:block;font-size:12px;color:var(--dim);margin-top:4px}
 @media (min-width:900px){.grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}}
+
+.jump{position:sticky;top:-14px;z-index:5;margin:-14px -14px 12px;padding:10px 14px;background:linear-gradient(180deg,#14061f 70%,#14061f00);display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.jump::-webkit-scrollbar{display:none}
+.jump button{flex:none;border:1px solid var(--line);background:var(--card2);color:var(--txt);border-radius:99px;padding:9px 14px;font-size:14px;font-weight:700;min-height:40px;white-space:nowrap}
+.jump button:active{background:#3a1d54}.jump button.all{background:none;color:var(--dim)}
+.card>h2{cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;margin:0}
+.card>h2::after{content:"\25BE";font-size:16px;color:var(--dim);transition:transform .15s}
+.card:not(.cl)>h2{margin-bottom:10px}
+.card.cl>h2::after{transform:rotate(-90deg)}
+.card.cl>*:not(h2){display:none}
+.card.flash{box-shadow:0 0 0 2px var(--pink),0 0 22px #ff2f9e88}
 </style></head><body>
 <div id="pin" style="position:fixed;inset:0;z-index:99999;background:#14061f;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#fff;font:600 18px system-ui"><div style="font:900 22px system-ui;letter-spacing:.08em">NICKI NIGHT CONTROL</div><input id="pinin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" style="font:700 28px system-ui;text-align:center;width:220px;padding:12px;border-radius:14px;border:2px solid #ff4fb0;background:#1e1230;color:#fff;letter-spacing:.3em"><button id="pinbtn" style="font:800 18px system-ui;padding:12px 34px;border-radius:14px;border:0;background:#ff4fb0;color:#fff">Unlock</button><div id="pinmsg" style="color:#ff8ad0;min-height:22px"></div></div>
 <script>(function(){var H='fc97275e3a4221bf48abec981a60b96422fd39fa9c0a0e2b3404db4e18a390be',g=document.getElementById('pin');function ok(){g.remove();document.documentElement.classList.add('pinok')}
@@ -64,21 +75,21 @@ document.getElementById('pinbtn').onclick=go;document.getElementById('pinin').on
 <main>
 <section class="tab on" id="t-show">
  <div class="card"><h2>Nicki</h2><div class="grid g3"><button class="b go" data-c="nicki.rehearse">Rehearse entrance</button><button class="b" data-c="nicki.out">Walks out</button><button class="b warn" data-c="show.new">New show<small>resets counts</small></button></div><p class="note" id="nstat"></p></div>
- <div class="card"><h2>Speakers</h2><p class="note" style="margin-top:0">The club speakers thump with the beat. Set the BPM in Lights to match the DJ.</p><div class="row"><label><input type="checkbox" id="spkon" checked> Speakers move</label></div><label class="l">How much they move</label><input type="range" id="spkamt" min="0" max="150" value="70" style="width:100%"></div>
- <div class="card"><h2>Secret codes</h2><p class="note" style="margin-top:0">Each code unlocks one special piece for anyone who types it. Say the word on stream when you want, then press Reveal. It also pops up on screen.</p><div id="codes"></div></div>
- <div class="card"><h2>Close the club</h2><p class="note" style="margin-top:0">Last call, then everyone walks out, then a thank-you card with the night's top dancers, top chatters, best dressed and crowd size.</p><label class="l">Message on the card</label><input type="text" id="clmsg" placeholder="Thanks for coming! Follow @yourhandle"><div class="row" style="margin-top:8px"><select id="cls"><option value="15">Last call 15s</option><option value="30" selected>Last call 30s</option><option value="60">Last call 60s</option></select></div><button class="b warn" id="clgo" style="width:100%;margin-top:8px">Close the club</button><button class="b" id="clre" style="width:100%;margin-top:8px">Cancel / hide card</button><p class="note" id="clst"></p></div>
+ <div class="card"><h2>Shout to the room</h2><div class="row"><input type="text" id="bn" placeholder="Big text (e.g. DRINK SPECIAL)"><input type="text" id="bs" placeholder="Small text"></div><button class="b go" id="bnsend" style="width:100%">Show banner</button></div>
  <div class="card"><h2>Runway</h2><p class="note" style="margin-top:0">Picks people on the floor to walk onto the stage. Chat votes for best dressed by typing a number. Winner gets the spotlight.</p><div class="row"><select id="rwn"><option value="3">3 people</option><option value="4" selected>4 people</option><option value="5">5 people</option></select><select id="rws"><option value="20">Vote 20s</option><option value="30" selected>Vote 30s</option><option value="45">Vote 45s</option></select></div><button class="b go" id="rwgo" style="width:100%;margin-top:8px">Start runway</button><button class="b bad" id="rwstop" style="width:100%;margin-top:8px">Stop runway</button><p class="note" id="rwst"></p></div>
- <div class="card"><h2>City window</h2><button class="b" id="citytog" style="width:100%">Live city window</button><button class="b go" id="cityfx" style="width:100%;margin-top:8px">Fireworks over the city</button><p class="note">Lights twinkle, cars and boats move and fireworks pop in the round window.</p></div>
- <div class="card"><h2>Chat bubbles</h2><button class="b" id="bubtog" style="width:100%">Chat bubbles</button><button class="b" id="emotog" style="width:100%;margin-top:8px">Emoji pop-ups</button><p class="note">Each chat shows above that person's character, in their own color with their name, and they step forward and glow while it's up. Quiet club: everyone gets one and it stays longer. Busy club: shorter and smaller. Packed club: front half of the room only (VIPs and Nicki always show), newest first. A message that is only emoji shoots up from the character instead. Commands (like !dance) never make a bubble.</p></div>
  <div class="card"><h2>Top 5 stage</h2><button class="b" id="top5" style="width:100%">Top 5 chatters dance in the middle</button><div id="toplist" class="note"></div></div>
  <div class="card"><h2>Now playing</h2><div class="row"><input type="text" id="npa" placeholder="Artist"><input type="text" id="npt" placeholder="Song"></div><div class="row"><button class="b go" id="npset">Show it</button><button class="b" id="npclr">Clear</button></div></div>
- <div class="card"><h2>Shout to the room</h2><div class="row"><input type="text" id="bn" placeholder="Big text (e.g. DRINK SPECIAL)"><input type="text" id="bs" placeholder="Small text"></div><button class="b go" id="bnsend" style="width:100%">Show banner</button></div>
+ <div class="card"><h2>Secret codes</h2><p class="note" style="margin-top:0">Each code unlocks one special piece for anyone who types it. Say the word on stream when you want, then press Reveal. It also pops up on screen.</p><div id="codes"></div></div>
+ <div class="card"><h2>Close the club</h2><p class="note" style="margin-top:0">Last call, then everyone walks out, then a thank-you card with the night's top dancers, top chatters, best dressed and crowd size.</p><label class="l">Message on the card</label><input type="text" id="clmsg" placeholder="Thanks for coming! Follow @yourhandle"><div class="row" style="margin-top:8px"><select id="cls"><option value="15">Last call 15s</option><option value="30" selected>Last call 30s</option><option value="60">Last call 60s</option></select></div><button class="b warn" id="clgo" style="width:100%;margin-top:8px">Close the club</button><button class="b" id="clre" style="width:100%;margin-top:8px">Cancel / hide card</button><p class="note" id="clst"></p></div>
 </section>
 <section class="tab" id="t-light">
  <div class="card"><h2>Moods</h2><div class="grid" id="presets"></div></div>
  <div class="card"><h2>Effects</h2><div class="grid" id="fx"></div><p class="note">Strobe is capped at 3 flashes a second.</p></div>
  <div class="card"><h2>Color wash</h2><div class="grid" id="washes"></div></div>
  <div class="card"><h2>Intensity &amp; tempo</h2><label class="l">Intensity</label><input type="range" id="inten" min="10" max="100"><div class="row"><div><label class="l">BPM</label><input type="number" id="bpm" min="60" max="200"></div><button class="b fit" id="tap" style="min-width:140px;margin-top:22px">Tap tempo</button></div></div>
+ <div class="card"><h2>Speakers</h2><p class="note" style="margin-top:0">The club speakers thump with the beat. Set the BPM in Lights to match the DJ.</p><div class="row"><label><input type="checkbox" id="spkon" checked> Speakers move</label></div><label class="l">How much they move</label><input type="range" id="spkamt" min="0" max="150" value="70" style="width:100%"></div>
+ <div class="card"><h2>City window</h2><button class="b" id="citytog" style="width:100%">Live city window</button><button class="b go" id="cityfx" style="width:100%;margin-top:8px">Fireworks over the city</button><p class="note">Lights twinkle, cars and boats move and fireworks pop in the round window.</p></div>
+ <div class="card"><h2>Chat bubbles</h2><button class="b" id="bubtog" style="width:100%">Chat bubbles</button><button class="b" id="emotog" style="width:100%;margin-top:8px">Emoji pop-ups</button><p class="note">Each chat shows above that person's character, in their own color with their name, and they step forward and glow while it's up. Quiet club: everyone gets one and it stays longer. Busy club: shorter and smaller. Packed club: front half of the room only (VIPs and Nicki always show), newest first. A message that is only emoji shoots up from the character instead. Commands (like !dance) never make a bubble.</p></div>
 </section>
 <section class="tab" id="t-crowd">
  <div class="card"><h2>Who is in</h2><div class="grid g3" id="stats"></div><label class="l" style="margin-top:12px">Avatar size</label><input type="range" id="scale" min="50" max="130"></div>
@@ -120,7 +131,7 @@ document.getElementById('pinbtn').onclick=go;document.getElementById('pinin').on
  <div class="card"><h2>Overlay log</h2><pre id="log"></pre></div>
 </section>
 </main>
-<nav id="nav"><button data-t="show" class="on"><i>🎤</i>Show</button><button data-t="light"><i>💡</i>Lights</button><button data-t="crowd"><i>👥</i>Crowd</button><button data-t="look"><i>👗</i>Looks</button><button data-t="test"><i>🧪</i>Test</button><button data-t="set"><i>⚙️</i>Setup</button></nav>
+<nav id="nav"><button data-t="show" class="on"><i>🎤</i>Show</button><button data-t="light"><i>💡</i>Room</button><button data-t="crowd"><i>👥</i>Crowd</button><button data-t="look"><i>👗</i>Looks</button><button data-t="test"><i>🧪</i>Test</button><button data-t="set"><i>⚙️</i>Setup</button></nav>
 <div class="sheet" id="sheet"><div id="sheetin"></div></div><div id="toast"></div>
 <script>
 (function(){
@@ -247,5 +258,25 @@ function render(){paint();if(!st)return;
  if(document.activeElement!==$('vips'))$('vips').value=st.vip.join('\n');if(document.activeElement!==$('mods'))$('mods').value=st.mods.map(function(m){return '@'+m}).join('\n');
  setv('needd',st.need.d);setv('needc',st.need.c);setv('maxs',st.maxOn);$('log').textContent=st.log.join('\n')}
 if(window.navigator.standalone===undefined){}start();render();
+})();
+
+(function(){
+var DEF={'t-set':1,'t-test':1};var KEEP={'Act as a viewer':0,'Demo reel':0};
+function slug(t){return t.toLowerCase().replace(/&amp;|[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function ls(k,d){try{var v=localStorage.getItem('vnnctl_cl_'+k);return v==null?d:v==='1'}catch(e){return d}}
+function ss(k,v){try{localStorage.setItem('vnnctl_cl_'+k,v?'1':'0')}catch(e){}}
+var main=document.querySelector('main');
+Array.prototype.forEach.call(document.querySelectorAll('section.tab'),function(sec){
+ var cards=sec.querySelectorAll(':scope>.card');if(cards.length<3||sec.id==='t-look')return;
+ var bar=document.createElement('div');bar.className='jump';
+ Array.prototype.forEach.call(cards,function(c){var h=c.querySelector(':scope>h2');if(!h)return;var name=h.textContent.trim();var id=sec.id+'-'+slug(h.innerHTML);c.id=id;
+  var def=DEF[sec.id]?!(name in KEEP):false;if(sec.id==='t-light'&&/Speakers|City window|Chat bubbles/.test(name))def=true;
+  if(ls(id,def))c.classList.add('cl');
+  h.onclick=function(){c.classList.toggle('cl');ss(id,c.classList.contains('cl'))};
+  var b=document.createElement('button');b.textContent=name.replace(/&/g,'&').replace(/\(.*\)/,'').trim();
+  b.onclick=function(){c.classList.remove('cl');ss(id,false);c.scrollIntoView({behavior:'smooth',block:'start'});c.classList.add('flash');setTimeout(function(){c.classList.remove('flash')},1200)};bar.appendChild(b)});
+ var all=document.createElement('button');all.className='all';all.textContent='Fold all';
+ all.onclick=function(){var open=sec.querySelectorAll(':scope>.card:not(.cl)').length>0;Array.prototype.forEach.call(cards,function(c){c.classList.toggle('cl',open);if(c.id)ss(c.id,open)});all.textContent=open?'Open all':'Fold all'};
+ bar.appendChild(all);sec.insertBefore(bar,sec.firstChild)});
 })();
 </script></body></html>
