@@ -26,6 +26,7 @@
   /* ---------- saved state ---------- */
   var S = { session: '__SESSION__', ws: '', vip: [], mods: ['kildadj_', 'mrnicki'], room: null, need: { d: 5, c: 20 }, maxOn: 400, top5: false, np: { a: '', t: '' }, npUrl: '', nickiDone: false, users: {}, light: null, bg: true, bub: { on: true, words: [], emoji: true } };
   try { var raw = localStorage.getItem(KEY); if (raw) { var sv = JSON.parse(raw); Object.keys(sv).forEach(function (k) { S[k] = sv[k]; }); } } catch (e) {}
+  S.blocked = S.blocked || {}; S.nophoto = S.nophoto || {}; var lastMsg = 0;
   S.bub = Object.assign({ on: true, words: [], emoji: true }, S.bub || {}); if (!Array.isArray(S.bub.words)) S.bub.words = [];
   if (Q.get('session')) S.session = Q.get('session');
   if (Q.get('ws')) S.ws = Q.get('ws');
@@ -158,6 +159,7 @@
   function norm(s) { return String(s || '').toLowerCase().replace(/^@/, '').replace(/\s+/g, '').trim(); }
   function blankLook() { return { body: null, top: null, topColor: null, bottom: null, bottomColor: null, shoes: null, shoesColor: null, height: null, hair: null, hairColor: null, skin: null, acc: [], accColor: null }; }
   function newUser(key, name, plat, photo) {
+    if (S.nophoto && S.nophoto[key]) photo = null;
     var h = hash(key), u = users[key];
     if (!u) {
       var sv = S.users && S.users[key];
@@ -1012,6 +1014,8 @@
     var plat = platOf(m.type || m.source || m.platform), photo = m.chatimg || m.userimg || m.avatar || null;
     var hnd = norm(m.userid || m.chatname), alt = norm(m.chatname);
     var key = plat + ':' + hnd;
+    if (S.blocked[key] || (alt && S.blocked[plat + ':' + alt])) return;
+    lastMsg = Date.now();
     log((plat + ' | ' + (m.userid || '-') + ' | ' + (m.chatname || '-') + ' | ' + text).slice(0, 160));
     var u = newUser(key, name || id, plat, photo); u.hnd = hnd; u.alt = alt;
     /* X handles can arrive as userid or as chatname; match the special lists on either */
@@ -1295,6 +1299,16 @@
     'mods.set': function (a) { S.mods = (a.list || []).map(norm).filter(Boolean); vipUI(); save(); },
     rules: function (a) { S.need = { d: Math.max(0, Number(a.d) || 0), c: Math.max(0, Number(a.c) || 0) }; S.maxOn = Math.max(100, Number(a.max) || 400); save(); relayout(); },
     scale: function (a) { R.scale = Math.max(0.5, Math.min(1.3, a.v / 100)); placeFixed(); relayout(); save(); },
+    'mod.photo': function (a) {
+      var u = rcFind(a); if (!u) throw new Error('not found');
+      if (a.hide) { S.nophoto[u.key] = u.name || 1; u.photo = null; u.pimg = null; u._pl = 0; u.photoBad = 0; } else { delete S.nophoto[u.key]; }
+      u.dirty = 1; save();
+    },
+    'mod.block': function (a) {
+      var k = a.key; if (!k) throw new Error('no user');
+      if (a.on === false) { delete S.blocked[k]; save(); return; }
+      var u = users[k]; S.blocked[k] = (u && u.name) || a.n || k; if (u) leave(u); save();
+    },
     'user.kick': function (a) { var u = rcFind(a); if (!u) throw new Error('not found'); leave(u); },
     'user.bar': function (a) { var u = rcFind(a); if (!u) throw new Error('not found'); u.atBar = true; seat(u, false); },
     'user.floor': function (a) { var u = rcFind(a); if (!u) throw new Error('not found'); u.atBar = false; seat(u, false); },
@@ -1328,11 +1342,11 @@
   function rcZone(u) { return u.stage && S.top5 ? 'stage' : (u.atBar ? 'bar' : (u.vip && !isNicki(u) ? 'vip' : 'floor')); }
   function rcSnap(force) {
     var cnt = { total: 0, floor: 0, bar: 0, vip: 0, stage: 0 }, people = [];
-    order.forEach(function (k) { var u = users[k]; if (!u || !u.inside) return; cnt.total++; var z = rcZone(u); cnt[z]++; people.push({ k: u.key, n: u.name, p: u.plat, h: u.hnd, z: z, c: u.chats, d: u.dances, v: !!u.vip, e: !!isEarned(u), nk: isNicki(u), la: u.lastActive || 0 }); });
+    order.forEach(function (k) { var u = users[k]; if (!u || !u.inside) return; cnt.total++; var z = rcZone(u); cnt[z]++; people.push({ np: !!S.nophoto[u.key], ph: !!u.photo, k: u.key, n: u.name, p: u.plat, h: u.hnd, z: z, c: u.chats, d: u.dances, v: !!u.vip, e: !!isEarned(u), nk: isNicki(u), la: u.lastActive || 0 }); });
     people.sort(function (a, b) { return b.la - a.la; });
     var top = []; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.stage && S.top5) top[u.rank || 0] = { n: u.name, s: u.show }; });
     var L = {}; Object.keys(LT).forEach(function (k) { if (k.charAt(0) !== '_') L[k] = LT[k]; });
-    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
+    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
     var sig = JSON.stringify(snap); if (!force && sig === RC.lastSnap) return; RC.lastSnap = sig; rcSend(snap);
   }
   function rcStart() {
