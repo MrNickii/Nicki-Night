@@ -57,6 +57,7 @@ pre#log{background:#0e0416;border-radius:12px;padding:10px;font-size:12px;max-he
 <main>
 <section class="tab on" id="t-show">
  <div class="card"><h2>Nicki</h2><div class="grid g3"><button class="b go" data-c="nicki.rehearse">Rehearse entrance</button><button class="b" data-c="nicki.out">Walks out</button><button class="b warn" data-c="show.new">New show<small>resets counts</small></button></div><p class="note" id="nstat"></p></div>
+ <div class="card"><h2>City window</h2><button class="b" id="citytog" style="width:100%">Live city window</button><button class="b go" id="cityfx" style="width:100%;margin-top:8px">Fireworks over the city</button><p class="note">Lights twinkle, cars and boats move and fireworks pop in the round window.</p></div>
  <div class="card"><h2>Chat bubbles</h2><button class="b" id="bubtog" style="width:100%">Chat bubbles</button><button class="b" id="emotog" style="width:100%;margin-top:8px">Emoji pop-ups</button><p class="note">Each chat shows above that person's character, in their own color with their name, and they step forward and glow while it's up. Quiet club: everyone gets one and it stays longer. Busy club: shorter and smaller. Packed club: front half of the room only (VIPs and Nicki always show), newest first. A message that is only emoji shoots up from the character instead. Commands (like !dance) never make a bubble.</p></div>
  <div class="card"><h2>Top 5 stage</h2><button class="b" id="top5" style="width:100%">Top 5 chatters dance in the middle</button><div id="toplist" class="note"></div></div>
  <div class="card"><h2>Now playing</h2><div class="row"><input type="text" id="npa" placeholder="Artist"><input type="text" id="npt" placeholder="Song"></div><div class="row"><button class="b go" id="npset">Show it</button><button class="b" id="npclr">Clear</button></div></div>
@@ -151,7 +152,7 @@ var it;$('inten').oninput=function(){clearTimeout(it);var v=+this.value;it=setTi
 var taps=[];$('tap').onclick=function(){var n=Date.now();taps=taps.filter(function(t){return n-t<2500});taps.push(n);if(taps.length>2){var av=(taps[taps.length-1]-taps[0])/(taps.length-1),b=Math.max(60,Math.min(200,Math.round(60000/av)));$('bpm').value=b;cmd('bpm',{v:b})}else toast('Keep tapping')};
 /* show */
 $('top5').onclick=function(){cmd('top5',{on:!(st&&st.top5)})};
-$('bubtog').onclick=function(){cmd('bub.set',{on:!(st&&st.bub&&st.bub.on)})};
+$('citytog').onclick=function(){cmd('city.set',{on:!(st&&st.city!==false)})};$('cityfx').onclick=function(){cmd('city.fire',{n:3}).then(function(r){if(r.ok)toast('Fireworks!','ok')})};$('bubtog').onclick=function(){cmd('bub.set',{on:!(st&&st.bub&&st.bub.on)})};
 $('emotog').onclick=function(){cmd('bub.set',{emoji:!(st&&st.bub&&st.bub.emoji)})};
 $('bubsave').onclick=function(){cmd('bub.set',{words:$('bubw').value}).then(function(r){if(r.ok)toast('Blocked words saved','ok')})};
 $('npset').onclick=function(){cmd('np',{a:$('npa').value,t:$('npt').value}).then(function(r){if(r.ok)toast('Now playing updated','ok')})};$('npclr').onclick=function(){$('npa').value='';$('npt').value='';cmd('np',{a:'',t:''})};
@@ -214,6 +215,7 @@ $('ssend').onclick=function(){cmd('chat',{h:$('sh').value||'@tester',m:$('sm').v
 var sticky={};function setv(id,v){var e=$(id);if(document.activeElement!==e)e.value=v}
 function render(){paint();if(!st)return;
  $('chips').innerHTML='<span class="chip"><b>'+st.cnt.total+'</b> inside</span><span class="chip">Floor <b>'+st.cnt.floor+'</b></span><span class="chip">Bar <b>'+st.cnt.bar+'</b></span><span class="chip">VIP <b>'+st.cnt.vip+'</b></span>';
+ if(st.city!==undefined){var cy=st.city!==false;$('citytog').classList.toggle('on',cy);$('citytog').textContent=cy?'Live city is ON (tap to stop)':'Live city is OFF (tap to start)'}
  if(st.bub){$('bubtog').classList.toggle('on',!!st.bub.on);$('bubtog').textContent=st.bub.on?'Chat bubbles are ON (tap to stop)':'Chat bubbles are OFF (tap to start)';$('emotog').classList.toggle('on',!!st.bub.emoji);$('emotog').textContent=st.bub.emoji?'Emoji pop-ups are ON (tap to stop)':'Emoji pop-ups are OFF (tap to start)';setv('bubw',(st.bub.words||[]).join('\n'))}
  $('top5').classList.toggle('on',st.top5);$('top5').textContent=st.top5?'Top 5 is ON (tap to stop)':'Top 5 chatters dance in the middle';
  $('toplist').textContent=st.top5&&st.top.length?st.top.map(function(t,i){return '#'+(i+1)+' '+t.n+' ('+t.s+')'}).join('  ·  '):'';

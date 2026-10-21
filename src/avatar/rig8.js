@@ -274,6 +274,43 @@ var RIG = (function () {
     var u = ((t / beat + (o.ph || 0)) / c.cb) % 1; if (u < 0) u += 1;
     return sample(CL[name] ? name : 'salsa', u, name === 'idle' ? 0.3 : A);
   }
+  /* ---- procedural walk: any phase, any facing; same pose format as sample() so figure() draws it unchanged ---- */
+  var WK = { L1: 0.5075, L2: 0.530, TOE: 0.145, HW: 0.216, UA: 0.367, FA: 0.361, ANK: 0.105 };
+  function wrapA(a) { a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; }
+  function walkPose(ph, yaw, k) {
+    k = k == null ? 1 : k; var a = ph * 2 * Math.PI, J = new Float32Array(57), sy = Math.sin(yaw), cyw = Math.cos(yaw);
+    function leg(phi) {
+      var th = 0.46 * k * Math.sin(phi + 0.3) + 0.04;
+      var d1 = wrapA(phi + 0.25), d2 = wrapA(phi - 1.9);
+      var kn = 0.09 + 0.8 * k * Math.exp(-d1 * d1 / (2 * 0.6 * 0.6)) + 0.2 * k * Math.exp(-d2 * d2 / (2 * 0.4 * 0.4));
+      var ko = th - kn, kf = WK.L1 * Math.sin(th), ky = -WK.L1 * Math.cos(th), af = kf + WK.L2 * Math.sin(ko), ay = ky - WK.L2 * Math.cos(ko);
+      var hs = Math.max(0, Math.cos(phi - 1.27)), to = Math.max(0, Math.cos(phi - 4.41 - 0.25)), pitch = 0.62 - 0.4 * hs * hs + 0.45 * to * to;
+      return { kf: kf, ky: ky, af: af, ay: ay, tf: af + WK.TOE * Math.cos(pitch), ty: ay - WK.TOE * Math.sin(pitch) };
+    }
+    var L = leg(a), R = leg(a + Math.PI), drop = Math.max(-L.ay, -R.ay), cy = drop + WK.ANK;
+    var pyaw = -0.1 * k * Math.sin(a + 0.3), syaw = 0.15 * k * Math.sin(a + 0.3), lean = 0.07, bob = 0;
+    function put(i, x, y, z) { /* x lateral, y up, z forward -> yaw about the hip centre */ J[i * 3] = x * cyw + z * sy; J[i * 3 + 1] = y; J[i * 3 + 2] = -x * sy + z * cyw; }
+    function rotx(x, z, t) { return [x * Math.cos(t) + z * Math.sin(t), -x * Math.sin(t) + z * Math.cos(t)]; }
+    var hw = WK.HW / 2, hl = rotx(hw, 0, pyaw), hr = rotx(-hw, 0, pyaw);
+    put(0, 0, cy + 0.13, 0);
+    put(1, hl[0], cy, hl[1]); put(2, hl[0] + 0, cy + L.ky, hl[1] + L.kf); put(3, hl[0], cy + L.ay, hl[1] + L.af); put(4, hl[0], cy + L.ty, hl[1] + L.tf);
+    put(5, hr[0], cy, hr[1]); put(6, hr[0], cy + R.ky, hr[1] + R.kf); put(7, hr[0], cy + R.ay, hr[1] + R.af); put(8, hr[0], cy + R.ty, hr[1] + R.tf);
+    function up(h) { return [h * Math.sin(lean), cy + h * Math.cos(lean)]; }
+    var sp = up(0.289), s1 = up(0.445), hd = up(0.70), sh = up(0.53), sl = rotx(0.235, 0, syaw), sr = rotx(-0.235, 0, syaw);
+    put(9, 0, sp[1], sp[0]); put(10, 0, s1[1], s1[0]); put(11, 0, s1[1], s1[0]); put(12, 0, hd[1], hd[0]);
+    function arm(base, ang, out, i0) {
+      var f1 = ang, f2 = ang + 0.16 + 0.4 * Math.max(0, ang / 0.32) * k;
+      var ef = base[1] + WK.UA * Math.sin(f1), ey = sh[1] - WK.UA * Math.cos(f1), wf = ef + WK.FA * Math.sin(f2), wy = ey - WK.FA * Math.cos(f2);
+      put(i0, base[0], sh[1], base[1] + sh[0]); put(i0 + 1, base[0] + out * 0.02, ey, ef + sh[0]); put(i0 + 2, base[0] + out * 0.03, wy, wf + sh[0]);
+    }
+    arm(sl, -0.32 * k * Math.sin(a + 0.3), 1, 13); arm(sr, 0.32 * k * Math.sin(a + 0.3), -1, 16);
+    return { j: J, aRest: WK.ANK };
+  }
+  function mixPose(A, B, w) {
+    if (w <= 0) return A; if (w >= 1) return B;
+    var n = A.j.length, o = new Float32Array(n), i; for (i = 0; i < n; i++) o[i] = A.j[i] + (B.j[i] - A.j[i]) * w;
+    return { j: o, aRest: A.aRest + (B.aRest - A.aRest) * w };
+  }
   CL.idle = null;
-  return { load: load, mkPart: mkPart, use: use, CFG: CFG, figure: figure, pose: pose, CL: CL, DANCES: ['idle','hh1','hh2','hh3','hh4','hh5','hh6','bboy','twerk','snake'], LOOPB: function (n) { return (CL[n] || CL.salsa).cb; }, H: 1700, FEET: 810 };
+  return { load: load, mkPart: mkPart, use: use, CFG: CFG, figure: figure, pose: pose, walkPose: walkPose, mixPose: mixPose, CL: CL, DANCES: ['idle','hh1','hh2','hh3','hh4','hh5','hh6','bboy','twerk','snake'], LOOPB: function (n) { return (CL[n] || CL.salsa).cb; }, H: 1700, FEET: 810 };
 })();

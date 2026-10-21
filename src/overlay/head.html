@@ -17,7 +17,6 @@ body.preview { background: #05020a; }
 .p.in { opacity: 1; }
 .p .in2 { position: relative; }
 .p.walk .av * { animation-play-state: paused !important; }
-.p.walk .in2 { animation: step .3s ease-in-out infinite; }
 @keyframes step { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-7px) rotate(1.5deg); } }
 .pill { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 4px); white-space: nowrap; padding: 3px 9px; border-radius: 99px; background: rgba(18,10,27,.88); border: 1px solid var(--ln); font: 600 15px/1.2 system-ui, Arial, sans-serif; color: #fff; opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 5; }
 .pill.show { opacity: 1; transform: translate(-50%, -2px); }
@@ -161,6 +160,7 @@ body.pan #panel { display: block; }
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs id="defs"></defs></svg>
 <div id="stage">
   <div id="art" class="layer"></div>
+  <canvas id="city" width="340" height="330" style="position:absolute;left:1553px;top:0;width:340px;height:330px;pointer-events:none;display:none"></canvas>
   <canvas id="fxc" width="1920" height="1080"></canvas>
   <div id="glows"></div>
   <svg id="led" viewBox="0 0 1920 1080"></svg>
