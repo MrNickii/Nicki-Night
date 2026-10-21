@@ -26,8 +26,10 @@
   /* ---------- saved state ---------- */
   var S = { session: '__SESSION__', ws: '', vip: [], mods: ['kildadj_', 'mrnicki'], room: null, need: { d: 5, c: 20 }, maxOn: 400, top5: false, np: { a: '', t: '' }, npUrl: '', nickiDone: false, users: {}, light: null, bg: true, bub: { on: true, words: [], emoji: true } };
   try { var raw = localStorage.getItem(KEY); if (raw) { var sv = JSON.parse(raw); Object.keys(sv).forEach(function (k) { S[k] = sv[k]; }); } } catch (e) {}
+  var CL = { on: false, ph: '', t: [] };
   var RW = { on: false, phase: '', picks: [], ords: [0, -1, 1, -2, 2], votes: {}, t: [], end: 0 };
   function stageOn() { return S.top5 || RW.on; }
+  S.ss = Object.assign({ peak: 0, ent: {}, sd: {}, win: [] }, S.ss || {}); S.closing = S.closing || 'Thanks for coming! See you next time.';
   S.blocked = S.blocked || {}; S.nophoto = S.nophoto || {}; var lastMsg = 0;
   S.bub = Object.assign({ on: true, words: [], emoji: true }, S.bub || {}); if (!Array.isArray(S.bub.words)) S.bub.words = [];
   if (Q.get('session')) S.session = Q.get('session');
@@ -432,7 +434,7 @@
         e.innerHTML = '<i class="h"></i><i class="b"></i>'; $('crowd').appendChild(e);
       }
     }
-    $('inside').textContent = String(order.filter(function (k) { return users[k].inside; }).length);
+    var nIn = order.filter(function (k) { return users[k].inside; }).length; $('inside').textContent = String(nIn); if (nIn > S.ss.peak) S.ss.peak = nIn;
   }
 
   /* ---------- !look parsing ---------- */
@@ -489,6 +491,8 @@
   function isMod(u) { return u.plat === 'x' && S.mods.indexOf(u.hnd) >= 0; }
   function activate(u) { u.lastActive = Date.now(); }
   function enter(u) {
+    if (CL.on && CL.ph !== 'last') return;
+    S.ss.ent[u.key] = 1;
     if (u.inside && u.slot) { say(u, 'already inside', 2000); return; }
     u.inside = true; activate(u); refreshVip(u);
     if (order.indexOf(u.key) < 0) order.push(u.key);
@@ -509,7 +513,7 @@
     if (cmd === '!dance') {
       var w = rest.toLowerCase().split(/\s+/)[0];
       u.dance = normD(w) || DANCES[Math.floor(Math.random() * DANCES.length)];
-      u.dances++; u.dirty = 1;
+      u.dances++; u.dirty = 1; var sd = S.ss.sd[u.key] || (S.ss.sd[u.key] = [u.name, 0]); sd[1]++;
       say(u, byId(CATALOG.dances, u.dance).name.toLowerCase(), 2200); save(); return;
     }
     if (cmd === '!look') {
@@ -735,7 +739,7 @@
     cnt.forEach(function (v, j) { if (RW.picks[j] && (best < 0 || v > cnt[best] || (v === cnt[best] && Math.random() < 0.5))) best = j; });
     RW.phase = 'result';
     if (best < 0 || cnt[best] === 0) { RW.win = -1; banner('NO VOTES', 'Everyone looked amazing', 4000); RW.end = Date.now(); rwHud(); rwAt(5000, runwayStop); return; }
-    RW.win = best; var w = RW.picks[best]; RW.end = Date.now(); rwHud();
+    RW.win = best; var w = RW.picks[best]; RW.end = Date.now(); rwHud(); S.ss.win.push({ n: w.name, v: cnt[best] }); save();
     banner('BEST DRESSED', esc2(w.name) + ' · ' + cnt[best] + ' vote' + (cnt[best] === 1 ? '' : 's'), 6500);
     lightFor('spot', true, w); CITY.fire(3); say(w, '👑 Best dressed!', 7000, true);
     rwAt(9000, function () { lightFor('spot', false, null); });
@@ -747,6 +751,42 @@
     picks.forEach(function (u) { if (u) { u.stage = false; u.rank = null; rankTag(u, false); } });
     var h = $('rwhud'); if (h) h.classList.remove('show');
     lightFor('spot', false, null); stageFx(); relayout(); rcSnap(true);
+  }
+
+
+  /* ---------- closing the club: last call, walk-out, recap ---------- */
+  function clAt(ms, f) { var h = setTimeout(f, ms); CL.t.push(h); return h; }
+  function clClear() { CL.t.forEach(clearTimeout); CL.t = []; }
+  function recapHtml() {
+    var top = function (arr, n) { return arr.sort(function (a, b) { return b[1] - a[1]; }).slice(0, n); };
+    var dancers = top(Object.keys(S.ss.sd).map(function (k) { return [S.ss.sd[k][0], S.ss.sd[k][1]]; }), 3);
+    var chatters = top(order.map(function (k) { return users[k]; }).filter(function (u) { return u && (u.show || 0) > 0 && !isNicki(u); }).map(function (u) { return [u.name, u.show]; }), 3);
+    var col = function (title, rows, unit) { return '<div class="rcc"><h4>' + title + '</h4>' + (rows.length ? rows.map(function (r, i) { return '<div class="rcr"><b>' + (i + 1) + '</b><span>' + esc2(r[0]) + '</span><em>' + r[1] + (unit ? ' ' + unit : '') + '</em></div>'; }).join('') : '<div class="rcr none">—</div>') + '</div>'; };
+    var wins = S.ss.win.slice(-3).reverse().map(function (w) { return [w.n, w.v]; });
+    return '<div class="rct">THANK YOU FOR PARTYING</div><div class="rcg">' + col('Most dance moves', dancers, '') + col('Most chatty', chatters, 'msgs') + col('Best dressed', wins, 'votes') + '</div><div class="rcs"><span><b>' + S.ss.peak + '</b> peak crowd</span><span><b>' + Object.keys(S.ss.ent).length + '</b> partied tonight</span></div><div class="rcm">' + esc2(S.closing) + '</div>';
+  }
+  function closingStart(sec) {
+    if (CL.on) throw new Error('Already closing');
+    if (RW.on) runwayStop(); if (S.top5) setTop5(false);
+    sec = Math.max(5, Math.min(120, Number(sec) || 30));
+    CL.on = true; CL.ph = 'last'; CL.end = Date.now() + sec * 1000;
+    banner('LAST CALL', 'The club closes in ' + sec + ' seconds', 5000); lightCmd('chill');
+    clAt(Math.max(1000, sec * 1000 - 8000), function () { banner('LAST CALL', 'Final songs', 4000); });
+    clAt(sec * 1000, function () {
+      CL.ph = 'out'; banner('THANK YOU FOR PARTYING', 'Safe travels', 5000);
+      var list = order.map(function (k) { return users[k]; }).filter(function (u) { return u && u.inside && !isNicki(u); }), gap = Math.min(220, 9000 / Math.max(1, list.length));
+      list.sort(function () { return Math.random() - 0.5; });
+      list.forEach(function (u, i) { clAt(i * gap, function () { if (u.inside) leave(u); }); });
+      var tOut = list.length * gap + 4500;
+      clAt(tOut, function () {
+        CL.ph = 'recap'; var r = $('recap'); r.innerHTML = recapHtml(); r.classList.add('show'); CITY.fire(4); rcSnap(true);
+        clAt(45000, function () { r.classList.remove('show'); CL.ph = 'done'; rcSnap(true); });
+      });
+    });
+    rcSnap(true);
+  }
+  function closingReopen() {
+    clClear(); CL.on = false; CL.ph = ''; var r = $('recap'); if (r) r.classList.remove('show'); rcSnap(true);
   }
 
   /* ---------- crowd auto-fit: avatars shrink when the room is full ---------- */
@@ -1351,13 +1391,13 @@
     bpm: function (a) { LT.bpm = Math.max(60, Math.min(200, Number(a.v) || 124)); lightUI(); },
     'nicki.rehearse': function () { nickiRehearse(); },
     'nicki.out': function () { var n = users['x:nickiminaj']; if (n && n.inside) nickiWalkOut(n); else throw new Error('Nicki is not inside'); },
-    'show.new': function () { S.nickiDone = false; order.forEach(function (k) { users[k].show = 0; }); top5Sig = ''; top5Update(true); save(); },
+    'show.new': function () { S.ss = { peak: 0, ent: {}, sd: {}, win: [] }; S.nickiDone = false; order.forEach(function (k) { users[k].show = 0; }); top5Sig = ''; top5Update(true); save(); },
     top5: function (a) { setTop5(a.on === undefined ? !S.top5 : !!a.on); },
     np: function (a) { setNP(String(a.a || ''), String(a.t || '')); },
     banner: function (a) { banner(String(a.t || '').slice(0, 60), String(a.s || '').slice(0, 80), 4200); },
     'user.drink': function (a) { var u = rcFind(a); if (!u || !u.inside) throw new Error('not inside'); var k = drinkKind(a.kind); if (!orderDrink(u, k, k === 'shot' ? 'shot' : null)) throw new Error('the bar is full'); },
     'user.cheers': function (a) { var u = rcFind(a); if (!u || !u.inside) throw new Error('not inside'); if (!u.dr) throw new Error('not at the bar'); startAct(u, 'cheers', 0.05); say(u, '\uD83E\uDD42 cheers', 2400); emojiPop(u, '\uD83E\uDD42'); },
-    'user.dance': function (a) { var u = rcFind(a); if (!u || !u.inside) throw new Error('not inside'); u.dance = normD(a.dance) || pick(DANCES); u.dances++; u.dirty = 1; say(u, byId(CATALOG.dances, u.dance).name.toLowerCase(), 2200); save(); },
+    'user.dance': function (a) { var u = rcFind(a); if (!u || !u.inside) throw new Error('not inside'); u.dance = normD(a.dance) || pick(DANCES); u.dances++; u.dirty = 1; var sd2 = S.ss.sd[u.key] || (S.ss.sd[u.key] = [u.name, 0]); sd2[1]++; say(u, byId(CATALOG.dances, u.dance).name.toLowerCase(), 2200); save(); },
     'crowd.dance': function (a) { var d = a.d && a.d !== 'random' ? normD(a.d) : null; var n = 0; order.forEach(function (k) { var u = users[k]; if (u && u.inside) { u.dance = d || pick(DANCES); u.dirty = 1; n++; } }); if (!n) throw new Error('nobody is inside'); save(); },
     'bar.round': function () { barRound(); },
     'bots.talk': function (a) { if (!insideUsers().length) throw new Error('add guests first'); botsTalk(Math.min(16, Number(a.n) || 6)); },
@@ -1379,6 +1419,9 @@
     'mods.set': function (a) { S.mods = (a.list || []).map(norm).filter(Boolean); vipUI(); save(); },
     rules: function (a) { S.need = { d: Math.max(0, Number(a.d) || 0), c: Math.max(0, Number(a.c) || 0) }; S.maxOn = Math.max(100, Number(a.max) || 400); save(); relayout(); },
     scale: function (a) { R.scale = Math.max(0.5, Math.min(1.3, a.v / 100)); placeFixed(); relayout(); save(); },
+    'club.close': function (a) { if (a.msg != null) S.closing = String(a.msg).slice(0, 120); save(); closingStart(a.sec); },
+    'club.reopen': function () { closingReopen(); },
+    'club.msg': function (a) { S.closing = String(a.msg || '').slice(0, 120); save(); },
     'runway.start': function (a) { runwayStart(a.n, a.sec); },
     'runway.stop': function () { runwayStop(); },
     'mod.photo': function (a) {
@@ -1428,7 +1471,7 @@
     people.sort(function (a, b) { return b.la - a.la; });
     var top = []; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.stage && S.top5 && !RW.on) top[u.rank || 0] = { n: u.name, s: u.show }; });
     var L = {}; Object.keys(LT).forEach(function (k) { if (k.charAt(0) !== '_') L[k] = LT[k]; });
-    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
+    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
     var sig = JSON.stringify(snap); if (!force && sig === RC.lastSnap) return; RC.lastSnap = sig; rcSend(snap);
   }
   function rcStart() {
