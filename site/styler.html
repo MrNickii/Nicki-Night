@@ -37,6 +37,7 @@ input:focus,select:focus{outline:2px solid var(--pink)}
 .opt{position:relative;border:2px solid transparent;background:var(--card);border-radius:16px;padding:6px 6px 8px;text-align:center;cursor:pointer;color:var(--txt);font:inherit;display:flex;flex-direction:column;align-items:center;gap:4px}
 .opt:active{transform:scale(.97)}.opt.on{border-color:var(--pink2);background:#3a1650;box-shadow:0 0 16px #ff2f9e66}
 .opt .th{height:104px;display:flex;align-items:flex-end;justify-content:center;width:100%;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,#2e1642,#1f0d2e)}.opt .th img{max-height:100%;max-width:100%;display:block}.opt .th.ld{background:linear-gradient(110deg,#2e1642 30%,#3d1d57 50%,#2e1642 70%);background-size:200% 100%;animation:ld 1.2s infinite}@keyframes ld{to{background-position:-200% 0}}
+.opt .hn{font-size:10px;font-style:italic;color:#c9a6e8;margin-top:3px;line-height:1.15;font-weight:500}
 .opt .nm{font-size:13px;font-weight:700;line-height:1.1}
 .badge{position:absolute;top:6px;right:6px;font-size:11px;font-weight:800;padding:3px 7px;border-radius:99px;background:#000c;border:1px solid var(--gold);color:var(--gold);z-index:2}
 .badge.vip{border-color:#b98cff;color:#d9bcff}
@@ -125,8 +126,10 @@ var STG = {};
     });
   }
   var UNL = { earned: ['🔒 Earn it', ''], vip: ['👑 VIP', 'vip'] };
+  function eh(id, locked) { var e = window.VNNA && VNNA.EARN; return locked === 'earned' && e && e.items[id] ? e.tasks[e.items[id]].replace(/"/g, '&quot;') : ''; }
   function opt(id, name, patch, region, locked, on) {
-    return '<button class="opt' + (on ? ' on' : '') + (locked ? ' locked' : '') + '" data-id="' + id + '">' + (locked ? '<span class="badge ' + UNL[locked][1] + '">' + UNL[locked][0] + '</span>' : '') + '<div class="th ld" data-th=\'' + JSON.stringify({ patch: patch, region: region }) + '\'></div><div class="nm">' + name + '</div></button>';
+    var hn = eh(id, locked);
+    return '<button class="opt' + (on ? ' on' : '') + (locked ? ' locked' : '') + '" data-id="' + id + '">' + (locked ? '<span class="badge ' + UNL[locked][1] + '"' + (hn ? ' title="' + hn + '"' : '') + '>' + UNL[locked][0] + '</span>' : '') + '<div class="th ld" data-th=\'' + JSON.stringify({ patch: patch, region: region }) + '\'></div><div class="nm">' + name + '</div></button>';
   }
   function swatches(list, cur, key, noneLabel) {
     return '<div class="sw">' + (noneLabel ? '<button class="none ' + (!cur ? 'on' : '') + '" data-sw="' + key + '" data-id="" title="Original"></button>' : '') + list.map(function (c) { var bg = c.ombre ? 'linear-gradient(135deg,' + c.ombre.join(',') + ')' : c.hex; return '<button class="' + (cur === c.id ? 'on' : '') + '" data-sw="' + key + '" data-id="' + c.id + '" title="' + (c.name || c.id) + '" style="background:' + bg + '"></button>'; }).join('') + '</div>';

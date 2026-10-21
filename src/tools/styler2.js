@@ -60,8 +60,10 @@ var STG = {};
     });
   }
   var UNL = { earned: ['🔒 Earn it', ''], vip: ['👑 VIP', 'vip'] };
+  function eh(id, locked) { var e = window.VNNA && VNNA.EARN; return locked === 'earned' && e && e.items[id] ? e.tasks[e.items[id]].replace(/"/g, '&quot;') : ''; }
   function opt(id, name, patch, region, locked, on) {
-    return '<button class="opt' + (on ? ' on' : '') + (locked ? ' locked' : '') + '" data-id="' + id + '">' + (locked ? '<span class="badge ' + UNL[locked][1] + '">' + UNL[locked][0] + '</span>' : '') + '<div class="th ld" data-th=\'' + JSON.stringify({ patch: patch, region: region }) + '\'></div><div class="nm">' + name + '</div></button>';
+    var hn = eh(id, locked);
+    return '<button class="opt' + (on ? ' on' : '') + (locked ? ' locked' : '') + '" data-id="' + id + '">' + (locked ? '<span class="badge ' + UNL[locked][1] + '"' + (hn ? ' title="' + hn + '"' : '') + '>' + UNL[locked][0] + '</span>' : '') + '<div class="th ld" data-th=\'' + JSON.stringify({ patch: patch, region: region }) + '\'></div><div class="nm">' + name + '</div></button>';
   }
   function swatches(list, cur, key, noneLabel) {
     return '<div class="sw">' + (noneLabel ? '<button class="none ' + (!cur ? 'on' : '') + '" data-sw="' + key + '" data-id="" title="Original"></button>' : '') + list.map(function (c) { var bg = c.ombre ? 'linear-gradient(135deg,' + c.ombre.join(',') + ')' : c.hex; return '<button class="' + (cur === c.id ? 'on' : '') + '" data-sw="' + key + '" data-id="' + c.id + '" title="' + (c.name || c.id) + '" style="background:' + bg + '"></button>'; }).join('') + '</div>';

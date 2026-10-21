@@ -30,6 +30,7 @@
   var RW = { on: false, phase: '', picks: [], ords: [0, -1, 1, -2, 2], votes: {}, t: [], end: 0 };
   function stageOn() { return S.top5 || RW.on; }
   S.ss = Object.assign({ peak: 0, ent: {}, sd: {}, win: [] }, S.ss || {}); S.closing = S.closing || 'Thanks for coming! See you next time.';
+  S.codes = Object.assign({ x_barb: { word: 'barbz', on: false }, x_pf2: { word: 'flight', on: false }, x_pink: { word: 'pinkprint', on: false }, x_gag: { word: 'gagcity', on: false } }, S.codes || {});
   S.blocked = S.blocked || {}; S.nophoto = S.nophoto || {}; var lastMsg = 0;
   S.bub = Object.assign({ on: true, words: [], emoji: true }, S.bub || {}); if (!Array.isArray(S.bub.words)) S.bub.words = [];
   if (Q.get('session')) S.session = Q.get('session');
@@ -43,7 +44,7 @@
     saveT = setTimeout(function () {
       try {
         var us = {};
-        Object.keys(users).forEach(function (k) { var u = users[k]; us[k] = { name: u.name, plat: u.plat, photo: u.photo, look: u.look, dance: u.dance, dances: u.dances, chats: u.chats, show: u.show, inside: u.inside, atBar: u.atBar, sx: u.slot ? Math.round(u.slot.x) : (u._sx != null ? u._sx : null), sy: u.slot ? Math.round(u.slot.y) : (u._sy != null ? u._sy : null), nickiLook: u.nickiLook, grant: !!u.grant }; });
+        Object.keys(users).forEach(function (k) { var u = users[k]; us[k] = { name: u.name, plat: u.plat, photo: u.photo, look: u.look, dance: u.dance, dances: u.dances, chats: u.chats, show: u.show, inside: u.inside, atBar: u.atBar, sx: u.slot ? Math.round(u.slot.x) : (u._sx != null ? u._sx : null), sy: u.slot ? Math.round(u.slot.y) : (u._sy != null ? u._sy : null), nickiLook: u.nickiLook, grant: !!u.grant, ear: u.ear, pg: u.pg }; });
         S.users = us; S.room = R; S.k = CROWDK;
         localStorage.setItem(KEY, JSON.stringify(S));
       } catch (e) {}
@@ -168,13 +169,39 @@
     if (!u) {
       var sv = S.users && S.users[key];
       u = users[key] = { key: key, name: name, plat: plat, photo: photo || null, look: blankLook(), dance: DANCES[h % 6], dances: 0, chats: 0, show: 0, inside: false, atBar: false, lastActive: 0, slot: null, el: null, ox: 0, h: 0, d: 0, nickiLook: null, vip: false, overflow: false, h32: h };
-      if (sv) { u.look = Object.assign(blankLook(), sv.look); u.dance = normD(sv.dance) || u.dance; u.dances = sv.dances || 0; u.chats = sv.chats || 0; u.show = sv.show || 0; u.nickiLook = sv.nickiLook || null; u.grant = !!sv.grant; u.atBar = !!sv.atBar; u._wasInside = !!sv.inside; u._sx = sv.sx != null ? sv.sx : null; u._sy = sv.sy != null ? sv.sy : null; }
+      if (sv) { u.look = Object.assign(blankLook(), sv.look); u.dance = normD(sv.dance) || u.dance; u.dances = sv.dances || 0; u.chats = sv.chats || 0; u.show = sv.show || 0; u.nickiLook = sv.nickiLook || null; u.grant = !!sv.grant; u.ear = sv.ear || {}; u.pg = sv.pg || null; u.atBar = !!sv.atBar; u._wasInside = !!sv.inside; u._sx = sv.sx != null ? sv.sx : null; u._sy = sv.sy != null ? sv.sy : null; }
     }
     if (name) u.name = name;
     if (photo) u.photo = photo;
     return u;
   }
-  function isEarned(u) { return !!u.grant || (u.dances >= S.need.d && u.chats >= S.need.c); }
+  var EARN = VNNA.EARN;
+  function PG(u) { return u.pg || (u.pg = { dnm: 0, dc: 0, lk: 0, it: {}, dr: 0, che: 0, sec: 0, early: 0, rwp: 0, rww: 0, t5: 0, lc: 0, cd: {} }); }
+  function popc(n) { var c = 0; while (n) { c += n & 1; n >>= 1; } return c; }
+  var TFN = {
+    dn3: function (u) { return popc(PG(u).dnm) >= 3; }, dn7: function (u) { return popc(PG(u).dnm) >= 7; },
+    lk2: function (u) { return PG(u).lk >= 2; }, lk8: function (u) { return Object.keys(PG(u).it).length >= 8; },
+    dr1: function (u) { return PG(u).dr >= 1; }, dr3: function (u) { return PG(u).dr >= 3; },
+    ch5: function (u) { return (u.show || 0) >= 5; }, ch25: function (u) { return (u.show || 0) >= 25; },
+    che3: function (u) { return PG(u).che >= 3; }, st30: function (u) { return PG(u).sec >= 1800; },
+    early: function (u) { return !!PG(u).early; }, rwp: function (u) { return !!PG(u).rwp; }, rww: function (u) { return !!PG(u).rww; },
+    t5: function (u) { return !!PG(u).t5; }, lc: function (u) { return !!PG(u).lc; },
+    reg: function (u) { return PG(u).dc >= S.need.d && (u.show || 0) >= S.need.c; },
+    x_barb: function (u) { return !!PG(u).cd.x_barb; }, x_pf2: function (u) { return !!PG(u).cd.x_pf2; }, x_pink: function (u) { return !!PG(u).cd.x_pink; }, x_gag: function (u) { return !!PG(u).cd.x_gag; }
+  };
+  function itemName(id) { var all = [].concat(CATALOG.looks, CATALOG.bottoms, CATALOG.shoes, CATALOG.hair.styles, CATALOG.accessories.items), i; for (i = 0; i < all.length; i++) if (all[i].id === id) return all[i].name; return id; }
+  function itemEarned(u, id) { var t = EARN.items[id]; return !!u.grant || !t || !!(u.ear && u.ear[t]); }
+  function isEarned(u) { return !!u.grant || !!(u.ear && Object.keys(u.ear).length); }
+  function hintFor(id) { var t = EARN.items[id]; return t ? EARN.tasks[t] : ''; }
+  function evalTasks(u) {
+    if (!u || isNicki(u)) return; u.ear = u.ear || {};
+    var got = [];
+    Object.keys(TFN).forEach(function (t) { if (!u.ear[t] && TFN[t](u)) { u.ear[t] = 1; got = got.concat(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })); } });
+    if (!got.length) return;
+    var nm = got.map(itemName), txt = '🔓 Unlocked: ' + nm[0] + (nm.length > 1 ? ' + ' + (nm.length - 1) + ' more' : '');
+    if (u.inside) { say(u, txt, 5200, true); try { emojiPop(u, '✨'); } catch (e) { } }
+    log(u.name + ' unlocked ' + nm.join(', ')); u.dirty = 1; save();
+  }
   function vipSet() { var o = {}; S.vip.forEach(function (h) { o[norm(h)] = 1; }); return o; }
   function refreshVip(u) { u.vip = (u.plat === 'x' && !!vipSet()[u.hnd || norm(u.name)]) || !!u.simVip; }
   function isNicki(u) { return u.plat === 'x' && u.hnd === 'nickiminaj'; }
@@ -467,19 +494,20 @@
     });
     res.unknown = unknown; return res;
   }
+  function lockNote(it) { return it.unlock === 'earned' ? '\uD83D\uDD12 ' + it.name + ' \u2014 ' + hintFor(it.id) : 'locked: ' + it.name; }
   function applyLook(u, text, force) {
     var p = parseLook(text, isNicki(u)), notes = [], c = u.look;
     if (p.nicki) { u.nickiLook = p.nicki; }
-    var earned = isEarned(u);
-    var tp = p.top && byId(CATALOG.looks, p.top);
-    if (tp && !force && ((tp.unlock === 'earned' && !earned) || (tp.unlock === 'vip' && !u.vip))) { notes.push('locked: ' + tp.name); p.top = null; }
+        var tp = p.top && byId(CATALOG.looks, p.top);
+    if (tp && !force && ((tp.unlock === 'earned' && !itemEarned(u, tp.id)) || (tp.unlock === 'vip' && !u.vip))) { notes.push(lockNote(tp)); p.top = null; }
     var bp = p.bottom && byId(CATALOG.bottoms, p.bottom);
-    var lk = function (it) { return it && ((it.unlock === 'earned' && !earned) || (it.unlock === 'vip' && !u.vip)); };
-    if (bp && !force && lk(bp)) { notes.push('locked: ' + bp.name); p.bottom = null; }
-    var shp = p.shoes && byId(CATALOG.shoes, p.shoes); if (shp && !force && lk(shp)) { notes.push('locked: ' + shp.name); p.shoes = null; }
-    var hrp = p.hair && byId(CATALOG.hair.styles, p.hair); if (hrp && !force && lk(hrp)) { notes.push('locked: ' + hrp.name); p.hair = null; }
-    if (p.acc.length && !force) p.acc = p.acc.filter(function (id) { var it = byId(CATALOG.accessories.items, id); if (lk(it)) { notes.push('locked: ' + it.name); return false; } return true; });
+    var lk = function (it) { return it && ((it.unlock === 'earned' && !itemEarned(u, it.id)) || (it.unlock === 'vip' && !u.vip)); };
+    if (bp && !force && lk(bp)) { notes.push(lockNote(bp)); p.bottom = null; }
+    var shp = p.shoes && byId(CATALOG.shoes, p.shoes); if (shp && !force && lk(shp)) { notes.push(lockNote(shp)); p.shoes = null; }
+    var hrp = p.hair && byId(CATALOG.hair.styles, p.hair); if (hrp && !force && lk(hrp)) { notes.push(lockNote(hrp)); p.hair = null; }
+    if (p.acc.length && !force) p.acc = p.acc.filter(function (id) { var it = byId(CATALOG.accessories.items, id); if (lk(it)) { notes.push(lockNote(it)); return false; } return true; });
     ['top', 'topColor', 'bottom', 'bottomColor', 'shoes', 'shoesColor', 'height', 'hair', 'hairColor', 'skin', 'body'].forEach(function (k) { if (p[k]) c[k] = p[k]; });
+    if (!force) { var pgi = PG(u).it; ['top', 'bottom', 'shoes', 'hair'].forEach(function (k) { if (p[k]) pgi[p[k]] = 1; }); (p.acc || []).forEach(function (a) { pgi[a] = 1; }); }
     if (p.acc.length) { c.acc = p.acc; c.accColor = p.accColor || c.accColor; } else if (p.accColor && c.acc.length) c.accColor = p.accColor;
     if (p.hairColor && !p.hair && !c.hair) c.hair = 'long';
     if (p.unknown.length) notes.push('?: ' + p.unknown.slice(0, 3).join(' '));
@@ -496,7 +524,9 @@
     if (u.inside && u.slot) { say(u, 'already inside', 2000); return; }
     u.inside = true; activate(u); refreshVip(u);
     if (order.indexOf(u.key) < 0) order.push(u.key);
+    var pe = PG(u); if (!pe.entered) { pe.entered = 1; if (Object.keys(S.ss.ent).length <= 10) pe.early = 1; }
     if (seat(u, false)) say(u, (u.vip ? 'VIP ' : '') + u.name, 3500, u.vip); else overflowUI();
+    evalTasks(u);
     overflowUI(); save(); scheduleFit();
   }
   function leave(u) { if (!u.inside) return; if (RW.on) rwDrop(u); u.inside = false; bubEnd(BUB.map[u.key]); unseat(u, true); overflowUI(); save(); scheduleFit(); }
@@ -505,7 +535,7 @@
     u.chats++; u.show = (u.show || 0) + 1; activate(u);
     if (isNicki(u) && !S.nickiDone && !nickiBusy) { nickiEntrance(u, false); }
     if (RW.on && RW.phase === 'vote' && /^[1-9]$/.test(t)) { rwVote(u, Number(t)); return; }
-    if (cmd.charAt(0) !== '!') { if (u.inside) bumpFront(u, t); save(); return; }
+    if (cmd.charAt(0) !== '!') { if (u.inside) { bumpFront(u, t); evalTasks(u); } save(); return; }
     var mod = isMod(u);
     if (cmd === '!enter') { if (isNicki(u) && !u.inside) { nickiEntrance(u, false); return; } enter(u); return; }
     if (!u.inside && !(mod && /^!(vip|unvip|light|top5|np|nicki)$/.test(cmd))) { return; }
@@ -513,11 +543,12 @@
     if (cmd === '!dance') {
       var w = rest.toLowerCase().split(/\s+/)[0];
       u.dance = normD(w) || DANCES[Math.floor(Math.random() * DANCES.length)];
+      var pgd = PG(u); pgd.dc++; pgd.dnm |= 1 << Math.max(0, DANCES.indexOf(u.dance)); evalTasks(u);
       u.dances++; u.dirty = 1; var sd = S.ss.sd[u.key] || (S.ss.sd[u.key] = [u.name, 0]); sd[1]++;
       say(u, byId(CATALOG.dances, u.dance).name.toLowerCase(), 2200); save(); return;
     }
     if (cmd === '!look') {
-      var notes = applyLook(u, rest); u.d = 0; seat(u, true);
+      var notes = applyLook(u, rest); PG(u).lk++; evalTasks(u); u.d = 0; seat(u, true);
       say(u, notes.length ? notes.join(' · ') : 'new look', 3200); save(); return;
     }
     if (cmd === '!drink' || cmd === '!order' || DRINKS[cmd.slice(1)]) {
@@ -528,7 +559,18 @@
     }
     if (cmd === '!cheers') {
       if (!u.dr) { say(u, 'grab a drink first: !bar', 2800); return; }
-      startAct(u, 'cheers', Math.max(0, u.dr.born - nowS()) + 0.1); say(u, '\uD83E\uDD42 cheers', 2400); emojiPop(u, '\uD83E\uDD42'); return;
+      PG(u).che++; evalTasks(u); startAct(u, 'cheers', Math.max(0, u.dr.born - nowS()) + 0.1); say(u, '\uD83E\uDD42 cheers', 2400); emojiPop(u, '\uD83E\uDD42'); return;
+    }
+    if (cmd === '!earned') {
+      var allE = Object.keys(EARN.items), nE = allE.filter(function (i) { return itemEarned(u, i); }).length, left = allE.filter(function (i) { return !itemEarned(u, i); });
+      if (!left.length) { say(u, '\uD83D\uDD13 Everything unlocked \u2014 you did it all', 4200, true); return; }
+      var hs = {}; left.forEach(function (i) { hs[EARN.items[i]] = 1; }); var ks = Object.keys(hs), hk = ks[Math.floor(Math.random() * ks.length)];
+      say(u, '\uD83D\uDD13 ' + nE + '/' + allE.length + ' \u00b7 ' + EARN.tasks[hk], 4800); return;
+    }
+    if (cmd === '!code') {
+      var cw = rest.toLowerCase().replace(/[^a-z0-9]/g, ''), ct = Object.keys(S.codes).filter(function (t) { return S.codes[t].on && S.codes[t].word === cw; })[0];
+      if (!cw) return; if (!ct) { say(u, 'hmm \u2014 not that one', 2200); return; }
+      PG(u).cd[ct] = 1; evalTasks(u); return;
     }
     if (cmd === '!bar') { if (u.atBar) { say(u, 'already at the bar \u00b7 try !drink', 2400); return; } u.atBar = true; seat(u, false); say(u, (u.dr ? DRINKS[u.dr.kind] + ' ' : '') + 'cheers', 2400); save(); return; }
     if (cmd === '!floor' || cmd === '!dancefloor') { if (!u.atBar && !u.vipFloor) { say(u, 'already on the floor', 2000); return; } u.atBar = false; seat(u, false); say(u, 'let\'s dance', 2400); save(); return; }
@@ -547,10 +589,17 @@
     if (mod && cmd === '!nicki' && /test/i.test(rest)) { nickiRehearse(); return; }
   }
   function bumpFront(u, text) { if (!emojiPop(u, text)) bubble(u, text); }
+  function earnTick() {
+    var ins = order.map(function (k) { return users[k]; }).filter(function (u) { return u && u.inside && !isNicki(u); });
+    ins.forEach(function (u) { PG(u).sec += 15; });
+    ins.slice().sort(function (a, b) { return (b.show || 0) - (a.show || 0); }).slice(0, 5).forEach(function (u) { if ((u.show || 0) >= 8) PG(u).t5 = 1; });
+    ins.forEach(evalTasks);
+  }
   setInterval(function () {
     var now = Date.now();
     /* overflow people who are chatting again earn a seat */
     order.forEach(function (k) { var u = users[k]; if (u.inside && !u.slot && now - u.lastActive < 60000) { u.d = 0; seat(u, false); } });
+    earnTick();
     overflowUI(); top5Update(); scheduleFit();
   }, 15000);
   setInterval(function () { top5Update(); }, 6000);
@@ -719,7 +768,7 @@
     picks.forEach(function (u, i) {
       rwAt(1800 + i * 2600, function () {
         if (!RW.on || !u.inside) return;
-        u._back = [u.x, u.y]; u.stage = true; u.rank = i; seat(u, false);
+        u._back = [u.x, u.y]; u.stage = true; u.rank = i; PG(u).rwp = 1; evalTasks(u); seat(u, false);
       });
     });
     var tIn = 1800 + picks.length * 2600 + 2500;
@@ -739,7 +788,7 @@
     cnt.forEach(function (v, j) { if (RW.picks[j] && (best < 0 || v > cnt[best] || (v === cnt[best] && Math.random() < 0.5))) best = j; });
     RW.phase = 'result';
     if (best < 0 || cnt[best] === 0) { RW.win = -1; banner('NO VOTES', 'Everyone looked amazing', 4000); RW.end = Date.now(); rwHud(); rwAt(5000, runwayStop); return; }
-    RW.win = best; var w = RW.picks[best]; RW.end = Date.now(); rwHud(); S.ss.win.push({ n: w.name, v: cnt[best] }); save();
+    RW.win = best; var w = RW.picks[best]; PG(w).rww = 1; evalTasks(w); RW.end = Date.now(); rwHud(); S.ss.win.push({ n: w.name, v: cnt[best] }); save();
     banner('BEST DRESSED', esc2(w.name) + ' · ' + cnt[best] + ' vote' + (cnt[best] === 1 ? '' : 's'), 6500);
     lightFor('spot', true, w); CITY.fire(3); say(w, '👑 Best dressed!', 7000, true);
     rwAt(9000, function () { lightFor('spot', false, null); });
@@ -769,6 +818,7 @@
     if (CL.on) throw new Error('Already closing');
     if (RW.on) runwayStop(); if (S.top5) setTop5(false);
     sec = Math.max(5, Math.min(120, Number(sec) || 30));
+    order.forEach(function (k) { var x = users[k]; if (x && x.inside && !isNicki(x)) { PG(x).lc = 1; evalTasks(x); } });
     CL.on = true; CL.ph = 'last'; CL.end = Date.now() + sec * 1000;
     banner('LAST CALL', 'The club closes in ' + sec + ' seconds', 5000); lightCmd('chill');
     clAt(Math.max(1000, sec * 1000 - 8000), function () { banner('LAST CALL', 'Final songs', 4000); });
@@ -1082,7 +1132,7 @@
     if (!wasBar) { u.atBar = true; seat(u, false); }
     if (!u.dr) return false;
     if (wasBar) u.dr = newDrink(u, k, 0.0);
-    u.dirty = 1; say(u, DRINKS[k] + ' ' + k, 2600);
+    u.dirty = 1; PG(u).dr++; evalTasks(u); say(u, DRINKS[k] + ' ' + k, 2600);
     if (then) startAct(u, then, Math.max(0, u.dr.born - nowS()) + 0.5);
     save(); return true;
   }
@@ -1306,7 +1356,7 @@
     $('npclr').onclick = function () { $('npa_in').value = ''; $('npt_in').value = ''; setNP('', ''); };
     $('npurl').value = S.npUrl || ''; $('npurl').onchange = function () { S.npUrl = this.value.trim(); save(); npStart(); };
     $('npa_in').value = S.np.a; $('npt_in').value = S.np.t;
-    $('nnew').onclick = function () { S.nickiDone = false; order.forEach(function (k) { users[k].show = 0; }); top5Sig = ''; top5Update(true); save(); log('New show: her entrance will play on her next chat, and the chat counts for the top 5 start again.'); };
+    $('nnew').onclick = function () { S.nickiDone = false; order.forEach(function (k) { users[k].show = 0; users[k].pg = null; users[k].ear = {}; }); top5Sig = ''; top5Update(true); save(); log('New show: her entrance will play on her next chat, and the chat counts for the top 5 start again.'); };
     Array.prototype.forEach.call(document.querySelectorAll('[data-bots]'), function (b) { b.onclick = function () { addBots(Number(b.dataset.bots)); }; });
     $('bchat').onclick = function () { botsChat(); };
     $('bclear').onclick = function () { order.slice().forEach(function (k) { var u = users[k]; u.inside = false; unseat(u, false); }); order = []; Object.keys(users).forEach(function (k) { delete users[k]; }); S.users = {}; overflowUI(); save(); };
@@ -1391,7 +1441,7 @@
     bpm: function (a) { LT.bpm = Math.max(60, Math.min(200, Number(a.v) || 124)); lightUI(); },
     'nicki.rehearse': function () { nickiRehearse(); },
     'nicki.out': function () { var n = users['x:nickiminaj']; if (n && n.inside) nickiWalkOut(n); else throw new Error('Nicki is not inside'); },
-    'show.new': function () { S.ss = { peak: 0, ent: {}, sd: {}, win: [] }; S.nickiDone = false; order.forEach(function (k) { users[k].show = 0; }); top5Sig = ''; top5Update(true); save(); },
+    'show.new': function () { S.ss = { peak: 0, ent: {}, sd: {}, win: [] }; S.nickiDone = false; order.forEach(function (k) { users[k].show = 0; users[k].pg = null; users[k].ear = {}; }); top5Sig = ''; top5Update(true); save(); },
     top5: function (a) { setTop5(a.on === undefined ? !S.top5 : !!a.on); },
     np: function (a) { setNP(String(a.a || ''), String(a.t || '')); },
     banner: function (a) { banner(String(a.t || '').slice(0, 60), String(a.s || '').slice(0, 80), 4200); },
@@ -1419,6 +1469,8 @@
     'mods.set': function (a) { S.mods = (a.list || []).map(norm).filter(Boolean); vipUI(); save(); },
     rules: function (a) { S.need = { d: Math.max(0, Number(a.d) || 0), c: Math.max(0, Number(a.c) || 0) }; S.maxOn = Math.max(100, Number(a.max) || 400); save(); relayout(); },
     scale: function (a) { R.scale = Math.max(0.5, Math.min(1.3, a.v / 100)); placeFixed(); relayout(); save(); },
+    'code.set': function (a) { var c = S.codes[a.t]; if (!c) throw new Error('unknown code'); var w = String(a.word || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20); if (!w) throw new Error('empty word'); c.word = w; save(); },
+    'code.reveal': function (a) { var c = S.codes[a.t]; if (!c) throw new Error('unknown code'); c.on = !!a.on; save(); if (c.on) { banner('SECRET CODE', 'Type  !code ' + c.word, 7000); try { CITY.fire(2); } catch (e) { } } },
     'club.close': function (a) { if (a.msg != null) S.closing = String(a.msg).slice(0, 120); save(); closingStart(a.sec); },
     'club.reopen': function () { closingReopen(); },
     'club.msg': function (a) { S.closing = String(a.msg || '').slice(0, 120); save(); },
@@ -1471,7 +1523,7 @@
     people.sort(function (a, b) { return b.la - a.la; });
     var top = []; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.stage && S.top5 && !RW.on) top[u.rank || 0] = { n: u.name, s: u.show }; });
     var L = {}; Object.keys(LT).forEach(function (k) { if (k.charAt(0) !== '_') L[k] = LT[k]; });
-    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
+    var snap = { t: 'state', ver: 1, ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, codes: Object.keys(S.codes).map(function (t) { return { t: t, w: S.codes[t].word, on: S.codes[t].on, item: itemName(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })[0]) }; }), cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
     var sig = JSON.stringify(snap); if (!force && sig === RC.lastSnap) return; RC.lastSnap = sig; rcSend(snap);
   }
   function rcStart() {
