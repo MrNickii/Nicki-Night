@@ -7,7 +7,8 @@ Everything in `site/` is the live website (GitHub Pages deploys it on every push
 - `overlay.html` : the OBS browser source. Open it with `?session=YOURSESSIONID`.
 - `control.html` : the iPad/iPhone control panel. Open it with the same `?session=...`.
 - `index.html` : the Style Studio viewers use to build a `!look` command.
-- `vnn/` : the avatar engine, motion data and art libraries.
+- `play.html` : the viewer guide. `mods.html` : the host and mod guide.
+- `vnn/` : the avatar engine, motion data, art libraries and speaker/UI art.
 
 `src/` holds the source files and build scripts (overlay build, avatar engine, library packer).
 The session ID is never stored in this repo.

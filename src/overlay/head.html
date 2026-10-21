@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head><link rel="icon" href="data:,">
 <meta charset="utf-8">
 <title>Virtual Nicki Night Overlay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -91,6 +91,9 @@ body.preview { background: #05020a; }
 #glows i { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); animation: glo var(--t, 4s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
 #glows i.p { background: radial-gradient(closest-side, rgba(255,150,210,.62), rgba(255,60,160,.2) 52%, rgba(255,60,160,0)); }
 #glows i.w { background: radial-gradient(closest-side, rgba(255,214,140,.6), rgba(255,150,60,.18) 52%, rgba(255,150,60,0)); }
+body.lite #glows i, body.lite #led *, body.lite #fog i, body.lite #banner.show, body.lite #banner.show::after, body.lite .p.talk .ring, body.lite #carpet .c2 { animation: none !important; }
+body.lite #glows { mix-blend-mode: normal; }
+body.lite .pill.show, body.lite .rk { filter: none; }
 @keyframes glo { 0%,100% { opacity: .55; transform: translate(-50%,-50%) scale(.92); } 50% { opacity: 1; transform: translate(-50%,-50%) scale(1.08); } }
 #led { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; transition: opacity .6s; }
 #led rect { fill: none; }

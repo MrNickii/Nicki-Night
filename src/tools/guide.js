@@ -33,11 +33,11 @@
       '<p>Use the Studio to try everything on first. The command bar at the bottom always shows exactly what to paste.</p>' +
       '<div class="chips"><span>👚 Tops</span><span>👖 Bottoms</span><span>👟 Shoes</span><span>💇 Hair</span><span>✨ Extras</span><span>🎨 Skin</span><span>📏 Size &amp; shape</span><span>🕺 Dance</span></div>' +
       '<h4>What\'s in the wardrobe</h4><ul>' +
-      '<li><b>Tops:</b> 14 free to wear right away, 13 more to unlock, 3 VIP only.</li>' +
-      '<li><b>Bottoms:</b> 7 free (jeans, cargo, flares, joggers and more) and 4 skirts to unlock.</li>' +
-      '<li><b>Shoes:</b> 7 styles, all free.</li>' +
-      '<li><b>Hair:</b> 20 styles in 22 colors.</li>' +
-      '<li><b>Extras:</b> 18 free (shades, caps, hoops, chains, nails and more) plus 2 VIP only.</li>' +
+      '<li><b>Tops:</b> 40+ pieces: everyday basics are free, trendier ones and signature pieces are earned or VIP.</li>' +
+      '<li><b>Bottoms:</b> 18 (jeans, cargo, flares, joggers, shorts, skirts and more). Some are free, some are earned or VIP.</li>' +
+      '<li><b>Shoes:</b> 13 styles, from sneakers to heels and boots. Seven are free.</li>' +
+      '<li><b>Hair:</b> 46 styles in 22 colors: 28 free, 9 to earn and 9 VIP.</li>' +
+      '<li><b>Extras:</b> 39 (shades, hats, hoops, chains, nails and more). Most are free, some are earned or VIP.</li>' +
       '<li><b>Body:</b> 8 skin tones, 3 heights, 2 body shapes. Every color can be changed.</li></ul>' +
       '<h4>Locks</h4><ul>' +
       '<li><b>🔒 Earned:</b> you unlock these by being active. By default that is <b>5 dances and 20 chat messages</b>. The host can also unlock them for you.</li>' +
