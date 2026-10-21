@@ -810,11 +810,11 @@
   var BT = [];
   function buildBartenders() {
     BT.forEach(function (b) { if (b.el) b.el.remove(); }); BT = [];
-    var names = ['Mimi', 'Jojo', 'Kiki', 'Lola', 'Bebe'], looks = [
+    var names = ['Priya', 'Amara', 'Freya', 'Valentina', 'Mei'], looks = [
       { top: 'pinkfriday', topColor: 'pink', bottom: 'miniskirt', bottomColor: 'pink', shoes: 'ankle', shoesColor: 'pink', skin: 'caramel', hair: 'ponytail', hairColor: 'black', acc: ['hoops'], accColor: 'gold' },
-      { top: FREE_TOPS[1 % FREE_TOPS.length].id, topColor: 'pink', bottom: 'shorts', bottomColor: 'pink', shoes: 'sneakers', shoesColor: 'pink', skin: 'espresso', hair: 'buns', hairColor: 'pink', acc: ['hoops'], accColor: 'pink' },
+      { top: FREE_TOPS[1 % FREE_TOPS.length].id, topColor: 'pink', bottom: 'shorts', bottomColor: 'pink', shoes: 'sneakers', shoesColor: 'pink', skin: 'cocoa', hair: 'buns', hairColor: 'pink', acc: ['hoops'], accColor: 'pink' },
       { top: FREE_TOPS[2 % FREE_TOPS.length].id, topColor: 'pink', bottom: 'jeans', bottomColor: 'pink', shoes: 'boots', shoesColor: 'pink', skin: 'sand', hair: 'wavy', hairColor: 'blonde', acc: ['pearls'], accColor: 'silver' },
-      { top: FREE_TOPS[0].id, topColor: 'pink', bottom: 'miniskirt', bottomColor: 'pink', shoes: 'ankle', shoesColor: 'pink', skin: 'bronze', hair: 'bob', hairColor: 'burgundy', acc: ['nails'], accColor: 'gold' },
+      { top: FREE_TOPS[0].id, topColor: 'pink', bottom: 'miniskirt', bottomColor: 'pink', shoes: 'ankle', shoesColor: 'pink', skin: 'honey', hair: 'bob', hairColor: 'burgundy', acc: ['nails'], accColor: 'gold' },
       { top: FREE_TOPS[3 % FREE_TOPS.length].id, topColor: 'pink', bottom: 'shorts', bottomColor: 'pink', shoes: 'sneakers', shoesColor: 'pink', skin: 'porcelain', hair: 'long', hairColor: 'platinum', acc: ['headphones'], accColor: 'pink' }
     ], spots = [[0, 0.2], [0, 0.52], [0, 0.82], [1, 0.3], [1, 0.72]], dances = ['rock', 'groove', 'rock', 'groove', 'rock'];
     spots.forEach(function (sp, i) {

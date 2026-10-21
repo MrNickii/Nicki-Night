@@ -41,6 +41,12 @@ var VNNA = (function () {
       { id: 'waistcoat', name: 'Tailored Waistcoat', fit: 'any', unlock: 'free', sheet: 'TOP-SLEEVELESS-4', v: 'B', col: '#16101f' },
       { id: 'partydress', name: 'Sculpted Party Dress', fit: 'fem', unlock: 'vip', dress: true, sheet: 'DRESS-5', col: '#d62839' },
       { id: 'orbithaori', name: 'Orbit Haori', fit: 'any', unlock: 'vip', sig: 1, sheet: 'SIG-TOP-8', v: 'A' },
+      { id: 'barbtee', name: 'Barb Crystal Tee', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-9', v: 'A' },
+      { id: 'resortmuscle', name: 'Resort Muscle Top', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-9', v: 'B' },
+      { id: 'pinkprintzip', name: 'Pinkprint Zip', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-10', v: 'A' },
+      { id: 'cityletterman', name: 'City Letterman', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-10', v: 'B' },
+      { id: 'pf2bomber', name: 'PF2 Flight Bomber', fit: 'masc', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-11', v: 'A' },
+      { id: 'pinkprintcrew', name: 'Pinkprint Crew', fit: 'masc', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-11', v: 'B' },
       { id: 'nightanorak', name: 'Nightshift Anorak', fit: 'any', unlock: 'vip', sig: 1, sheet: 'SIG-TOP-8', v: 'B' },
       { id: 'nickitee', name: 'Nicki Tee', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-7', v: 'A' },
       { id: 'nickicrew', name: 'Nicki Crew', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-7', v: 'B' },
@@ -63,6 +69,9 @@ var VNNA = (function () {
       { id: 'pleated', name: 'Pleated skirt', unlock: 'earned', skirt: true, sheet: 'BOTTOM-SKIRTS-2', v: 'A', col: '#3b82f6' },
       { id: 'denimskirt', name: 'Denim skirt', unlock: 'earned', skirt: true, sheet: 'BOTTOM-SKIRTS-2', v: 'B', col: '#3f6fb0' },
       { id: 'leathertrousers', name: 'Leather Trousers', unlock: 'vip', sheet: 'BOTTOM-PANTS-6', col: '#16101f' },
+      { id: 'resortshorts', name: 'Resort Sweatshorts', unlock: 'earned', fixed: 1, sheet: 'BOTTOM-SHORTS-4' },
+      { id: 'airbrushjoggers', name: 'Airbrush Joggers', unlock: 'earned', fixed: 1, sheet: 'BOTTOM-PANTS-7' },
+      { id: 'gagcargos', name: 'Gag City Cargos', unlock: 'earned', fixed: 1, sheet: 'BOTTOM-PANTS-8' },
       { id: 'courtshorts', name: 'Court Shorts', unlock: 'free', sheet: 'BOTTOM-SHORTS-3', col: '#f4f0fa' },
       { id: 'utilitymini', name: 'Utility Mini', unlock: 'earned', skirt: true, sheet: 'BOTTOM-SKIRTS-3', v: 'A', col: '#6b7a4a' },
       { id: 'wrapmidi', name: 'Wrap Midi', unlock: 'vip', skirt: true, sheet: 'BOTTOM-SKIRTS-3', v: 'B', col: '#16101f' }
@@ -76,6 +85,9 @@ var VNNA = (function () {
       { id: 'boots', name: 'Tall boots', sheet: 'SHOES-2', v: 'C', col: '#7a1226', shaft: { sheet: 'SHOES-3', v: 'A' } },
       { id: 'warmers', name: 'Leg warmers', sheet: 'SHOES-1', v: 'A', col: '#f4f0fa', shaft: { sheet: 'SHOES-3', v: 'B', col: '#ff9ed2' } },
       { id: 'westernboots', name: 'Western Boots', unlock: 'vip', sheet: 'SHOES-4', v: 'A', col: '#8a5a34', shaft: { sheet: 'SHOES-5', v: 'A' } },
+      { id: 'fphightops', name: 'Fingerprint High-tops', unlock: 'earned', fixed: 1, sheet: 'SHOES-6', v: 'A' },
+      { id: 'crowntrainers', name: 'Crown Trainers', unlock: 'earned', fixed: 1, sheet: 'SHOES-6', v: 'B' },
+      { id: 'pinkstarboots', name: 'Pink Star Boots', unlock: 'earned', fixed: 1, sheet: 'SHOES-6', v: 'C' },
       { id: 'loafers', name: 'Penny Loafers', unlock: 'earned', sheet: 'SHOES-4', v: 'B', col: '#16101f', shaft: { sheet: 'SHOES-5', v: 'B', col: '#f4f0fa' } },
       { id: 'cloudslides', name: 'Cloud Slides', unlock: 'free', sheet: 'SHOES-4', v: 'C', col: '#f4f0fa' }
     ],
@@ -118,6 +130,15 @@ var VNNA = (function () {
         { id: 'orbitglasses', name: 'Orbit glasses', slot: 'face', sheet: 'ACC-HEAD-2', key: 'ORBIT_GLASSES', unlock: 'vip', fit: 'any' },
         { id: 'cateye', name: 'Cat-eye glasses', slot: 'face', sheet: 'ACC-HEAD-2', key: 'CATEYE_GLASSES', unlock: 'earned', fit: 'any' },
         { id: 'halo', name: 'Halo band', slot: 'head', sheet: 'ACC-HEAD-2', key: 'HALO_BAND', unlock: 'vip', fit: 'any' },
+        { id: 'airtrucker', name: 'Airbrush Trucker', slot: 'head', sheet: 'ACC-HEAD-3', key: 'TRUCKER_HAT', unlock: 'earned', fit: 'any', full: 1 },
+        { id: 'fuzzybucket', name: 'Fuzzy Bucket', slot: 'head', sheet: 'ACC-HEAD-3', key: 'FUZZY_BUCKET', unlock: 'earned', fit: 'any', full: 1 },
+        { id: 'citysnap', name: 'City Snapback', slot: 'head', sheet: 'ACC-HEAD-3', key: 'CITY_SNAPBACK', unlock: 'earned', fit: 'any', full: 1 },
+        { id: 'satinscarf', name: 'Satin Headscarf', slot: 'head', sheet: 'ACC-HEAD-3', key: 'SATIN_HEADSCARF', unlock: 'earned', fit: 'any', full: 1 },
+        { id: 'pinkbeanie', name: 'Pinkprint Beanie', slot: 'head', sheet: 'ACC-HEAD-3', key: 'PINKPRINT_BEANIE', unlock: 'earned', fit: 'any', full: 1 },
+        { id: 'nightshades', name: 'Night Shades', slot: 'face', sheet: 'ACC-HEAD-3', key: 'NIGHT_SHADES', unlock: 'earned', fit: 'any', full: 1 },
+        { id: 'crystalcat', name: 'Crystal Cat-eye', slot: 'face', sheet: 'ACC-HEAD-3', key: 'CRYSTAL_CATEYE', unlock: 'earned', fit: 'any', full: 1 },
+        { id: 'heartcrown', name: 'Heart Crown', slot: 'head', sheet: 'ACC-HEAD-3', key: 'HEART_CROWN', unlock: 'earned', fit: 'any', full: 1 },
+        { id: 'heartstud', name: 'Heart Stud', slot: 'ears', sheet: 'ACC-HEAD-3', key: 'HEART_STUD', unlock: 'earned', fit: 'any', full: 1 },
         { id: 'gemstuds', name: 'Gem studs', slot: 'ears', sheet: 'ACC-HEAD-2', key: 'GEM_STUDS', fit: 'any' },
         { id: 'chain', name: 'Gold chain', slot: 'neck', key: 'NECKLACE', fit: 'any' },
         { id: 'pearls', name: 'Pearls', slot: 'neck', key: 'PEARLS', fit: 'fem' },
@@ -321,9 +342,9 @@ var VNNA = (function () {
     if (nk) { S.top = { sheet: top.sheet + '-TOP' }; S.bottom = { sheet: top.sheet + '-BOTTOM' }; S.body = 'curvy'; }
     else if (top.sig) S.top = { sheet: top.sheet, v: top.v };
     else S.top = { sheet: top.sheet, v: top.v, col: look.topColor ? c(look.topColor) : colArr(top.col), dress: !!top.dress };
-    if (!nk && !top.dress) { var b = byId(CATALOG.bottoms, look.bottom) || CATALOG.bottoms[0]; S.bottom = { sheet: b.sheet, v: b.v, skirt: !!b.skirt, col: look.bottomColor ? c(look.bottomColor) : colArr(b.col) }; }
+    if (!nk && !top.dress) { var b = byId(CATALOG.bottoms, look.bottom) || CATALOG.bottoms[0]; S.bottom = { sheet: b.sheet, v: b.v, skirt: !!b.skirt, col: b.fixed ? null : (look.bottomColor ? c(look.bottomColor) : colArr(b.col)) }; }
     var shId = look.shoes || (nk && top.shoes) || 'sneakers', sh = byId(CATALOG.shoes, shId) || CATALOG.shoes[0], shc = look.shoesColor || (nk && top.shoesColor);
-    S.shoes = { sheet: sh.sheet, v: sh.v, col: shc ? c(shc) : colArr(sh.col) };
+    S.shoes = { sheet: sh.sheet, v: sh.v, col: sh.fixed ? null : (shc ? c(shc) : colArr(sh.col)) };
     if (sh.shaft) S.shaft = { sheet: sh.shaft.sheet, v: sh.shaft.v, col: sh.shaft.col ? colArr(sh.shaft.col) : S.shoes.col };
     var hid = look.hair || (nk && top.hair), hs = hid && byId(CATALOG.hair.styles, hid);
     if (!hs && look.hairColor) hs = byId(CATALOG.hair.styles, 'long');
