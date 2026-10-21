@@ -312,7 +312,8 @@
     $('crowd').appendChild(el);
   }
   /* one shared animation loop for everyone on screen */
-  var bclk = 0, lastF = 0, frameN = 0, STRIDE = 1, dtAvg = 16, fpsMs = 0;
+  var FPSCAP = Math.max(10, Math.min(60, Number(new URLSearchParams(location.search).get('fps')) || 30)), lastDraw = 0;
+  var dtRef = 17, dtSamp = [], bclk = 0, lastF = 0, frameN = 0, STRIDE = 1, dtAvg = 16, fpsMs = 0;
   function crowdList() { var a = []; order.forEach(function (k) { var u = users[k]; if (u && u.el && u.inside && u.cv) { if (u.set) a.push(u); else if (u.ghostD !== u.cw) { u.ghostD = u.cw; ghost(u); } } }); BT.forEach(function (u) { if (u.cv && u.set) a.push(u); }); return a; }
   /* speakers: placed on the room's floor planes; they thump with the beat clock (set the BPM in Lights) */
   var SPKR = [{ f: 'pal', x: 80, y: 338, h: 175, k: 'pa' }, { f: 'par', x: 1872, y: 352, h: 175, k: 'pa' }, { f: 'wl', x: 70, y: 455, h: 100, k: 'wl' }, { f: 'wr', x: 1868, y: 520, h: 100, k: 'wl' }, { f: 'sl', x: 585, y: 470, h: 58, k: 'sub' }, { f: 'sr', x: 1565, y: 392, h: 56, k: 'sub' }], SPKRE = [];
@@ -335,9 +336,11 @@
   function animate(now) {
     requestAnimationFrame(animate);
     var dt = Math.min(100, now - (lastF || now)); lastF = now; if (!dt) return;
-    dtAvg += (dt - dtAvg) * 0.05; bclk += dt / 1000 * LT.bpm / 60; frameN++; spkTick();
+    if (dtSamp && dtSamp.length < 140) { dtSamp.push(dt); if (dtSamp.length === 140) { var sm = dtSamp.slice(20).sort(function (a, b) { return a - b; }); dtRef = Math.max(15, Math.min(34, sm[Math.floor(sm.length * 0.25)])); dtSamp = null; } }
+    dtAvg += (dt - dtAvg) * 0.05; bclk += dt / 1000 * LT.bpm / 60; spkTick();
+    if (now - lastDraw < 1000 / FPSCAP - 4) return; lastDraw = now; frameN++;
     var list = crowdList(), n = list.length, base = n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
-    if (dtAvg > 26 && STRIDE < 6) STRIDE = Math.min(6, Math.max(STRIDE, base) + 1); else if (dtAvg < 19 && STRIDE > base) STRIDE--; else if (STRIDE < base) STRIDE = base;
+    if (dtAvg > dtRef * 1.5 && STRIDE < 6) STRIDE = Math.min(6, Math.max(STRIDE, base) + 1); else if (dtAvg < dtRef * 1.2 && STRIDE > base) STRIDE--; else if (STRIDE < base) STRIDE = base;
     var t0 = performance.now();
     for (var i = 0; i < list.length; i++) {
       var u = list[i], wk = u.wk, nowMs = performance.now(), walkOpt = null, walking = false;
@@ -351,7 +354,7 @@
       if (performance.now() - t0 > (u.dirty ? 34 : 14)) break;
     }
     fpsMs = performance.now() - t0;
-    if (!S.lite && STRIDE >= 6 && dtAvg > 45) { slowT += dt; if (slowT > 20000) { S.lite = 'auto'; liteApply(); save(); try { log('Performance mode switched on automatically (slow frames)'); } catch (e) {} rcSnap(true); } } else slowT = Math.max(0, slowT - dt);
+    if (!S.lite && STRIDE >= 6 && dtAvg > Math.max(45, dtRef * 2.2)) { slowT += dt; if (slowT > 20000) { S.lite = 'auto'; liteApply(); save(); try { log('Performance mode switched on automatically (slow frames)'); } catch (e) {} rcSnap(true); } } else slowT = Math.max(0, slowT - dt);
   }
   function rebuildAll() { order.forEach(function (k) { var u = users[k]; if (u && u.cv) { u._sg = null; build(u); } }); BT.forEach(function (u) { if (u.cv) { u._sg = null; build(u); } }); }
   VNNA.setCache(260);
@@ -1245,6 +1248,26 @@
     if (u._wasInside && !u.inside && u._wasInside !== 'done') { u._wasInside = 'done'; u.inside = true; if (order.indexOf(u.key) < 0) order.push(u.key); seat(u, true); }
     handle(u, text);
   }
+  /* chat intake: messages are queued and handled a few at a time so a burst can never freeze the show */
+  var MQ = [], mqT = 0, RATE = {}, mqDrop = 0;
+  function qMsg(x) {
+    var t = String(x.chatmessage != null ? x.chatmessage : (x.message != null ? x.message : '')), cmd = t.charAt(0) === '!';
+    if (!cmd) {
+      var k = String(x.userid || x.chatname || x.username || ''), now = Date.now(), r = RATE[k] || (RATE[k] = []);
+      while (r.length && now - r[0] > 3000) r.shift();
+      if (r.length >= 6) { mqDrop++; return; }
+      r.push(now);
+    }
+    MQ.push(x);
+    if (MQ.length > 250) { var keep = [], over = MQ.length - 120; for (var i = 0; i < MQ.length; i++) { var q = MQ[i], qt = String(q.chatmessage != null ? q.chatmessage : (q.message != null ? q.message : '')); if (over > 0 && qt.charAt(0) !== '!') { over--; mqDrop++; } else keep.push(q); } MQ = keep; }
+    if (!mqT) mqT = setTimeout(mqRun, 0);
+  }
+  function mqRun() {
+    mqT = 0; var t0 = performance.now(), n = 0;
+    while (MQ.length && n < 12 && performance.now() - t0 < 8) { n++; try { onMessage(MQ.shift()); } catch (e) { console.error('msg', e); } }
+    if (MQ.length) mqT = setTimeout(mqRun, 30);
+    if (Object.keys(RATE).length > 600) RATE = {};
+  }
   function handleRaw(data) {
     var j; try { j = typeof data === 'string' ? JSON.parse(data) : data; } catch (e) { return; }
     (function walk(x) {
@@ -1253,7 +1276,7 @@
       if (x.overlayNinja) return walk(x.overlayNinja);
       if (x.dataReceived) return walk(x.dataReceived);
       if (x.contents) return walk(x.contents);
-      if (typeof x === 'object' && (x.chatmessage != null || x.chatname || x.userid)) onMessage(x);
+      if (typeof x === 'object' && (x.chatmessage != null || x.chatname || x.userid)) qMsg(x);
     })(j);
   }
   var ws = null, wsT = null, wsTry = 0;
@@ -1595,7 +1618,7 @@
   CITY.start(); spkBuild(); liteApply(); if (K_STEPS.indexOf(S.k) >= 0) CROWDK = S.k; buildSlots(); placeFixed(); buildGlows(); buildLed(); buildBartenders(); setBg(); buildPanel(); setNP(S.np.a, S.np.t); npStart(); vipUI(); lightUI(); tip(); setInterval(tip, 8000); connect(); rcStart();
   Object.keys(S.users || {}).forEach(function (k) { var sv = S.users[k]; if (sv.inside) { var u = newUser(k, sv.name, sv.plat, sv.photo); u.hnd = k.split(':')[1]; u.inside = true; u._restore = true; refreshVip(u); order.push(k); } });
   relayout();
-  window.__vnn = { slots: function (k) { var o = makeSlots(k); return { floor: o.floor.length, bar: o.bar.length, vip: o.vip.length }; }, city: CITY, perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap, drinks: { order: orderDrink, round: barRound, act: startAct, hold: holdOf }, demo: demoRun, emo: emojiOnly, bub: bubble, bubs: BUB, bubRule: bubRule };
+  window.__vnn = { raw: handleRaw, mq: function () { return { q: MQ.length, dropped: mqDrop }; }, slots: function (k) { var o = makeSlots(k); return { floor: o.floor.length, bar: o.bar.length, vip: o.vip.length }; }, city: CITY, perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap, drinks: { order: orderDrink, round: barRound, act: startAct, hold: holdOf }, demo: demoRun, emo: emojiOnly, bub: bubble, bubs: BUB, bubRule: bubRule };
 })();
 </script>
 </body>
