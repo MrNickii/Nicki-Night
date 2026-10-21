@@ -468,8 +468,11 @@
     var tp = p.top && byId(CATALOG.looks, p.top);
     if (tp && !force && ((tp.unlock === 'earned' && !earned) || (tp.unlock === 'vip' && !u.vip))) { notes.push('locked: ' + tp.name); p.top = null; }
     var bp = p.bottom && byId(CATALOG.bottoms, p.bottom);
-    if (bp && !force && bp.unlock === 'earned' && !earned) { notes.push('locked: ' + bp.name); p.bottom = null; }
-    if (p.acc.length && !force) p.acc = p.acc.filter(function (id) { var it = byId(CATALOG.accessories.items, id); if (it && it.unlock === 'vip' && !u.vip) { notes.push('locked: ' + it.name); return false; } return true; });
+    var lk = function (it) { return it && ((it.unlock === 'earned' && !earned) || (it.unlock === 'vip' && !u.vip)); };
+    if (bp && !force && lk(bp)) { notes.push('locked: ' + bp.name); p.bottom = null; }
+    var shp = p.shoes && byId(CATALOG.shoes, p.shoes); if (shp && !force && lk(shp)) { notes.push('locked: ' + shp.name); p.shoes = null; }
+    var hrp = p.hair && byId(CATALOG.hair.styles, p.hair); if (hrp && !force && lk(hrp)) { notes.push('locked: ' + hrp.name); p.hair = null; }
+    if (p.acc.length && !force) p.acc = p.acc.filter(function (id) { var it = byId(CATALOG.accessories.items, id); if (lk(it)) { notes.push('locked: ' + it.name); return false; } return true; });
     ['top', 'topColor', 'bottom', 'bottomColor', 'shoes', 'shoesColor', 'height', 'hair', 'hairColor', 'skin', 'body'].forEach(function (k) { if (p[k]) c[k] = p[k]; });
     if (p.acc.length) { c.acc = p.acc; c.accColor = p.accColor || c.accColor; } else if (p.accColor && c.acc.length) c.accColor = p.accColor;
     if (p.hairColor && !p.hair && !c.hair) c.hair = 'long';
