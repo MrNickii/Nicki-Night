@@ -51,6 +51,17 @@ body.preview { background: #05020a; }
 #cmd { position: absolute; display: flex; align-items: center; justify-content: center; gap: 18px; background: linear-gradient(90deg, rgba(18,10,27,.0), rgba(18,10,27,.88) 12%, rgba(18,10,27,.88) 88%, rgba(18,10,27,0)); font: 700 26px/1 "Arial Black", system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; }
 #cmd b { color: var(--pink); }
 #cmd span { transition: opacity .4s; }
+#rwhud { position: absolute; left: 560px; top: 436px; width: 800px; padding: 8px 12px 10px; border-radius: 16px; background: rgba(20,6,31,.82); border: 2px solid #ffd86b; box-shadow: 0 0 30px rgba(255,79,176,.55); color: #fff; font: 700 15px/1.2 system-ui, Arial, sans-serif; opacity: 0; transform: translateY(-6px); transition: opacity .4s, transform .4s; pointer-events: none; z-index: 9000; }
+#rwhud.show { opacity: 1; transform: none; }
+#rwhud .rwh { display: flex; justify-content: space-between; font: 900 17px/1 "Arial Black", system-ui; letter-spacing: .08em; color: #ffd86b; margin-bottom: 7px; }
+#rwhud .rwc { display: flex; gap: 8px; }
+#rwhud .rwi { position: relative; flex: 1; height: 34px; border-radius: 10px; background: rgba(255,255,255,.1); overflow: hidden; display: flex; align-items: center; padding: 0 8px; gap: 6px; }
+#rwhud .rwi i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, rgba(255,79,176,.7), rgba(255,216,107,.7)); transition: width .4s; z-index: 0; }
+#rwhud .rwi span, #rwhud .rwi em { position: relative; z-index: 1; }
+#rwhud .rwi em { margin-left: auto; font-style: normal; color: #ffd86b; }
+#rwhud .rwn { background: #ffd86b; color: #1a0f26; border-radius: 99px; min-width: 22px; text-align: center; font-weight: 900; }
+#rwhud .rwm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90px; }
+#rwhud .rwi.win { outline: 3px solid #ffd86b; box-shadow: 0 0 18px #ffd86b; }
 #banner { position: absolute; left: 0; right: 0; top: 150px; text-align: center; font: 900 54px/1 "Arial Black", system-ui, sans-serif; letter-spacing: .04em; color: #fff; text-shadow: 0 0 24px #ff4fb0, 0 0 60px #ff4fb0; opacity: 0; transform: scale(.9); transition: opacity .5s, transform .5s; pointer-events: none; }
 #banner.show { opacity: 1; transform: scale(1); }
 #banner small { display: block; margin-top: 10px; font: 700 22px/1 system-ui, Arial, sans-serif; color: var(--gold); text-shadow: none; letter-spacing: .2em; }
@@ -175,6 +186,7 @@ body.pan #panel { display: block; }
   <svg id="carpet" viewBox="0 0 1920 1080"></svg>
   <div id="np" class="idle"><div class="eq"><i></i><i></i><i></i><i></i></div><span class="lbl">NOW PLAYING</span><div id="npbox"><span id="npa"></span><span id="npd">&mdash;</span><span id="npt">DJ set live</span></div></div>
   <div id="banner"></div>
+  <div id="rwhud"></div>
   <div id="nfx"></div>
   <div id="zones" class="layer"></div>
   <div id="strobe"></div>
