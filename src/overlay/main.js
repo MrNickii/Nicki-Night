@@ -1010,6 +1010,16 @@
   }
   function bubClear() { BUB.list.slice().forEach(function (b) { talk(b.u, null, false); bubDrop(b); }); }
   function bubKick() { if (BUB.run) return; BUB.run = true; requestAnimationFrame(bubTick); }
+  /* keep speech bubbles off the video windows (main screen unless it is see-through, DJ screen, host cam) */
+  function clearZones(x, y, w, h, ay) {
+    var hole = $('stage').classList.contains('hole'), zs = R.zones || {}, out = y;
+    ['screen', 'dj', 'host'].forEach(function (id) {
+      var z = zs[id]; if (!z || (id === 'screen' && hole)) return;
+      var zx = z[0] - 6, zy = z[1] - 6, zw = z[2] + 12, zh = z[3] + 12;
+      if (x < zx + zw && x + w > zx && out < zy + zh && out + h > zy) out = Math.min(zy + zh + 2, ay - h - 2 > zy + zh ? ay - h - 2 : zy + zh + 2);
+    });
+    return out;
+  }
   function bubTick() {
     if (!BUB.list.length) { BUB.run = false; return; }
     requestAnimationFrame(bubTick);
@@ -1032,6 +1042,7 @@
         for (j = 0; j < placed.length; j++) { var p = placed[j]; if (bx < p.x + p.w + 6 && bx + w + 6 > p.x && by < p.y + p.h + 6 && by + h + 6 > p.y) { hit = p; break; } }
         if (!hit) break; by = hit.y - h - 8;
       }
+      by = clearZones(bx, by, w, h, it.ay);
       if (by < 4) by = 4;
       placed.push({ x: bx, y: by, w: w, h: h });
       b.el.style.transform = 'translate3d(' + Math.round(bx) + 'px,' + Math.round(by) + 'px,0)'; b.el.style.zIndex = String(Math.round(it.ay) + 100);
