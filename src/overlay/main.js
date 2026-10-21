@@ -198,7 +198,7 @@
     var got = [];
     Object.keys(TFN).forEach(function (t) { if (!u.ear[t] && TFN[t](u)) { u.ear[t] = 1; got = got.concat(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })); } });
     if (!got.length) return;
-    var nm = got.map(itemName), txt = '🔓 Unlocked: ' + nm[0] + (nm.length > 1 ? ' + ' + (nm.length - 1) + ' more' : '');
+    var nm = got.map(itemName), txt = '🔓 ' + nm[0] + (nm.length > 1 ? ' +' + (nm.length - 1) : '');
     if (u.inside) { say(u, txt, 5200, true); try { emojiPop(u, '✨'); } catch (e) { } }
     log(u.name + ' unlocked ' + nm.join(', ')); u.dirty = 1; save();
   }
@@ -608,7 +608,10 @@
   var nickiBusy = false;
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   function banner(t, sub, ms) {
-    var b = $('banner'); b.innerHTML = t + (sub ? '<small>' + sub + '</small>' : ''); b.classList.add('show');
+    var b = $('banner'); b.innerHTML = '<span class="bt">' + t + '</span>' + (sub ? '<small>' + sub + '</small>' : ''); b.classList.add('show');
+    var bt = b.firstChild, bs = b.querySelector('small'), sc = 1;
+    if (bt.offsetWidth > 670) { sc = 670 / bt.offsetWidth; bt.style.transform = 'scale(' + sc.toFixed(3) + ')'; bt.style.marginBottom = (-(1 - sc) * 20) + 'px'; }
+    if (bs && bs.offsetWidth > 670) bs.style.transform = 'scale(' + (670 / bs.offsetWidth).toFixed(3) + ')';
     setTimeout(function () { b.classList.remove('show'); }, ms || 3800);
   }
   /* the big entrance moment: light rays, slam-in letters, confetti, camera flashes, glowing carpet */
@@ -698,8 +701,15 @@
     var el = u.el; if (!el) return; var tag = el.querySelector('.rk');
     if (!on) { if (tag) tag.remove(); u.autoDance = false; return; }
     if (!tag) { tag = document.createElement('div'); tag.className = 'rk'; el.appendChild(tag); }
-    tag.textContent = '#' + ((u.rank || 0) + 1); tag.style.fontSize = Math.max(14, u.d * 0.22) + 'px'; u.autoDance = true;
+    tag.className = 'rk r' + Math.min(5, (u.rank || 0) + 1); tag.textContent = String((u.rank || 0) + 1); tag.style.fontSize = Math.max(14, u.d * 0.22) + 'px'; u.autoDance = true;
   }
+  function rankSync() {
+    order.forEach(function (k) {
+      var u = users[k]; if (!u || !u.el) return; var has = !!u.el.querySelector('.rk'), want = !!(u.inside && u.stage && u.slot && u.slot.z === 'stage' && u.rank != null);
+      if (want) { var t = u.el.querySelector('.rk'); if (!t || t.textContent !== String((u.rank || 0) + 1)) rankTag(u, true); } else if (has) rankTag(u, false);
+    });
+  }
+  setInterval(rankSync, 1200);
   var top5Sig = '';
   function top5Update(force) {
     if (RW.on) return;
