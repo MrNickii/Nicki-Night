@@ -16,6 +16,10 @@ body.preview { background: #05020a; }
 .p { position: absolute; left: 0; top: 0; transition: transform 1.6s cubic-bezier(.45,.05,.4,1), opacity .6s; will-change: transform; opacity: 0; }
 .p.in { opacity: 1; }
 .p .in2 { position: relative; }
+.p .sh { position: absolute; display: none; pointer-events: none; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0)); }
+html.polish .p .sh { display: block; }
+html.polish .p .in2 canvas { filter: drop-shadow(0 0 .7px rgba(14,2,10,.95)) drop-shadow(0 0 .6px rgba(14,2,10,.8)); }
+body.lite .p .sh { display: none !important; } body.lite .p .in2 canvas { filter: none !important; }
 .p.walk .av * { animation-play-state: paused !important; }
 @keyframes step { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-7px) rotate(1.5deg); } }
 .pill { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 4px); white-space: nowrap; box-sizing: border-box; border: .62em solid transparent; border-image: url(vnn/ui/tag.png) 32 fill / .62em stretch; padding: .02em .5em; background: none; font: 700 15px/1.15 system-ui, Arial, sans-serif; color: #fff; text-shadow: 0 0 6px rgba(255,79,176,.8); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 5; }

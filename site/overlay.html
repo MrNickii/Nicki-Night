@@ -16,6 +16,10 @@ body.preview { background: #05020a; }
 .p { position: absolute; left: 0; top: 0; transition: transform 1.6s cubic-bezier(.45,.05,.4,1), opacity .6s; will-change: transform; opacity: 0; }
 .p.in { opacity: 1; }
 .p .in2 { position: relative; }
+.p .sh { position: absolute; display: none; pointer-events: none; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0)); }
+html.polish .p .sh { display: block; }
+html.polish .p .in2 canvas { filter: drop-shadow(0 0 .7px rgba(14,2,10,.95)) drop-shadow(0 0 .6px rgba(14,2,10,.8)); }
+body.lite .p .sh { display: none !important; } body.lite .p .in2 canvas { filter: none !important; }
 .p.walk .av * { animation-play-state: paused !important; }
 @keyframes step { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-7px) rotate(1.5deg); } }
 .pill { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 4px); white-space: nowrap; box-sizing: border-box; border: .62em solid transparent; border-image: url(vnn/ui/tag.png) 32 fill / .62em stretch; padding: .02em .5em; background: none; font: 700 15px/1.15 system-ui, Arial, sans-serif; color: #fff; text-shadow: 0 0 6px rgba(255,79,176,.8); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 5; }
@@ -640,7 +644,7 @@ var VNNA = (function () {
       { id: 'waistcoat', name: 'Tailored Waistcoat', fit: 'any', unlock: 'free', sheet: 'TOP-SLEEVELESS-4', v: 'B', col: '#16101f' },
       { id: 'partydress', name: 'Sculpted Party Dress', fit: 'fem', unlock: 'vip', dress: true, sheet: 'DRESS-5', col: '#d62839' },
       { id: 'orbithaori', name: 'Orbit Haori', fit: 'any', unlock: 'vip', sig: 1, sheet: 'SIG-TOP-8', v: 'A' },
-      { id: 'barbtee', name: 'Barb Crystal Tee', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-9', v: 'A' },
+      { id: 'barbcrystal', name: 'Barb Crystal Tee', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-9', v: 'A' },
       { id: 'resortmuscle', name: 'Resort Muscle Top', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-9', v: 'B' },
       { id: 'pinkprintzip', name: 'Pinkprint Zip', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-10', v: 'A' },
       { id: 'cityletterman', name: 'City Letterman', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-10', v: 'B' },
@@ -1004,7 +1008,7 @@ var VNNA = (function () {
   }
   function clipOf(id) { var d = byId(CATALOG.dances, id) || byId(CATALOG.dances, CATALOG.danceAlias[id]); return d ? d.clip : 'hh1'; }
   var EARN = { tasks: {"dn3": "Never get stuck on one groove.", "dn7": "Know every move this room has to offer.", "lk2": "A fresh fit, then another fresh fit.", "lk8": "A new mood, a new you. Again and again.", "dr1": "Someone behind the bar is waiting on you.", "dr3": "The third round is where the magic happens.", "ch5": "The quiet ones never get noticed.", "ch25": "Keep the conversation loud.", "che3": "Lift your glass. More than once.", "st30": "Good things come to those who stay.", "early": "Doors open, early birds get in first.", "rwp": "Be seen under the lights.", "rww": "The crowd crowns one winner.", "t5": "Be one of the loudest five.", "lc": "Stay until the lights come up.", "reg": "Keep dancing and keep talking.", "x_barb": "Nicki will whisper a secret. Listen close.", "x_pf2": "Nicki will whisper a secret. Listen close.", "x_pink": "Nicki will whisper a secret. Listen close.", "x_gag": "Nicki will whisper a secret. Listen close."},
-    items: {"citysnap": "dn3", "cowboyhat": "dn3", "heartstud": "dn3", "airtrucker": "ch5", "nightshades": "ch5", "pinkbeanie": "dr1", "durag": "dr1", "fuzzybucket": "dr1", "fedora": "lk2", "cateye": "lk2", "satinscarf": "lk2", "crystalcat": "dr3", "miniskirt": "dr3", "resortshorts": "dr3", "trini": "dr3", "puffvest": "dr3", "midiskirt": "che3", "loafers": "che3", "roman": "early", "pleated": "dn7", "slipdress": "dn7", "whitebomber": "dn7", "fphightops": "dn7", "denimskirt": "ch25", "bodycon": "ch25", "airbrushjoggers": "ch25", "varsity": "ch25", "utilitymini": "st30", "skater": "st30", "layeredcurls": "st30", "letterman": "st30", "satindress": "lk8", "harajuku": "lk8", "pinkstarboots": "lk8", "queens": "t5", "crowntrainers": "t5", "cityletterman": "rwp", "nickitee": "rwp", "heartcrown": "rww", "resortmuscle": "lc", "pinkprintcrew": "reg", "nickicrew": "reg", "barbtee": "x_barb", "pf2bomber": "x_pf2", "pinkprintzip": "x_pink", "gagcargos": "x_gag", "crimped": "lk2", "bubbletail": "dr3", "jellyfish": "ch5", "fulani": "ch25", "curlymullet": "dn7", "fauxhawk": "dr1", "twoblock": "che3", "angfringe": "lk8"} };
+    items: {"citysnap": "dn3", "cowboyhat": "dn3", "heartstud": "dn3", "airtrucker": "ch5", "nightshades": "ch5", "pinkbeanie": "dr1", "durag": "dr1", "fuzzybucket": "dr1", "fedora": "lk2", "cateye": "lk2", "satinscarf": "lk2", "crystalcat": "dr3", "miniskirt": "dr3", "resortshorts": "dr3", "trini": "dr3", "puffvest": "dr3", "midiskirt": "che3", "loafers": "che3", "roman": "early", "pleated": "dn7", "slipdress": "dn7", "whitebomber": "dn7", "fphightops": "dn7", "denimskirt": "ch25", "bodycon": "ch25", "airbrushjoggers": "ch25", "varsity": "ch25", "utilitymini": "st30", "skater": "st30", "layeredcurls": "st30", "letterman": "st30", "satindress": "lk8", "harajuku": "lk8", "pinkstarboots": "lk8", "queens": "t5", "crowntrainers": "t5", "cityletterman": "rwp", "nickitee": "rwp", "heartcrown": "rww", "resortmuscle": "lc", "pinkprintcrew": "reg", "nickicrew": "reg", "barbcrystal": "x_barb", "pf2bomber": "x_pf2", "pinkprintzip": "x_pink", "gagcargos": "x_gag", "crimped": "lk2", "bubbletail": "dr3", "jellyfish": "ch5", "fulani": "ch25", "curlymullet": "dn7", "fauxhawk": "dr1", "twoblock": "che3", "angfringe": "lk8"} };
   return { CATALOG: CATALOG, EARN: EARN, init: init, build: build, spec: spec, draw: draw, clipOf: clipOf, byId: byId, hex2: hex2, lib: function () { return LIB; }, Q: function () { return Q; }, cacheSize: function () { return CORDER.length; }, setCache: function (n) { MAXC = n; } };
 })();
 
@@ -1019,6 +1023,8 @@ var VNNA = (function () {
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function byId(arr, id) { for (var i = 0; i < arr.length; i++) if (arr[i].id === id || (arr[i].alias && arr[i].alias.indexOf(id) >= 0)) return arr[i]; return null; }
   var Q = new URLSearchParams(location.search);
+  /* avatar polish (on by default, ?polish=0 turns it off): sharper avatar scaling, outline + floor shadow, full-speed animation when the machine keeps up */
+  var POL = Q.get('polish') !== '0', STG = 1; if (POL) document.documentElement.classList.add('polish');
   var KEY = 'vnn-overlay-v1', KEYBG = 'vnn-overlay-bg';
   var DEFROOM = {
     stage: { x: 960, y: 770 },
@@ -1071,7 +1077,7 @@ var VNNA = (function () {
   var stage = $('stage'), preview = !(window.obsstudio);
   if (Q.get('preview') === '0') preview = false;
   if (preview) document.body.classList.add('preview');
-  function fit() { var s = Math.min(innerWidth / W, innerHeight / H); if (!preview) s = innerWidth / W; stage.style.transform = 'scale(' + s + ')'; }
+  function fit() { var s = Math.min(innerWidth / W, innerHeight / H); if (!preview) s = innerWidth / W; STG = s; stage.style.transform = 'scale(' + s + ')'; }
   addEventListener('resize', fit); fit();
 
   function applyHole() {
@@ -1315,14 +1321,16 @@ var VNNA = (function () {
     u.d = d; u.s0 = s0; u.fh = 1700 * s0 * hs; u.h = ch; u.w = d;
     if (!u.cv) { u.cv = document.createElement('canvas'); u.cv.style.cssText = 'display:block;pointer-events:none'; u.inner.innerHTML = ''; u.inner.appendChild(u.cv); u.cx = u.cv.getContext('2d'); }
     var old = null; if (u.cw && u.cv.width > 0 && u.set) { old = document.createElement('canvas'); old.width = u.cv.width; old.height = u.cv.height; old.getContext('2d').drawImage(u.cv, 0, 0); }
-    u.cv.width = cw; u.cv.height = ch; if (old) u.cx.drawImage(old, 0, 0, cw, ch); u.cv.style.width = cw + 'px'; u.cv.style.height = ch + 'px'; u.inner.style.width = cw + 'px'; u.inner.style.height = ch + 'px';
+    var R = POL ? Math.min(2, Math.max(1, STG * (window.devicePixelRatio || 1))) : 1; u.R = R;
+    u.cv.width = Math.round(cw * R); u.cv.height = Math.round(ch * R); if (R !== 1) u.cx.setTransform(R, 0, 0, R, 0, 0); if (POL) u.cx.imageSmoothingQuality = 'high'; if (old) u.cx.drawImage(old, 0, 0, cw, ch);
+    if (u.sh) { var shw = u.fh * 0.46, shh = u.fh * 0.075; u.sh.style.width = shw + 'px'; u.sh.style.height = shh + 'px'; u.sh.style.left = (cw - shw) / 2 + 'px'; u.sh.style.top = (2003 * s0 - shh / 2) + 'px'; } u.cv.style.width = cw + 'px'; u.cv.style.height = ch + 'px'; u.inner.style.width = cw + 'px'; u.inner.style.height = ch + 'px';
     u.cw = cw; u.ch = ch; u.cv.style.marginLeft = '0'; u.dirty = 1; loadPhoto(u); build(u);
     if (u.pill) u.pill.style.bottom = 'calc(100% - ' + Math.round(250 * s0) + 'px)';
   }
   function makeEl(u) {
     var el = document.createElement('div'); el.className = 'p';
-    el.innerHTML = '<div class="in2"></div><div class="pill"></div>';
-    u.el = el; u.inner = el.firstChild; u.pill = el.lastChild; u.cv = null; u.cx = null; u.h = 0; u.ghostD = 0; u.dirty = 1;
+    el.innerHTML = '<div class="sh"></div><div class="in2"></div><div class="pill"></div>';
+    u.el = el; u.sh = el.firstChild; u.inner = el.children[1]; u.pill = el.lastChild; u.cv = null; u.cx = null; u.h = 0; u.ghostD = 0; u.dirty = 1;
     $('crowd').appendChild(el);
   }
   /* one shared animation loop for everyone on screen */
@@ -1353,7 +1361,7 @@ var VNNA = (function () {
     if (dtSamp && dtSamp.length < 140) { dtSamp.push(dt); if (dtSamp.length === 140) { var sm = dtSamp.slice(20).sort(function (a, b) { return a - b; }); dtRef = Math.max(15, Math.min(34, sm[Math.floor(sm.length * 0.25)])); dtSamp = null; } }
     dtAvg += (dt - dtAvg) * 0.05; bclk += dt / 1000 * LT.bpm / 60; spkTick();
     if (now - lastDraw < 1000 / FPSCAP - 4) return; lastDraw = now; frameN++;
-    var list = crowdList(), n = list.length, base = n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
+    var list = crowdList(), n = list.length, base = (POL && !S.lite) ? 1 : n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
     if (dtAvg > dtRef * 1.5 && STRIDE < 6) STRIDE = Math.min(6, Math.max(STRIDE, base) + 1); else if (dtAvg < dtRef * 1.2 && STRIDE > base) STRIDE--; else if (STRIDE < base) STRIDE = base;
     var t0 = performance.now();
     for (var i = 0; i < list.length; i++) {

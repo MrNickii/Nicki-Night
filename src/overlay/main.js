@@ -5,6 +5,8 @@
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function byId(arr, id) { for (var i = 0; i < arr.length; i++) if (arr[i].id === id || (arr[i].alias && arr[i].alias.indexOf(id) >= 0)) return arr[i]; return null; }
   var Q = new URLSearchParams(location.search);
+  /* avatar polish (on by default, ?polish=0 turns it off): sharper avatar scaling, outline + floor shadow, full-speed animation when the machine keeps up */
+  var POL = Q.get('polish') !== '0', STG = 1; if (POL) document.documentElement.classList.add('polish');
   var KEY = 'vnn-overlay-v1', KEYBG = 'vnn-overlay-bg';
   var DEFROOM = {
     stage: { x: 960, y: 770 },
@@ -57,7 +59,7 @@
   var stage = $('stage'), preview = !(window.obsstudio);
   if (Q.get('preview') === '0') preview = false;
   if (preview) document.body.classList.add('preview');
-  function fit() { var s = Math.min(innerWidth / W, innerHeight / H); if (!preview) s = innerWidth / W; stage.style.transform = 'scale(' + s + ')'; }
+  function fit() { var s = Math.min(innerWidth / W, innerHeight / H); if (!preview) s = innerWidth / W; STG = s; stage.style.transform = 'scale(' + s + ')'; }
   addEventListener('resize', fit); fit();
 
   function applyHole() {
@@ -301,14 +303,16 @@
     u.d = d; u.s0 = s0; u.fh = 1700 * s0 * hs; u.h = ch; u.w = d;
     if (!u.cv) { u.cv = document.createElement('canvas'); u.cv.style.cssText = 'display:block;pointer-events:none'; u.inner.innerHTML = ''; u.inner.appendChild(u.cv); u.cx = u.cv.getContext('2d'); }
     var old = null; if (u.cw && u.cv.width > 0 && u.set) { old = document.createElement('canvas'); old.width = u.cv.width; old.height = u.cv.height; old.getContext('2d').drawImage(u.cv, 0, 0); }
-    u.cv.width = cw; u.cv.height = ch; if (old) u.cx.drawImage(old, 0, 0, cw, ch); u.cv.style.width = cw + 'px'; u.cv.style.height = ch + 'px'; u.inner.style.width = cw + 'px'; u.inner.style.height = ch + 'px';
+    var R = POL ? Math.min(2, Math.max(1, STG * (window.devicePixelRatio || 1))) : 1; u.R = R;
+    u.cv.width = Math.round(cw * R); u.cv.height = Math.round(ch * R); if (R !== 1) u.cx.setTransform(R, 0, 0, R, 0, 0); if (POL) u.cx.imageSmoothingQuality = 'high'; if (old) u.cx.drawImage(old, 0, 0, cw, ch);
+    if (u.sh) { var shw = u.fh * 0.46, shh = u.fh * 0.075; u.sh.style.width = shw + 'px'; u.sh.style.height = shh + 'px'; u.sh.style.left = (cw - shw) / 2 + 'px'; u.sh.style.top = (2003 * s0 - shh / 2) + 'px'; } u.cv.style.width = cw + 'px'; u.cv.style.height = ch + 'px'; u.inner.style.width = cw + 'px'; u.inner.style.height = ch + 'px';
     u.cw = cw; u.ch = ch; u.cv.style.marginLeft = '0'; u.dirty = 1; loadPhoto(u); build(u);
     if (u.pill) u.pill.style.bottom = 'calc(100% - ' + Math.round(250 * s0) + 'px)';
   }
   function makeEl(u) {
     var el = document.createElement('div'); el.className = 'p';
-    el.innerHTML = '<div class="in2"></div><div class="pill"></div>';
-    u.el = el; u.inner = el.firstChild; u.pill = el.lastChild; u.cv = null; u.cx = null; u.h = 0; u.ghostD = 0; u.dirty = 1;
+    el.innerHTML = '<div class="sh"></div><div class="in2"></div><div class="pill"></div>';
+    u.el = el; u.sh = el.firstChild; u.inner = el.children[1]; u.pill = el.lastChild; u.cv = null; u.cx = null; u.h = 0; u.ghostD = 0; u.dirty = 1;
     $('crowd').appendChild(el);
   }
   /* one shared animation loop for everyone on screen */
@@ -339,7 +343,7 @@
     if (dtSamp && dtSamp.length < 140) { dtSamp.push(dt); if (dtSamp.length === 140) { var sm = dtSamp.slice(20).sort(function (a, b) { return a - b; }); dtRef = Math.max(15, Math.min(34, sm[Math.floor(sm.length * 0.25)])); dtSamp = null; } }
     dtAvg += (dt - dtAvg) * 0.05; bclk += dt / 1000 * LT.bpm / 60; spkTick();
     if (now - lastDraw < 1000 / FPSCAP - 4) return; lastDraw = now; frameN++;
-    var list = crowdList(), n = list.length, base = n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
+    var list = crowdList(), n = list.length, base = (POL && !S.lite) ? 1 : n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
     if (dtAvg > dtRef * 1.5 && STRIDE < 6) STRIDE = Math.min(6, Math.max(STRIDE, base) + 1); else if (dtAvg < dtRef * 1.2 && STRIDE > base) STRIDE--; else if (STRIDE < base) STRIDE = base;
     var t0 = performance.now();
     for (var i = 0; i < list.length; i++) {
