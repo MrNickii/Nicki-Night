@@ -219,7 +219,7 @@ var VNNA = (function () {
   function colArr(c) { return typeof c === 'string' ? hex2(c) : c; }
   function tint(im, col, key) {
     var ck = key + '|' + (col.ombre ? col.ombre.join('') : col.join(',')); if (TINT[ck]) return TINT[ck];
-    var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d'); x.drawImage(im, 0, 0);
+    var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
     var d = x.getImageData(0, 0, c.width, c.height), p = d.data, n = p.length / 4, i, hist = new Uint32Array(256), cnt = 0, W = c.width, H = c.height;
     for (i = 0; i < n; i++) if (p[i * 4 + 3] > 128) { hist[(p[i * 4] * 0.3 + p[i * 4 + 1] * 0.59 + p[i * 4 + 2] * 0.11) | 0]++; cnt++; }
     var acc = 0, ref = 255, tgt = cnt * 0.08; for (i = 255; i >= 0; i--) { acc += hist[i]; if (acc >= tgt) { ref = Math.max(60, i); break; } }
@@ -239,7 +239,7 @@ var VNNA = (function () {
   }
   function skinned(im, ratio, key) {
     var ck = key + '|s' + ratio.r.join(','); if (TINT[ck]) return TINT[ck];
-    var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d'); x.drawImage(im, 0, 0);
+    var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
     var d = x.getImageData(0, 0, c.width, c.height), p = d.data, i, n = p.length / 4, r = ratio.r;
     for (i = 0; i < n; i++) { p[i * 4] = Math.min(255, p[i * 4] * r[0]); p[i * 4 + 1] = Math.min(255, p[i * 4 + 1] * r[1]); p[i * 4 + 2] = Math.min(255, p[i * 4 + 2] * r[2]); }
     x.putImageData(d, 0, 0); return TINT[ck] = c;
@@ -269,7 +269,7 @@ var VNNA = (function () {
       R.forEach(function (r) { if (!r) return; minx = Math.min(minx, r.e.ox); miny = Math.min(miny, r.e.oy); maxx = Math.max(maxx, r.e.ox + r.e.w); maxy = Math.max(maxy, r.e.oy + r.e.h); });
       if (STRIP[key]) { miny = 0; maxy = def.h; }
       minx = Math.floor(minx); miny = Math.floor(miny); var W = Math.ceil(maxx) - minx, H = Math.ceil(maxy) - miny;
-      var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W * Q)); c.height = Math.max(1, Math.round(H * Q)); var x = c.getContext('2d'); x.imageSmoothingQuality = 'high';
+      var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W * Q)); c.height = Math.max(1, Math.round(H * Q)); var x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingQuality = 'high'; /* built in main memory: the sleeve fix below reads pixels back, which stalls the graphics card in OBS */
       R.forEach(function (r) {
         if (!r) return; var dx = (r.e.ox - minx) * Q, dy = (r.e.oy - miny) * Q, w = r.e.w * Q, h = r.e.h * Q;
         if (r.garment) { var o = (r.big ? 8 : 3) * Q, A = [[o, 0], [-o, 0], [0, o], [0, -o], [o, o], [-o, -o], [o, -o], [-o, o]]; A.forEach(function (a) { x.drawImage(r.im, dx + a[0], dy + a[1], w, h); }); }

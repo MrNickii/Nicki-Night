@@ -39,7 +39,7 @@ body.lite .p .sh { display: none !important; } body.lite .p .in2 canvas { filter
 .bub.gold .bbox { border-color: var(--gold); }
 .bub .bstem { position: absolute; width: 3px; margin-left: -1px; border-radius: 2px; background: var(--c); box-shadow: 0 0 8px var(--cg); }
 .bub .bstem::after { content: ''; position: absolute; left: 50%; bottom: -4px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
-.emo { position: absolute; left: 0; top: 0; line-height: 1; white-space: nowrap; pointer-events: none; will-change: transform, opacity; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; filter: drop-shadow(0 2px 6px rgba(0,0,0,.45)); }
+.emo { position: absolute; left: 0; top: 0; line-height: 1; white-space: nowrap; pointer-events: none; will-change: transform, opacity; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
 @keyframes bubIn { from { opacity: 0; transform: translateY(10px) scale(.88); } to { opacity: 1; transform: none; } }
 .p .ring { position: absolute; left: 50%; width: 120px; height: 36px; margin: -18px 0 0 -60px; border-radius: 50%; border: 3px solid var(--c); box-shadow: 0 0 14px var(--c), inset 0 0 12px var(--cg); opacity: 0; transition: opacity .25s; pointer-events: none; }
 .p.talk .ring { opacity: 1; animation: ringp 1.3s ease-in-out infinite; }
@@ -324,7 +324,7 @@ var RIG = (function () {
     im = popImg(im);
     q = q || 1; var w = im.width / q, h = im.height / q, tiers = [{ c: im, k: q }], prev = im, kk = q, i;
     for (i = 0; i < 4; i++) { kk /= 2; var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * kk)); c.height = Math.max(1, Math.round(h * kk)); var x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(prev, 0, 0, c.width, c.height); tiers.push({ c: c, k: kk }); prev = c; }
-    for (i = 1; i < tiers.length; i++) sharpen(tiers[i].c, 0.55);
+    /* no runtime sharpen: reading pixels back from the graphics card stalled OBS while avatars were building */
     return { ball: d.ball, ank: d.ank, disc: d.disc, w: w, h: h, piv: d.piv || [w / 2, 0], bone: d.bone || [0, 1], len: d.bone ? Math.hypot(d.bone[0], d.bone[1]) : 0, tiers: tiers };
   }
   function use(P) { PART = P; }
@@ -878,7 +878,7 @@ var VNNA = (function () {
   function colArr(c) { return typeof c === 'string' ? hex2(c) : c; }
   function tint(im, col, key) {
     var ck = key + '|' + (col.ombre ? col.ombre.join('') : col.join(',')); if (TINT[ck]) return TINT[ck];
-    var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d'); x.drawImage(im, 0, 0);
+    var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
     var d = x.getImageData(0, 0, c.width, c.height), p = d.data, n = p.length / 4, i, hist = new Uint32Array(256), cnt = 0, W = c.width, H = c.height;
     for (i = 0; i < n; i++) if (p[i * 4 + 3] > 128) { hist[(p[i * 4] * 0.3 + p[i * 4 + 1] * 0.59 + p[i * 4 + 2] * 0.11) | 0]++; cnt++; }
     var acc = 0, ref = 255, tgt = cnt * 0.08; for (i = 255; i >= 0; i--) { acc += hist[i]; if (acc >= tgt) { ref = Math.max(60, i); break; } }
@@ -898,7 +898,7 @@ var VNNA = (function () {
   }
   function skinned(im, ratio, key) {
     var ck = key + '|s' + ratio.r.join(','); if (TINT[ck]) return TINT[ck];
-    var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d'); x.drawImage(im, 0, 0);
+    var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
     var d = x.getImageData(0, 0, c.width, c.height), p = d.data, i, n = p.length / 4, r = ratio.r;
     for (i = 0; i < n; i++) { p[i * 4] = Math.min(255, p[i * 4] * r[0]); p[i * 4 + 1] = Math.min(255, p[i * 4 + 1] * r[1]); p[i * 4 + 2] = Math.min(255, p[i * 4 + 2] * r[2]); }
     x.putImageData(d, 0, 0); return TINT[ck] = c;
@@ -928,7 +928,7 @@ var VNNA = (function () {
       R.forEach(function (r) { if (!r) return; minx = Math.min(minx, r.e.ox); miny = Math.min(miny, r.e.oy); maxx = Math.max(maxx, r.e.ox + r.e.w); maxy = Math.max(maxy, r.e.oy + r.e.h); });
       if (STRIP[key]) { miny = 0; maxy = def.h; }
       minx = Math.floor(minx); miny = Math.floor(miny); var W = Math.ceil(maxx) - minx, H = Math.ceil(maxy) - miny;
-      var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W * Q)); c.height = Math.max(1, Math.round(H * Q)); var x = c.getContext('2d'); x.imageSmoothingQuality = 'high';
+      var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W * Q)); c.height = Math.max(1, Math.round(H * Q)); var x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingQuality = 'high'; /* built in main memory: the sleeve fix below reads pixels back, which stalls the graphics card in OBS */
       R.forEach(function (r) {
         if (!r) return; var dx = (r.e.ox - minx) * Q, dy = (r.e.oy - miny) * Q, w = r.e.w * Q, h = r.e.h * Q;
         if (r.garment) { var o = (r.big ? 8 : 3) * Q, A = [[o, 0], [-o, 0], [0, o], [0, -o], [o, o], [-o, -o], [o, -o], [-o, o]]; A.forEach(function (a) { x.drawImage(r.im, dx + a[0], dy + a[1], w, h); }); }
@@ -1419,7 +1419,7 @@ var VNNA = (function () {
     if (dtSamp && dtSamp.length < 140) { dtSamp.push(dt); if (dtSamp.length === 140) { var sm = dtSamp.slice(20).sort(function (a, b) { return a - b; }); dtRef = Math.max(15, Math.min(34, sm[Math.floor(sm.length * 0.25)])); dtSamp = null; } }
     dtAvg += (dt - dtAvg) * 0.05; bclk += dt / 1000 * LT.bpm / 60; spkTick(); if (LT.disco) discoDraw(false);
     if (now - lastDraw < 1000 / FPSCAP - 4) return; lastDraw = now; frameN++;
-    var list = crowdList(), n = list.length, base = n <= 60 ? 1 : n <= 120 ? 2 : 3; /* full-speed dancing up to 60 people; the slow-frame check still steps this up if the machine struggles */
+    var list = crowdList(), n = list.length, base = n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
     if (dtAvg > dtRef * 1.5 && STRIDE < 6) STRIDE = Math.min(6, Math.max(STRIDE, base) + 1); else if (dtAvg < dtRef * 1.2 && STRIDE > base) STRIDE--; else if (STRIDE < base) STRIDE = base;
     var t0 = performance.now();
     for (var i = 0; i < list.length; i++) {
@@ -2445,23 +2445,23 @@ var VNNA = (function () {
   /* house specials: each one has its own pop-up when it lands in someone's hand (cheap: a handful of moving emoji, capped) */
   var DFX = { n: 0 };
   function drinkFx(u, k) {
-    if (S.lite && DFX.n > 2) return; if (DFX.n > 8 || !(u && u.inside && u.el)) return; var hp = headPos(u); if (!hp) return;
+    if (DFX.n > (S.lite ? 6 : 16) || !(u && u.inside && u.el)) return; /* hard cap on drink pop-up pieces on screen at once */ var hp = headPos(u); if (!hp) return;
     var sz = Math.max(44, Math.min(78, u.d * 0.6)), P = [];
     function add(ch, f) { P.push([ch, f]); }
     if (k === 'starships') { /* a rocket blasts off with a star trail */
       add('🚀', { k: [[0, 0, .4, -45, 0], [30, -60, 1.3, -40, 1], [150, -330, 1, -35, 1], [190, -430, .8, -35, 0]], d: 1700, s: 1.2 });
-      for (var i = 0; i < 6; i++) add(i % 2 ? '⭐' : '✨', { k: [[18 + i * 24, -40 - i * 55, .3, 0, 0], [18 + i * 24, -40 - i * 55, 1, 0, 1], [10 + i * 24, -20 - i * 55, .6, 90, 0]], d: 1100, dl: 120 + i * 110, s: .55 });
+      for (var i = 0; i < 4; i++) add(i % 2 ? '⭐' : '✨', { k: [[18 + i * 24, -40 - i * 55, .3, 0, 0], [18 + i * 24, -40 - i * 55, 1, 0, 1], [10 + i * 24, -20 - i * 55, .6, 90, 0]], d: 1100, dl: 120 + i * 110, s: .55 });
     } else if (k === 'cybertruck') { /* lightning flash, then a smash of shards */
       add('⚡', { k: [[0, -20, .2, 0, 0], [0, -30, 1.9, -8, 1], [0, -30, 1.5, 8, 1], [0, -40, 2.2, 0, 0]], d: 700, s: 1.2 });
       add('💥', { k: [[0, -10, .2, 0, 0], [0, -10, 1.5, 0, 1], [0, -10, 1.8, 0, 0]], d: 650, dl: 380, s: 1 });
-      for (var j = 0; j < 8; j++) { var a = j / 8 * 6.283, r = 150 + (j % 3) * 30; add(j % 2 ? '💜' : '🔷', { k: [[0, -10, .5, 0, 1], [Math.cos(a) * r, Math.sin(a) * r * .8 - 40, .8, 220, 1], [Math.cos(a) * r * 1.15, Math.sin(a) * r * .8 + 20, .5, 400, 0]], d: 1100, dl: 420, s: .5 }); }
+      for (var j = 0; j < 5; j++) { var a = j / 5 * 6.283, r = 150 + (j % 3) * 30; add(j % 2 ? '💜' : '🔷', { k: [[0, -10, .5, 0, 1], [Math.cos(a) * r, Math.sin(a) * r * .8 - 40, .8, 220, 1], [Math.cos(a) * r * 1.15, Math.sin(a) * r * .8 + 20, .5, 400, 0]], d: 1100, dl: 420, s: .5 }); }
     } else if (k === 'daq') { /* a frosty ring of snowflakes and a strawberry that hops up */
-      for (var m = 0; m < 8; m++) { var b = m / 8 * 6.283; add('❄️', { k: [[0, -20, .3, 0, 0], [Math.cos(b) * 70, Math.sin(b) * 50 - 20, 1, 90, 1], [Math.cos(b) * 140, Math.sin(b) * 100 - 30, .6, 200, 0]], d: 1500, dl: m * 30, s: .5 }); }
+      for (var m = 0; m < 5; m++) { var b = m / 5 * 6.283; add('❄️', { k: [[0, -20, .3, 0, 0], [Math.cos(b) * 70, Math.sin(b) * 50 - 20, 1, 90, 1], [Math.cos(b) * 140, Math.sin(b) * 100 - 30, .6, 200, 0]], d: 1500, dl: m * 30, s: .5 }); }
       add('🍓', { k: [[0, 0, .4, 0, 0], [0, -150, 1.4, -15, 1], [0, -110, 1.2, 10, 1], [0, -230, 1, 0, 0]], d: 1600, dl: 150, s: 1 });
     } else if (k === 'barbz') { /* ice cubes clink, watermelon pops, hearts float */
-      for (var q = 0; q < 3; q++) add('🧊', { k: [[(q - 1) * 50, -260, .8, -30, 0], [(q - 1) * 45, -60, 1, 10, 1], [(q - 1) * 40, -100, 1, -10, 1], [(q - 1) * 40, -70, .9, 0, 0]], d: 1300, dl: q * 120, s: .62 });
+      for (var q = 0; q < 2; q++) add('🧊', { k: [[(q - 1) * 50, -260, .8, -30, 0], [(q - 1) * 45, -60, 1, 10, 1], [(q - 1) * 40, -100, 1, -10, 1], [(q - 1) * 40, -70, .9, 0, 0]], d: 1300, dl: q * 120, s: .62 });
       add('🍉', { k: [[0, 0, .3, 0, 0], [0, -120, 1.4, -12, 1], [0, -180, 1, 12, 0]], d: 1500, dl: 400, s: 1 });
-      for (var h = 0; h < 4; h++) add('💗', { k: [[(h - 1.5) * 30, -40, .3, 0, 0], [(h - 1.5) * 50, -170 - h * 25, 1, (h - 1.5) * 15, 1], [(h - 1.5) * 60, -260 - h * 25, .7, 0, 0]], d: 1700, dl: 500 + h * 140, s: .55 });
+      for (var h = 0; h < 3; h++) add('💗', { k: [[(h - 1.5) * 30, -40, .3, 0, 0], [(h - 1.5) * 50, -170 - h * 25, 1, (h - 1.5) * 15, 1], [(h - 1.5) * 60, -260 - h * 25, .7, 0, 0]], d: 1700, dl: 500 + h * 140, s: .55 });
     }
     P.forEach(function (pp) {
       var ch = pp[0], f = pp[1], el = document.createElement('span'); DFX.n++;

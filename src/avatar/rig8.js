@@ -22,7 +22,7 @@ var RIG = (function () {
     im = popImg(im);
     q = q || 1; var w = im.width / q, h = im.height / q, tiers = [{ c: im, k: q }], prev = im, kk = q, i;
     for (i = 0; i < 4; i++) { kk /= 2; var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * kk)); c.height = Math.max(1, Math.round(h * kk)); var x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(prev, 0, 0, c.width, c.height); tiers.push({ c: c, k: kk }); prev = c; }
-    for (i = 1; i < tiers.length; i++) sharpen(tiers[i].c, 0.55);
+    /* no runtime sharpen: reading pixels back from the graphics card stalled OBS while avatars were building */
     return { ball: d.ball, ank: d.ank, disc: d.disc, w: w, h: h, piv: d.piv || [w / 2, 0], bone: d.bone || [0, 1], len: d.bone ? Math.hypot(d.bone[0], d.bone[1]) : 0, tiers: tiers };
   }
   function use(P) { PART = P; }

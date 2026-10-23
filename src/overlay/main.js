@@ -345,7 +345,7 @@
     if (dtSamp && dtSamp.length < 140) { dtSamp.push(dt); if (dtSamp.length === 140) { var sm = dtSamp.slice(20).sort(function (a, b) { return a - b; }); dtRef = Math.max(15, Math.min(34, sm[Math.floor(sm.length * 0.25)])); dtSamp = null; } }
     dtAvg += (dt - dtAvg) * 0.05; bclk += dt / 1000 * LT.bpm / 60; spkTick(); if (LT.disco) discoDraw(false);
     if (now - lastDraw < 1000 / FPSCAP - 4) return; lastDraw = now; frameN++;
-    var list = crowdList(), n = list.length, base = n <= 60 ? 1 : n <= 120 ? 2 : 3; /* full-speed dancing up to 60 people; the slow-frame check still steps this up if the machine struggles */
+    var list = crowdList(), n = list.length, base = n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
     if (dtAvg > dtRef * 1.5 && STRIDE < 6) STRIDE = Math.min(6, Math.max(STRIDE, base) + 1); else if (dtAvg < dtRef * 1.2 && STRIDE > base) STRIDE--; else if (STRIDE < base) STRIDE = base;
     var t0 = performance.now();
     for (var i = 0; i < list.length; i++) {
@@ -1230,23 +1230,23 @@
   /* house specials: each one has its own pop-up when it lands in someone's hand (cheap: a handful of moving emoji, capped) */
   var DFX = { n: 0 };
   function drinkFx(u, k) {
-    if (S.lite && DFX.n > 2) return; if (DFX.n > 8 || !(u && u.inside && u.el)) return; var hp = headPos(u); if (!hp) return;
+    if (DFX.n > (S.lite ? 6 : 16) || !(u && u.inside && u.el)) return; /* hard cap on drink pop-up pieces on screen at once */ var hp = headPos(u); if (!hp) return;
     var sz = Math.max(44, Math.min(78, u.d * 0.6)), P = [];
     function add(ch, f) { P.push([ch, f]); }
     if (k === 'starships') { /* a rocket blasts off with a star trail */
       add('🚀', { k: [[0, 0, .4, -45, 0], [30, -60, 1.3, -40, 1], [150, -330, 1, -35, 1], [190, -430, .8, -35, 0]], d: 1700, s: 1.2 });
-      for (var i = 0; i < 6; i++) add(i % 2 ? '⭐' : '✨', { k: [[18 + i * 24, -40 - i * 55, .3, 0, 0], [18 + i * 24, -40 - i * 55, 1, 0, 1], [10 + i * 24, -20 - i * 55, .6, 90, 0]], d: 1100, dl: 120 + i * 110, s: .55 });
+      for (var i = 0; i < 4; i++) add(i % 2 ? '⭐' : '✨', { k: [[18 + i * 24, -40 - i * 55, .3, 0, 0], [18 + i * 24, -40 - i * 55, 1, 0, 1], [10 + i * 24, -20 - i * 55, .6, 90, 0]], d: 1100, dl: 120 + i * 110, s: .55 });
     } else if (k === 'cybertruck') { /* lightning flash, then a smash of shards */
       add('⚡', { k: [[0, -20, .2, 0, 0], [0, -30, 1.9, -8, 1], [0, -30, 1.5, 8, 1], [0, -40, 2.2, 0, 0]], d: 700, s: 1.2 });
       add('💥', { k: [[0, -10, .2, 0, 0], [0, -10, 1.5, 0, 1], [0, -10, 1.8, 0, 0]], d: 650, dl: 380, s: 1 });
-      for (var j = 0; j < 8; j++) { var a = j / 8 * 6.283, r = 150 + (j % 3) * 30; add(j % 2 ? '💜' : '🔷', { k: [[0, -10, .5, 0, 1], [Math.cos(a) * r, Math.sin(a) * r * .8 - 40, .8, 220, 1], [Math.cos(a) * r * 1.15, Math.sin(a) * r * .8 + 20, .5, 400, 0]], d: 1100, dl: 420, s: .5 }); }
+      for (var j = 0; j < 5; j++) { var a = j / 5 * 6.283, r = 150 + (j % 3) * 30; add(j % 2 ? '💜' : '🔷', { k: [[0, -10, .5, 0, 1], [Math.cos(a) * r, Math.sin(a) * r * .8 - 40, .8, 220, 1], [Math.cos(a) * r * 1.15, Math.sin(a) * r * .8 + 20, .5, 400, 0]], d: 1100, dl: 420, s: .5 }); }
     } else if (k === 'daq') { /* a frosty ring of snowflakes and a strawberry that hops up */
-      for (var m = 0; m < 8; m++) { var b = m / 8 * 6.283; add('❄️', { k: [[0, -20, .3, 0, 0], [Math.cos(b) * 70, Math.sin(b) * 50 - 20, 1, 90, 1], [Math.cos(b) * 140, Math.sin(b) * 100 - 30, .6, 200, 0]], d: 1500, dl: m * 30, s: .5 }); }
+      for (var m = 0; m < 5; m++) { var b = m / 5 * 6.283; add('❄️', { k: [[0, -20, .3, 0, 0], [Math.cos(b) * 70, Math.sin(b) * 50 - 20, 1, 90, 1], [Math.cos(b) * 140, Math.sin(b) * 100 - 30, .6, 200, 0]], d: 1500, dl: m * 30, s: .5 }); }
       add('🍓', { k: [[0, 0, .4, 0, 0], [0, -150, 1.4, -15, 1], [0, -110, 1.2, 10, 1], [0, -230, 1, 0, 0]], d: 1600, dl: 150, s: 1 });
     } else if (k === 'barbz') { /* ice cubes clink, watermelon pops, hearts float */
-      for (var q = 0; q < 3; q++) add('🧊', { k: [[(q - 1) * 50, -260, .8, -30, 0], [(q - 1) * 45, -60, 1, 10, 1], [(q - 1) * 40, -100, 1, -10, 1], [(q - 1) * 40, -70, .9, 0, 0]], d: 1300, dl: q * 120, s: .62 });
+      for (var q = 0; q < 2; q++) add('🧊', { k: [[(q - 1) * 50, -260, .8, -30, 0], [(q - 1) * 45, -60, 1, 10, 1], [(q - 1) * 40, -100, 1, -10, 1], [(q - 1) * 40, -70, .9, 0, 0]], d: 1300, dl: q * 120, s: .62 });
       add('🍉', { k: [[0, 0, .3, 0, 0], [0, -120, 1.4, -12, 1], [0, -180, 1, 12, 0]], d: 1500, dl: 400, s: 1 });
-      for (var h = 0; h < 4; h++) add('💗', { k: [[(h - 1.5) * 30, -40, .3, 0, 0], [(h - 1.5) * 50, -170 - h * 25, 1, (h - 1.5) * 15, 1], [(h - 1.5) * 60, -260 - h * 25, .7, 0, 0]], d: 1700, dl: 500 + h * 140, s: .55 });
+      for (var h = 0; h < 3; h++) add('💗', { k: [[(h - 1.5) * 30, -40, .3, 0, 0], [(h - 1.5) * 50, -170 - h * 25, 1, (h - 1.5) * 15, 1], [(h - 1.5) * 60, -260 - h * 25, .7, 0, 0]], d: 1700, dl: 500 + h * 140, s: .55 });
     }
     P.forEach(function (pp) {
       var ch = pp[0], f = pp[1], el = document.createElement('span'); DFX.n++;
