@@ -59,6 +59,8 @@ pre#log{background:#0e0416;border-radius:12px;padding:10px;font-size:12px;max-he
 .card:not(.cl)>h2{margin-bottom:10px}
 .card.cl>h2::after{transform:rotate(-90deg)}
 .card.cl>*:not(h2){display:none}
+.lnow{font-size:15px;line-height:1.5}.lnow b{color:var(--pink2)}.lnow .w{display:block;margin-top:6px;padding:8px 10px;border-radius:10px;background:#4a3200;color:#ffd35a;font-size:14px}
+.moods .b{flex-direction:column;gap:2px}.b .st{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--dim)}.b.on .st{color:#fff}
 .card.flash{box-shadow:0 0 0 2px var(--pink),0 0 22px #ff2f9e88}
 </style></head><body>
 <div id="pingate" style="position:fixed;inset:0;z-index:99999;background:#14061f;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#fff;font:600 18px system-ui"><div style="font:900 22px system-ui;letter-spacing:.08em">NICKI NIGHT CONTROL</div><input id="pinin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" style="font:700 28px system-ui;text-align:center;width:220px;padding:12px;border-radius:14px;border:2px solid #ff4fb0;background:#1e1230;color:#fff;letter-spacing:.3em"><button id="pinbtn" style="font:800 18px system-ui;padding:12px 34px;border-radius:14px;border:0;background:#ff4fb0;color:#fff">Unlock</button><div id="pinmsg" style="color:#ff8ad0;min-height:22px"></div></div>
@@ -83,16 +85,21 @@ document.getElementById('pinbtn').onclick=go;document.getElementById('pinin').on
  <div class="card"><h2>Close the club</h2><p class="note" style="margin-top:0">Last call, then everyone walks out, then a thank-you card with the night's top dancers, top chatters, best dressed and crowd size.</p><label class="l">Message on the card</label><input type="text" id="clmsg" placeholder="Thanks for coming! Follow @yourhandle"><div class="row" style="margin-top:8px"><select id="cls"><option value="15">Last call 15s</option><option value="30" selected>Last call 30s</option><option value="60">Last call 60s</option></select></div><button class="b warn" id="clgo" style="width:100%;margin-top:8px">Close the club</button><button class="b" id="clre" style="width:100%;margin-top:8px">Cancel / hide card</button><p class="note" id="clst"></p></div>
 </section>
 <section class="tab" id="t-light">
- <div class="card"><h2>Moods</h2><div class="grid" id="presets"></div></div>
- <div class="card"><h2>Effects</h2><div class="grid" id="fx"></div><p class="note">Strobe is capped at 3 flashes a second.</p></div>
- <div class="card"><h2>Color wash</h2><div class="grid" id="washes"></div></div>
- <div class="card"><h2>Intensity &amp; tempo</h2><label class="l">Intensity</label><input type="range" id="inten" min="10" max="100"><div class="row"><div><label class="l">BPM</label><input type="number" id="bpm" min="60" max="200"></div><button class="b fit" id="tap" style="min-width:140px;margin-top:22px">Tap tempo</button></div></div>
- <div class="card"><h2>Speakers</h2><p class="note" style="margin-top:0">The club speakers thump with the beat. Set the BPM in Lights to match the DJ.</p><div class="row"><label><input type="checkbox" id="spkon" checked> Speakers move</label></div><label class="l">How much they move</label><input type="range" id="spkamt" min="0" max="150" value="70" style="width:100%"></div>
- <div class="card"><h2>Performance mode</h2><p class="note" style="margin-top:0">Turns off the animated glows, LED strips and shine to lighten the load on a slow computer. Everything else stays. It also switches itself on if the overlay struggles for 20 seconds.</p><div class="row"><label><input type="checkbox" id="liteon"> Performance mode</label></div><p class="note" id="liten"></p></div>
+ <div class="card now"><h2>Right now</h2><div id="lnow" class="lnow">Waiting for the overlay…</div></div>
+ <div class="card"><h2>1. Pick a mood</h2><p class="note" style="margin-top:0">One tap sets the whole room. Then fine-tune below if you want.</p><div class="grid moods" id="presets"></div></div>
+ <div class="card"><h2>2. Effects on / off</h2><p class="note" style="margin-top:0">Tap to switch each one on or off. Lit up = on.</p>
+  <label class="l">Moving lights</label><div class="grid" id="fx1"></div>
+  <label class="l" style="margin-top:12px">Atmosphere</label><div class="grid" id="fx2"></div>
+  <label class="l" style="margin-top:12px">Room glow (always-on decor)</label><div class="grid" id="fx3"></div>
+  <p class="note">Strobe is capped at 3 flashes a second. Blackout darkens the whole room until you tap it again.</p></div>
+ <div class="card"><h2>3. Color wash</h2><p class="note" style="margin-top:0">Tints the whole room one color.</p><div class="grid" id="washes"></div></div>
+ <div class="card"><h2>4. Brightness &amp; tempo</h2><label class="l">Brightness of all the lights</label><input type="range" id="inten" min="10" max="100"><div class="row"><div><label class="l">BPM (beat pulse and speakers follow it)</label><input type="number" id="bpm" min="60" max="200"></div><button class="b fit" id="tap" style="min-width:140px;margin-top:22px">Tap tempo</button></div></div>
+ <div class="card"><h2>Speakers</h2><p class="note" style="margin-top:0">The club speakers thump with the beat. Set the BPM above to match the DJ.</p><div class="row"><label><input type="checkbox" id="spkon" checked> Speakers move</label></div><label class="l">How much they move</label><input type="range" id="spkamt" min="0" max="150" value="70" style="width:100%"></div>
+ <div class="card"><h2>Performance mode</h2><p class="note" style="margin-top:0">For a slow computer: the glows and LED strips stop animating (they stay lit) and avatar shadows are hidden. Beams, lasers and every other light still work. It also switches itself on if the overlay struggles for 20 seconds, and that automatic switch resets when the overlay reloads.</p><div class="row"><label><input type="checkbox" id="liteon"> Performance mode</label></div><p class="note" id="liten"></p></div>
  <div class="card"><h2>City window</h2><button class="b" id="citytog" style="width:100%">Live city window</button><button class="b go" id="cityfx" style="width:100%;margin-top:8px">Fireworks over the city</button><p class="note">Lights twinkle, cars and boats move and fireworks pop in the round window.</p></div>
- <div class="card"><h2>Chat bubbles</h2><button class="b" id="bubtog" style="width:100%">Chat bubbles</button><button class="b" id="emotog" style="width:100%;margin-top:8px">Emoji pop-ups</button><p class="note">Each chat shows above that person's character, in their own color with their name, and they step forward and glow while it's up. Quiet club: everyone gets one and it stays longer. Busy club: shorter and smaller. Packed club: front half of the room only (VIPs and Nicki always show), newest first. A message that is only emoji shoots up from the character instead. Commands (like !dance) never make a bubble.</p></div>
 </section>
 <section class="tab" id="t-crowd">
+ <div class="card"><h2>Chat bubbles</h2><button class="b" id="bubtog" style="width:100%">Chat bubbles</button><button class="b" id="emotog" style="width:100%;margin-top:8px">Emoji pop-ups</button><p class="note">Each chat shows above that person's character, in their own color with their name, and they step forward and glow while it's up. Quiet club: everyone gets one and it stays longer. Busy club: shorter and smaller. Packed club: front half of the room only (VIPs and Nicki always show), newest first. A message that is only emoji shoots up from the character instead. Commands (like !dance) never make a bubble.</p></div>
  <div class="card"><h2>Who is in</h2><div class="grid g3" id="stats"></div><label class="l" style="margin-top:12px">Avatar size</label><input type="range" id="scale" min="50" max="130"></div>
  <div class="card"><h2>Moderation</h2><p class="note" style="margin-top:0">Open a person below to hide their photo or block them. Blocked people are removed and everything they type is ignored.</p><div id="modlist"></div></div>
  <div class="card"><h2>People</h2><input type="text" id="find" placeholder="Search name…" style="margin-bottom:8px"><div id="people"></div></div>
@@ -132,7 +139,7 @@ document.getElementById('pinbtn').onclick=go;document.getElementById('pinin').on
  <div class="card"><h2>Overlay log</h2><pre id="log"></pre></div>
 </section>
 </main>
-<nav id="nav"><button data-t="show" class="on"><i>🎤</i>Show</button><button data-t="light"><i>💡</i>Room</button><button data-t="crowd"><i>👥</i>Crowd</button><button data-t="look"><i>👗</i>Looks</button><button data-t="test"><i>🧪</i>Test</button><button data-t="set"><i>⚙️</i>Setup</button></nav>
+<nav id="nav"><button data-t="show" class="on"><i>🎤</i>Show</button><button data-t="light"><i>💡</i>Lights</button><button data-t="crowd"><i>👥</i>Crowd</button><button data-t="look"><i>👗</i>Looks</button><button data-t="test"><i>🧪</i>Test</button><button data-t="set"><i>⚙️</i>Setup</button></nav>
 <div class="sheet" id="sheet"><div id="sheetin"></div></div><div id="toast"></div>
 <script>
 (function(){
@@ -167,11 +174,21 @@ document.getElementById('nav').onclick=function(e){var b=e.target.closest('butto
 document.body.addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(b&&!b.dataset.n){cmd(b.dataset.c).then(function(r){if(r.ok)toast('Done','ok')})}
  var bb=e.target.closest('[data-bots]');if(bb){var p=bb.dataset.bots.split(':');cmd('bots',{n:+p[0],mode:p[1]}).then(function(r){if(r.ok)toast('Added','ok')})}});
 /* lights */
-var PRE=[['chill','Chill'],['party','Party'],['drop','The drop (8s)'],['dark','Dark + spot'],['off','Lights off']],FX=[['beams','Beams'],['lasers','Lasers'],['ball','Sparkles'],['pulse','Beat pulse'],['strobe','Strobe'],['fog','Fog'],['spot','Spotlight'],['dark','Blackout'],['glow','Glows'],['led','LED strips']],WS=[['none','No wash','#555'],['pink','Pink','#ff2f9e'],['blue','Blue','#2f6bff'],['purple','Purple','#8a3cff'],['cyan','Cyan','#20d8ff'],['amber','Amber','#ff9a2f'],['rainbow','Rainbow','linear-gradient(90deg,#f33,#fc3,#3f6,#3cf,#93f)']];
-$('presets').innerHTML=PRE.map(function(p,i){return '<button class="b '+(i<3?'go':'')+'" data-l="'+p[0]+'">'+p[1]+'</button>'}).join('');
-$('fx').innerHTML=FX.map(function(p){return '<button class="b" data-f="'+p[0]+'">'+p[1]+'</button>'}).join('');
+var PRE=[['chill','Chill','sparkles, fog, pink'],['party','Party','beams, lasers, sparkles, pulse, rainbow'],['drop','The drop','party + strobe for 8s'],['dark','Dark + spot','fog, spotlight, purple'],['off','Lights off','all effects off']],
+ FXG={fx1:[['beams','Beams'],['lasers','Lasers'],['ball','Sparkles'],['pulse','Beat pulse'],['strobe','Strobe']],fx2:[['fog','Fog'],['spot','Spotlight'],['blackout','Blackout','dark']],fx3:[['glow','Glows'],['led','LED strips']]},
+ FXN={},WS=[['none','No wash','#555'],['pink','Pink','#ff2f9e'],['blue','Blue','#2f6bff'],['purple','Purple','#8a3cff'],['cyan','Cyan','#20d8ff'],['amber','Amber','#ff9a2f'],['rainbow','Rainbow','linear-gradient(90deg,#f33,#fc3,#3f6,#3cf,#93f)']];
+$('presets').innerHTML=PRE.map(function(p,i){return '<button class="b" data-l="'+p[0]+'">'+p[1]+'<small>'+p[2]+'</small></button>'}).join('');
+Object.keys(FXG).forEach(function(g){$(g).innerHTML=FXG[g].map(function(p){FXN[p[2]||p[0]]=p[1];return '<button class="b" data-f="'+p[0]+'" data-s="'+(p[2]||p[0])+'">'+p[1]+'<span class="st">OFF</span></button>'}).join('');
+ $(g).onclick=function(e){var b=e.target.closest('[data-f]');if(b)cmd('light',{n:b.dataset.f})}});
 $('washes').innerHTML=WS.map(function(p){return '<button class="b sw" data-w="'+p[0]+'" style="background:'+p[2]+';color:#fff;text-shadow:0 1px 3px #000a">'+p[1]+'</button>'}).join('');
-$('presets').onclick=function(e){var b=e.target.closest('[data-l]');if(b)cmd('light',{n:b.dataset.l})};$('fx').onclick=function(e){var b=e.target.closest('[data-f]');if(b)cmd('light',{n:b.dataset.f})};$('washes').onclick=function(e){var b=e.target.closest('[data-w]');if(b)cmd('wash',{n:b.dataset.w})};
+$('presets').onclick=function(e){var b=e.target.closest('[data-l]');if(b)cmd('light',{n:b.dataset.l}).then(function(r){if(r&&r.ok!==false)toast('Mood: '+b.firstChild.textContent,'ok')})};$('washes').onclick=function(e){var b=e.target.closest('[data-w]');if(b)cmd('wash',{n:b.dataset.w})};
+function lightNow(){var L=st.light||{},on=[];Object.keys(FXN).forEach(function(k){if(L[k]&&k!=='glow'&&k!=='led')on.push(FXN[k])});
+ var mood={chill:'Chill',party:'Party',drop:'The drop',dark:'Dark + spot',off:'Lights off',custom:'Custom mix'}[L.mood]||'None picked yet',wash=(WS.filter(function(w){return w[0]===L.wash})[0]||WS[0])[1];
+ var h='Mood: <b>'+mood+'</b><br>Effects on: <b>'+(on.length?on.join(', '):'none')+'</b><br>Wash: <b>'+wash+'</b> · Brightness <b>'+Math.round((L.inten||0)*100)+'%</b> · <b>'+(L.bpm||124)+'</b> BPM';
+ if(L.dark)h+='<span class="w">Blackout is ON, the room is dark. Tap Blackout to bring it back.</span>';
+ if(st.lite)h+='<span class="w">Performance mode is ON'+(st.liteAuto?' (switched on automatically)':'')+'. Glows and LED strips are still, everything else works.</span>';
+ if(!on.length&&!L.dark&&L.wash==='none')h+='<span class="w">No effects are on. Pick a mood above to light the room.</span>';
+ $('lnow').innerHTML=h}
 var it;$('inten').oninput=function(){clearTimeout(it);var v=+this.value;it=setTimeout(function(){cmd('inten',{v:v})},120)};$('bpm').onchange=function(){cmd('bpm',{v:+this.value})};
 var taps=[];$('tap').onclick=function(){var n=Date.now();taps=taps.filter(function(t){return n-t<2500});taps.push(n);if(taps.length>2){var av=(taps[taps.length-1]-taps[0])/(taps.length-1),b=Math.max(60,Math.min(200,Math.round(60000/av)));$('bpm').value=b;cmd('bpm',{v:b})}else toast('Keep tapping')};
 /* show */
@@ -250,7 +267,8 @@ function render(){paint();if(!st)return;
  $('top5').classList.toggle('on',st.top5);$('top5').textContent=st.top5?'Top 5 is ON (tap to stop)':'Top 5 chatters dance in the middle';
  $('toplist').textContent=st.top5&&st.top.length?st.top.map(function(t,i){return '#'+(i+1)+' '+t.n+' ('+t.s+')'}).join('  ·  '):'';
  $('nstat').textContent=st.nicki.inside?'Nicki is in the club.':(st.nicki.done?'Entrance already played this show.':'Her entrance is ready for when she chats.');
- Array.prototype.forEach.call(document.querySelectorAll('[data-f]'),function(b){b.classList.toggle('on',!!st.light[b.dataset.f])});
+ Array.prototype.forEach.call(document.querySelectorAll('[data-f]'),function(b){var o=!!st.light[b.dataset.s];b.classList.toggle('on',o);var t=b.querySelector('.st');if(t)t.textContent=o?'ON':'OFF'});
+ Array.prototype.forEach.call(document.querySelectorAll('[data-l]'),function(b){b.classList.toggle('on',st.light.mood===b.dataset.l)});lightNow();
  Array.prototype.forEach.call(document.querySelectorAll('[data-w]'),function(b){b.classList.toggle('on',st.light.wash===b.dataset.w)});
  setv('inten',Math.round(st.light.inten*100));setv('bpm',st.light.bpm);setv('scale',Math.round(st.scale*100));
  if(!(document.activeElement&&/npa|npt/.test(document.activeElement.id))){setv('npa',st.np.a);setv('npt',st.np.t)}
@@ -271,7 +289,7 @@ Array.prototype.forEach.call(document.querySelectorAll('section.tab'),function(s
  var cards=sec.querySelectorAll(':scope>.card');if(cards.length<3||sec.id==='t-look')return;
  var bar=document.createElement('div');bar.className='jump';
  Array.prototype.forEach.call(cards,function(c){var h=c.querySelector(':scope>h2');if(!h)return;var name=h.textContent.trim();var id=sec.id+'-'+slug(h.innerHTML);c.id=id;
-  var def=DEF[sec.id]?!(name in KEEP):false;if(sec.id==='t-light'&&/Speakers|City window|Chat bubbles/.test(name))def=true;
+  var def=DEF[sec.id]?!(name in KEEP):false;if(sec.id==='t-light'&&/Speakers|City window|Performance/.test(name))def=true;
   if(ls(id,def))c.classList.add('cl');
   h.onclick=function(){c.classList.toggle('cl');ss(id,c.classList.contains('cl'))};
   var b=document.createElement('button');b.textContent=name.replace(/&/g,'&').replace(/\(.*\)/,'').trim();

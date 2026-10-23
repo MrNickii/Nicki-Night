@@ -1051,7 +1051,7 @@ var VNNA = (function () {
   S.ss = Object.assign({ peak: 0, ent: {}, sd: {}, win: [] }, S.ss || {}); S.closing = S.closing || 'Thanks for coming! See you next time.';
   S.codes = Object.assign({ x_barb: { word: 'barbz', on: false }, x_pf2: { word: 'flight', on: false }, x_pink: { word: 'pinkprint', on: false }, x_gag: { word: 'gagcity', on: false } }, S.codes || {});
   S.spk = Object.assign({ on: true, amt: 0.7 }, S.spk || {});
-  S.lite = S.lite === true || S.lite === 'auto' ? S.lite : false;
+  S.lite = S.lite === true ? true : false; /* an automatic Performance mode never survives a reload; only the manual switch is remembered */
   S.blocked = S.blocked || {}; S.nophoto = S.nophoto || {}; var lastMsg = 0;
   S.bub = Object.assign({ on: true, words: [], emoji: true }, S.bub || {}); if (!Array.isArray(S.bub.words)) S.bub.words = [];
   if (Q.get('session')) S.session = Q.get('session');
@@ -2456,21 +2456,22 @@ var VNNA = (function () {
   }
 
   /* ---------- lighting ---------- */
-  var LT = { glow: true, led: true, beams: false, lasers: false, ball: false, fog: false, spot: false, strobe: false, pulse: false, dark: false, wash: 'none', inten: 0.7, bpm: 124 };
+  var LT = { glow: true, led: true, beams: false, lasers: false, ball: false, fog: false, spot: false, strobe: false, pulse: false, dark: false, wash: 'none', inten: 0.7, bpm: 124, mood: '' };
   if (S.light) Object.keys(S.light).forEach(function (k) { if (k in LT) LT[k] = S.light[k]; });
+  LT.strobe = false; if (LT.mood === 'drop') LT.mood = 'party'; /* a strobe never comes back on by itself after a reload */
   var WASHC = { pink: '#ff2f9e', blue: '#2f6bff', purple: '#8a3cff', cyan: '#20d8ff', amber: '#ff9a2f' };
   var LIGHTS = [['beams', 'Beams'], ['lasers', 'Lasers'], ['ball', 'Sparkles'], ['pulse', 'Beat pulse'], ['strobe', 'Strobe'], ['fog', 'Fog'], ['spot', 'Spotlight'], ['dark', 'Blackout'], ['glow', 'Glows'], ['led', 'LED strips']];
   var WASHES = [['none', 'No wash'], ['pink', 'Pink'], ['blue', 'Blue'], ['purple', 'Purple'], ['cyan', 'Cyan'], ['amber', 'Amber'], ['rainbow', 'Rainbow']];
   var PRESETS = { off: { beams: 0, lasers: 0, ball: 0, fog: 0, spot: 0, strobe: 0, pulse: 0, dark: 0, wash: 'none' }, chill: { beams: 0, lasers: 0, ball: 1, fog: 1, spot: 0, strobe: 0, pulse: 0, dark: 0, wash: 'pink' }, party: { beams: 1, lasers: 1, ball: 1, fog: 0, spot: 0, strobe: 0, pulse: 1, dark: 0, wash: 'rainbow' }, dark: { beams: 0, lasers: 0, ball: 0, fog: 1, spot: 1, strobe: 0, pulse: 0, dark: 0, wash: 'purple' } };
   var dropT = null, spotTarget = null, spotT = null;
-  function applyPreset(n) { var p = PRESETS[n]; Object.keys(p).forEach(function (k) { LT[k] = k === 'wash' ? p[k] : !!p[k]; }); lightUI(); }
+  function applyPreset(n) { var p = PRESETS[n]; LT.mood = n; Object.keys(p).forEach(function (k) { LT[k] = k === 'wash' ? p[k] : !!p[k]; }); lightUI(); }
   function lightCmd(n) {
     if (PRESETS[n]) { clearTimeout(dropT); applyPreset(n); return; }
-    if (n === 'drop') { clearTimeout(dropT); applyPreset('party'); LT.strobe = true; LT.beams = true; lightUI(); dropT = setTimeout(function () { LT.strobe = false; lightUI(); }, 8000); return; }
+    if (n === 'drop') { clearTimeout(dropT); applyPreset('party'); LT.mood = 'drop'; LT.strobe = true; LT.beams = true; lightUI(); dropT = setTimeout(function () { LT.strobe = false; if (LT.mood === 'drop') LT.mood = 'party'; lightUI(); }, 8000); return; }
     if (n === 'blackout') n = 'dark';
-    if (n === 'dark') { LT.dark = !LT.dark; lightUI(); return; }
-    if (WASHES.some(function (w) { return w[0] === n; })) { LT.wash = n; lightUI(); return; }
-    if (n in LT && typeof LT[n] === 'boolean') { LT[n] = !LT[n]; lightUI(); }
+    if (n === 'dark') { LT.dark = !LT.dark; LT.mood = 'custom'; lightUI(); return; }
+    if (WASHES.some(function (w) { return w[0] === n; })) { LT.wash = n; LT.mood = 'custom'; lightUI(); return; }
+    if (n in LT && typeof LT[n] === 'boolean') { clearTimeout(dropT); LT[n] = !LT[n]; LT.mood = 'custom'; lightUI(); }
   }
   function lightFor(k, on, u) { /* temporary light that follows a person */ if (k === 'spot') { LT._spotHold = on; spotTarget = on ? u : null; lightUI(); } }
   function lightUI() {
@@ -2493,7 +2494,7 @@ var VNNA = (function () {
       b.setAttribute('aria-pressed', String(pr));
     });
     $('inten').value = Math.round(I * 100); $('bpm').value = LT.bpm;
-    S.light = { glow: LT.glow, led: LT.led, beams: LT.beams, lasers: LT.lasers, ball: LT.ball, fog: LT.fog, spot: LT.spot, strobe: LT.strobe, pulse: LT.pulse, dark: LT.dark, wash: LT.wash, inten: LT.inten, bpm: LT.bpm }; save();
+    S.light = { glow: LT.glow, led: LT.led, beams: LT.beams, lasers: LT.lasers, ball: LT.ball, fog: LT.fog, spot: LT.spot, strobe: LT.strobe, pulse: LT.pulse, dark: LT.dark, wash: LT.wash, inten: LT.inten, bpm: LT.bpm, mood: LT.mood }; save();
   }
   function spotMove() {
     var t = spotTarget, x, y;
@@ -2672,7 +2673,7 @@ var VNNA = (function () {
     'spk.set': function (a) { if (a.on != null) S.spk.on = !!a.on; if (a.amt != null) S.spk.amt = Math.max(0, Math.min(1.5, Number(a.amt) || 0)); spkShow(); save(); rcSnap(true); },
     'city.set': function (a) { S.cityOn = a.on !== false; setBg(); save(); rcSnap(true); },
     'city.fire': function (a) { CITY.fire(Math.max(1, Math.min(6, Number(a.n) || 3))); },
-    wash: function (a) { LT.wash = String(a.n); lightUI(); },
+    wash: function (a) { LT.wash = String(a.n); LT.mood = 'custom'; lightUI(); },
     inten: function (a) { LT.inten = Math.max(0.1, Math.min(1, a.v / 100)); lightUI(); },
     bpm: function (a) { LT.bpm = Math.max(60, Math.min(200, Number(a.v) || 124)); lightUI(); },
     'nicki.rehearse': function () { nickiRehearse(); },
