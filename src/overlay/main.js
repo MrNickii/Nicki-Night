@@ -343,7 +343,7 @@
     if (dtSamp && dtSamp.length < 140) { dtSamp.push(dt); if (dtSamp.length === 140) { var sm = dtSamp.slice(20).sort(function (a, b) { return a - b; }); dtRef = Math.max(15, Math.min(34, sm[Math.floor(sm.length * 0.25)])); dtSamp = null; } }
     dtAvg += (dt - dtAvg) * 0.05; bclk += dt / 1000 * LT.bpm / 60; spkTick();
     if (now - lastDraw < 1000 / FPSCAP - 4) return; lastDraw = now; frameN++;
-    var list = crowdList(), n = list.length, base = n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
+    var list = crowdList(), n = list.length, base = n <= 60 ? 1 : n <= 120 ? 2 : 3; /* full-speed dancing up to 60 people; the slow-frame check still steps this up if the machine struggles */
     if (dtAvg > dtRef * 1.5 && STRIDE < 6) STRIDE = Math.min(6, Math.max(STRIDE, base) + 1); else if (dtAvg < dtRef * 1.2 && STRIDE > base) STRIDE--; else if (STRIDE < base) STRIDE = base;
     var t0 = performance.now();
     for (var i = 0; i < list.length; i++) {
