@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="icon" href="data:,">
+<title>Nicki Night Mod Panel</title><link rel="stylesheet" href="vnn/panel.css"></head>
+<body>
+<div id="gate"><div style="font:900 22px system-ui;letter-spacing:.08em">NICKI NIGHT · MODS</div><input id="gin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN"><button id="gbtn">Unlock</button><div id="gmsg" style="color:#ff8ad0;min-height:22px"></div></div>
+<header><h1>NICKI <b>NIGHT</b> · Mods</h1><span class="pill"><i class="dot" id="d1"></i><span id="s1">Connecting…</span></span></header>
+<main>
+ <div class="card"><h2>Your job tonight</h2><p class="how" style="margin:0">Keep the club safe and fun. If someone posts something nasty or has a bad profile picture, find them below and act. <b>Block</b> removes them from the club and ignores everything they type for the rest of the show. <b>Hide photo</b> swaps their picture for a plain letter. Block asks you to tap twice so it can't happen by accident. Everything can be undone at the bottom.</p></div>
+
+ <div class="card"><h2>1 · Find someone</h2><p class="how">Type part of their name. The list updates live.</p>
+  <input type="text" id="find" placeholder="Search name…" autocapitalize="off" autocorrect="off">
+  <div id="people" style="margin-top:8px"></div></div>
+
+ <div class="card"><h2>2 · Emergency</h2><p class="how">If chat gets flooded with nasty messages, turn the chat bubbles off. The club keeps running. Turn them back on when it calms down.</p>
+  <button class="b" id="bub">Chat bubbles</button></div>
+
+ <div class="card"><h2>3 · Blocked words</h2><p class="how">Any chat containing one of these words never shows as a bubble. One word per line. Links and phone numbers are always hidden.</p>
+  <textarea id="words" placeholder="one word per line"></textarea>
+  <button class="b go" id="wsave" style="margin-top:10px">Save words</button></div>
+
+ <div class="card"><h2>4 · VIP list</h2><p class="how">X accounts on this list go straight to the VIP lounge when they type !enter. Type a handle like <b>@someone</b>.</p>
+  <div class="row"><input type="text" id="vh" placeholder="@handle" autocapitalize="off" autocorrect="off"><button class="b go" id="vadd" style="flex:0 0 120px">Add VIP</button></div>
+  <div id="viplist"></div></div>
+
+ <div class="card"><h2>5 · Undo</h2><p class="how">People you blocked or whose photo you hid. Tap to undo.</p><div id="undo"></div></div>
+</main>
+<div id="toast"></div>
+<script src="vnn/panel.js"></script>
+<script>
+(function () {
+  var P = PANEL, $ = P.$, cmd = P.cmd, esc = P.esc, ZN = { floor: 'dance floor', bar: 'bar', vip: 'VIP', stage: 'stage', out: 'outside', line: 'in line' };
+  function people() {
+    var st = P.st(); if (!st) return; var q = $('find').value.toLowerCase().replace(/^@/, '');
+    var L = (st.people || []).filter(function (p) { return !q || (p.n + ' ' + p.h).toLowerCase().indexOf(q) >= 0; }).slice(0, 60);
+    if (document.activeElement && document.activeElement.closest && document.activeElement.closest('#people')) return;
+    $('people').innerHTML = L.length ? L.map(function (p) { return '<div class="person"><div class="av ' + esc(p.p) + '">' + esc((p.n || '?').charAt(0).toUpperCase()) + '</div><div style="flex:1;min-width:0"><div class="nm">' + esc(p.n) + (p.v ? '<span class="tag">VIP</span>' : '') + '</div><div class="meta">' + esc(p.p) + ' · ' + (ZN[p.z] || p.z || '') + ' · ' + (p.c || 0) + ' chats</div></div>' + (p.np ? '<button class="b sm" data-up2="' + esc(p.k) + '">Show photo</button>' : '<button class="b sm" data-ph="' + esc(p.k) + '">Hide photo</button>') + '<button class="b sm bad" data-bl="' + esc(p.k) + '" data-n="' + esc(p.n) + '">Block</button></div>'; }).join('') : '<p class="how">' + (q ? 'Nobody with that name inside.' : 'Nobody inside yet.') + '</p>';
+  }
+  $('find').oninput = people;
+  $('people').onclick = function (e) {
+    var ph = e.target.closest('[data-ph]'), bl = e.target.closest('[data-bl]');
+    if (ph) cmd('mod.photo', { key: ph.dataset.ph, hide: true }, 'Photo hidden'); var sp = e.target.closest('[data-up2]'); if (sp) cmd('mod.photo', { key: sp.dataset.up2, hide: false }, 'Photo shown');
+    if (bl) P.armed(bl, function () { cmd('mod.block', { key: bl.dataset.bl, n: bl.dataset.n }, 'Blocked ' + bl.dataset.n); });
+  };
+  $('bub').onclick = function () { var st = P.st(); if (!st || !st.bub) { P.toast('Waiting for the overlay…', 'bad'); return; } cmd('bub.set', { on: !st.bub.on }); };
+  $('wsave').onclick = function () { cmd('bub.set', { words: $('words').value }, 'Words saved'); };
+  $('vadd').onclick = function () { var h = $('vh').value.trim(); if (!h) return; cmd('user.vip', { h: h }, 'Added ' + h).then(function (r) { if (r.ok !== false) $('vh').value = ''; }); };
+  $('viplist').onclick = function (e) { var b = e.target.closest('[data-uv]'); if (b) cmd('user.unvip', { h: b.dataset.uv }, 'Removed'); };
+  $('undo').onclick = function (e) { var b = e.target.closest('[data-ub]'), q = e.target.closest('[data-up]'); if (b) cmd('mod.block', { key: b.dataset.ub, on: false }, 'Unblocked'); if (q) cmd('mod.photo', { key: q.dataset.up, hide: false }, 'Photo shown'); };
+  P.on(function (st) {
+    people();
+    var on = !(st.bub && st.bub.on === false); $('bub').classList.toggle('on', on); $('bub').classList.toggle('bad', !on); $('bub').innerHTML = on ? 'Chat bubbles are ON<small>tap to turn them off</small>' : 'Chat bubbles are OFF<small>tap to turn them back on</small>';
+    if (document.activeElement !== $('words')) $('words').value = ((st.bub && st.bub.words) || []).join('\n');
+    $('viplist').innerHTML = (st.vip || []).length ? st.vip.map(function (h) { return '<div class="person"><div style="flex:1" class="nm">' + esc(h) + '</div><button class="b sm" data-uv="' + esc(h) + '">Remove</button></div>'; }).join('') : '<p class="how">No VIPs yet.</p>';
+    var m = st.mod || {}, h = '';
+    (m.blocked || []).forEach(function (x) { h += '<div class="person"><div style="flex:1"><div class="nm">' + esc(x.n) + '<span class="tag">blocked</span></div></div><button class="b sm" data-ub="' + esc(x.k) + '">Unblock</button></div>'; });
+    (m.nophoto || []).forEach(function (x) { h += '<div class="person"><div style="flex:1"><div class="nm">' + esc(x.n) + '<span class="tag">photo hidden</span></div></div><button class="b sm" data-up="' + esc(x.k) + '">Show photo</button></div>'; });
+    $('undo').innerHTML = h || '<p class="how">Nothing to undo.</p>';
+  });
+  P.gate(P.start);
+})();
+</script>
+</body></html>

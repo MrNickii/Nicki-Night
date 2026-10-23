@@ -14,7 +14,7 @@
       '<div class="step"><b>2</b><div><h4>Join the club</h4><p>In the live chat type ' + C('!enter') + ' Your character walks in through the door.</p></div></div>' +
       '<div class="step"><b>3</b><div><h4>Wear your look</h4><p>Paste the command you copied. It looks like ' + C('!look varsity black cargo green') + '</p></div></div>' +
       '<div class="step"><b>4</b><div><h4>Dance</h4><p>Type ' + C('!dance') + ' for a random move or ' + C('!dance twerk') + ' to pick one.</p></div></div>' +
-      '<div class="step"><b>5</b><div><h4>Grab a drink</h4><p>Type ' + C('!bar') + ' then ' + C('!drink martini') + ' and ' + C('!cheers') + '</p></div></div>' +
+      '<div class="step"><b>5</b><div><h4>Grab a drink</h4><p>Type ' + C('!bar') + ' then ' + C('!starships') + ' and ' + C('!cheers') + '</p></div></div>' +
       '<div class="step"><b>6</b><div><h4>Chat</h4><p>Everything you say shows above your head in your own color. Send just an emoji and it floats up from your character.</p></div></div>' +
       '</div><p class="tip">Tap any command in this guide to copy it.</p>' },
 
@@ -59,7 +59,12 @@
       '<p>Two bars, one on each side of the club, with five bartenders pouring. Go to the bar and you get a drink in your hand.</p>' +
       row('!bar', 'Walk over to a bar. You pick up a drink automatically and keep dancing.') +
       row('!floor', 'Back to the dance floor.') +
-      '<h4>Pick your drink</h4>' +
+      '<h4>House specials</h4>' +
+      '<div class="dg dk"><span>🚀 Starships Punch</span><span>⚡ Cybertruck Smash</span><span>🍓 Nicki\'s Strawberry Daq\'</span><span>🍉 Barbz on the Rocks</span></div>' +
+      row('!starships', 'Order a house special: <b>!starships</b> <b>!cybertruck</b> <b>!daq</b> <b>!barbz</b>. Each one has its own pop-up when it lands in your hand.') +
+      row('!menu', 'Show the drink specials board on screen.') +
+      '<p>Trying a house special, and then all four, unlocks earned pieces.</p>' +
+      '<h4>Classic drinks</h4>' +
       '<div class="dg dk"><span>🍸 martini</span><span>🥃 shot</span><span>🍺 beer</span><span>🍹 cocktail</span><span>🥂 champagne</span><span>🍷 wine</span></div>' +
       row('!drink martini', 'Order a specific drink. Plain <b>!drink</b> gets you a surprise.') +
       row('!shot', 'Shortcuts: <b>!martini</b> <b>!shot</b> <b>!beer</b> <b>!cocktail</b> <b>!champagne</b> <b>!wine</b>. You don\'t need to be at the bar first, you\'ll be sent there.') +

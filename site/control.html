@@ -61,6 +61,7 @@ pre#log{background:#0e0416;border-radius:12px;padding:10px;font-size:12px;max-he
 .card.cl>*:not(h2){display:none}
 .lnow{font-size:15px;line-height:1.5}.lnow b{color:var(--pink2)}.lnow .w{display:block;margin-top:6px;padding:8px 10px;border-radius:10px;background:#4a3200;color:#ffd35a;font-size:14px}
 .moods .b{flex-direction:column;gap:2px}.b .st{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--dim)}.b.on .st{color:#fff}
+#t-home .card>h2{cursor:default}#t-home .card>h2::after{content:none}
 .card.flash{box-shadow:0 0 0 2px var(--pink),0 0 22px #ff2f9e88}
 </style></head><body>
 <div id="pingate" style="position:fixed;inset:0;z-index:99999;background:#14061f;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#fff;font:600 18px system-ui"><div style="font:900 22px system-ui;letter-spacing:.08em">NICKI NIGHT CONTROL</div><input id="pinin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" style="font:700 28px system-ui;text-align:center;width:220px;padding:12px;border-radius:14px;border:2px solid #ff4fb0;background:#1e1230;color:#fff;letter-spacing:.3em"><button id="pinbtn" style="font:800 18px system-ui;padding:12px 34px;border-radius:14px;border:0;background:#ff4fb0;color:#fff">Unlock</button><div id="pinmsg" style="color:#ff8ad0;min-height:22px"></div></div>
@@ -75,7 +76,15 @@ document.getElementById('pinbtn').onclick=go;document.getElementById('pinin').on
 <span class="pill"><i class="dot" id="d2"></i><span id="s2">Chat</span></span>
 <div class="chips" id="chips"></div></header>
 <main>
-<section class="tab on" id="t-show">
+<section class="tab on" id="t-home">
+ <div class="card"><h2>Lights</h2><div class="grid" id="hmoods"></div><div class="grid g3" style="margin-top:10px"><button class="b" data-hf="disco">Disco floor</button><button class="b" data-hf="lasers">Lasers</button><button class="b" data-hf="blackout" data-hs="dark">Blackout</button></div></div>
+ <div class="card"><h2>Moments</h2><div class="grid g2"><button class="b go" id="hmenu">Show drink menu</button><button class="b" data-c="bar.round">Round on the house</button><button class="b" id="htop5">Top 5 stage</button><button class="b" id="hrw">Start runway</button></div></div>
+ <div class="card"><h2>Shout to the room</h2><div class="row"><input type="text" id="hbn" placeholder="Big text"><button class="b go fit" id="hbsend" style="min-width:120px">Show</button></div></div>
+ <div class="card"><h2>Nicki</h2><div class="grid g2"><button class="b go" data-c="nicki.rehearse">Rehearse her entrance</button><button class="b" data-c="nicki.out">She walks out</button></div><p class="note" id="hnstat"></p></div>
+ <div class="card"><h2>End of night</h2><div class="grid g2"><button class="b warn" id="hclose">Last call (30s)</button><button class="b" data-c="club.reopen">Cancel / reopen</button></div></div>
+ <div class="card"><h2>Panels for your team</h2><p class="note" style="margin-top:0">Send these to your hosts and mods. They use the same PIN as this panel. The Host panel has lights, drinks, runway, Top 5, banners and Now Playing. The Mod panel has search, block, hide photo, word filter and VIP.</p><div class="grid g2" style="margin-top:10px"><button class="b" id="hhost">Copy Host link</button><button class="b" id="hmod">Copy Mod link</button></div></div>
+</section>
+<section class="tab" id="t-show">
  <div class="card"><h2>Nicki</h2><div class="grid g3"><button class="b go" data-c="nicki.rehearse">Rehearse entrance</button><button class="b" data-c="nicki.out">Walks out</button><button class="b warn" data-c="show.new">New show<small>resets counts</small></button></div><p class="note" id="nstat"></p></div>
  <div class="card"><h2>Shout to the room</h2><div class="row"><input type="text" id="bn" placeholder="Big text (e.g. DRINK SPECIAL)"><input type="text" id="bs" placeholder="Small text"></div><button class="b go" id="bnsend" style="width:100%">Show banner</button></div>
  <div class="card"><h2>Runway</h2><p class="note" style="margin-top:0">Picks people on the floor to walk onto the stage. Chat votes for best dressed by typing a number. Winner gets the spotlight.</p><div class="row"><select id="rwn"><option value="3">3 people</option><option value="4" selected>4 people</option><option value="5">5 people</option></select><select id="rws"><option value="20">Vote 20s</option><option value="30" selected>Vote 30s</option><option value="45">Vote 45s</option></select></div><button class="b go" id="rwgo" style="width:100%;margin-top:8px">Start runway</button><button class="b bad" id="rwstop" style="width:100%;margin-top:8px">Stop runway</button><p class="note" id="rwst"></p></div>
@@ -139,7 +148,7 @@ document.getElementById('pinbtn').onclick=go;document.getElementById('pinin').on
  <div class="card"><h2>Overlay log</h2><pre id="log"></pre></div>
 </section>
 </main>
-<nav id="nav"><button data-t="show" class="on"><i>🎤</i>Show</button><button data-t="light"><i>💡</i>Lights</button><button data-t="crowd"><i>👥</i>Crowd</button><button data-t="look"><i>👗</i>Looks</button><button data-t="test"><i>🧪</i>Test</button><button data-t="set"><i>⚙️</i>Setup</button></nav>
+<nav id="nav"><button data-t="home" class="on"><i>🏠</i>Home</button><button data-t="show"><i>🎤</i>Show</button><button data-t="light"><i>💡</i>Lights</button><button data-t="crowd"><i>👥</i>Crowd</button><button data-t="look"><i>👗</i>Looks</button><button data-t="test"><i>🧪</i>Test</button><button data-t="set"><i>⚙️</i>Setup</button></nav>
 <div class="sheet" id="sheet"><div id="sheetin"></div></div><div id="toast"></div>
 <script>
 (function(){
@@ -174,8 +183,8 @@ document.getElementById('nav').onclick=function(e){var b=e.target.closest('butto
 document.body.addEventListener('click',function(e){var b=e.target.closest('[data-c]');if(b&&!b.dataset.n){cmd(b.dataset.c).then(function(r){if(r.ok)toast('Done','ok')})}
  var bb=e.target.closest('[data-bots]');if(bb){var p=bb.dataset.bots.split(':');cmd('bots',{n:+p[0],mode:p[1]}).then(function(r){if(r.ok)toast('Added','ok')})}});
 /* lights */
-var PRE=[['chill','Chill','sparkles, fog, pink'],['party','Party','beams, lasers, sparkles, pulse, rainbow'],['drop','The drop','party + strobe for 8s'],['dark','Dark + spot','fog, spotlight, purple'],['off','Lights off','all effects off']],
- FXG={fx1:[['beams','Beams'],['lasers','Lasers'],['ball','Sparkles'],['pulse','Beat pulse'],['strobe','Strobe']],fx2:[['fog','Fog'],['spot','Spotlight'],['blackout','Blackout','dark']],fx3:[['glow','Glows'],['led','LED strips']]},
+var PRE=[['chill','Chill','sparkles, fog, pink'],['party','Party','beams, lasers, sparkles, disco floor, pulse, rainbow'],['drop','The drop','party + strobe for 8s'],['dark','Dark + spot','fog, spotlight, purple'],['off','Lights off','all effects off']],
+ FXG={fx1:[['beams','Beams'],['lasers','Lasers'],['ball','Sparkles'],['disco','Disco floor'],['pulse','Beat pulse'],['strobe','Strobe']],fx2:[['fog','Fog'],['spot','Spotlight'],['blackout','Blackout','dark']],fx3:[['glow','Glows'],['led','LED strips']]},
  FXN={},WS=[['none','No wash','#555'],['pink','Pink','#ff2f9e'],['blue','Blue','#2f6bff'],['purple','Purple','#8a3cff'],['cyan','Cyan','#20d8ff'],['amber','Amber','#ff9a2f'],['rainbow','Rainbow','linear-gradient(90deg,#f33,#fc3,#3f6,#3cf,#93f)']];
 $('presets').innerHTML=PRE.map(function(p,i){return '<button class="b" data-l="'+p[0]+'">'+p[1]+'<small>'+p[2]+'</small></button>'}).join('');
 Object.keys(FXG).forEach(function(g){$(g).innerHTML=FXG[g].map(function(p){FXN[p[2]||p[0]]=p[1];return '<button class="b" data-f="'+p[0]+'" data-s="'+(p[2]||p[0])+'">'+p[1]+'<span class="st">OFF</span></button>'}).join('');
@@ -276,20 +285,39 @@ function render(){paint();if(!st)return;
  people();modlist();
  if(document.activeElement!==$('vips'))$('vips').value=st.vip.join('\n');if(document.activeElement!==$('mods'))$('mods').value=st.mods.map(function(m){return '@'+m}).join('\n');
  setv('needd',st.need.d);setv('needc',st.need.c);setv('maxs',st.maxOn);$('log').textContent=st.log.join('\n')}
+/* home tab */
+$('hmoods').innerHTML=PRE.map(function(p){return '<button class="b'+(p[0]==='drop'?' go':'')+'" data-hm="'+p[0]+'">'+p[1]+'</button>'}).join('');
+$('hmoods').onclick=function(e){var b=e.target.closest('[data-hm]');if(b)cmd('light',{n:b.dataset.hm})};
+Array.prototype.forEach.call(document.querySelectorAll('[data-hf]'),function(b){b.onclick=function(){cmd('light',{n:b.dataset.hf})}});
+$('hmenu').onclick=function(){cmd('specials',st&&st.specials?{on:false}:{sec:20})};
+$('htop5').onclick=function(){cmd('top5',{})};
+$('hrw').onclick=function(){if(st&&st.rw&&st.rw.on)cmd('runway.stop',{});else cmd('runway.start',{n:4,sec:30})};
+$('hbsend').onclick=function(){var t=$('hbn').value.trim();if(t)cmd('banner',{t:t,s:''}).then(function(r){if(r.ok)toast('Shown','ok')})};
+$('hclose').onclick=function(){cmd('club.close',{sec:30})};
+function plink(f){var u=location.href.split('?')[0].replace(/control\.html$/,'')+f+'?session='+encodeURIComponent(C.session);try{navigator.clipboard.writeText(u).then(function(){toast('Link copied','ok')},function(){prompt('Copy this link',u)})}catch(e){prompt('Copy this link',u)}}
+$('hhost').onclick=function(){plink('host.html')};$('hmod').onclick=function(){plink('mod.html')};
+function homeRender(){if(!st)return;var L=st.light||{};
+ Array.prototype.forEach.call(document.querySelectorAll('[data-hm]'),function(b){b.classList.toggle('on',L.mood===b.dataset.hm)});
+ Array.prototype.forEach.call(document.querySelectorAll('[data-hf]'),function(b){b.classList.toggle('on',!!L[b.dataset.hs||b.dataset.hf])});
+ $('hmenu').classList.toggle('on',!!st.specials);$('hmenu').textContent=st.specials?'Hide drink menu':'Show drink menu';
+ $('htop5').classList.toggle('on',!!st.top5);$('htop5').textContent=st.top5?'Top 5 is ON':'Top 5 stage';
+ var rw=st.rw||{};$('hrw').classList.toggle('on',!!rw.on);$('hrw').textContent=rw.on?(rw.ph==='vote'?'Voting '+rw.left+'s · stop':'Runway on · stop'):'Start runway';
+ $('hclose').disabled=!!(st.cl&&st.cl.on);$('hnstat').textContent=st.nicki.inside?'Nicki is in the club.':(st.nicki.done?'Her entrance already played this show.':'Her entrance plays the first time @NickiMinaj chats.')}
+var _render=render;render=function(){_render();homeRender()};
 if(window.navigator.standalone===undefined){}start();render();
 })();
 
 (function(){
 var DEF={'t-set':1,'t-test':1};var KEEP={'Act as a viewer':0,'Demo reel':0};
 function slug(t){return t.toLowerCase().replace(/&amp;|[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
-function ls(k,d){try{var v=localStorage.getItem('vnnctl_cl_'+k);return v==null?d:v==='1'}catch(e){return d}}
-function ss(k,v){try{localStorage.setItem('vnnctl_cl_'+k,v?'1':'0')}catch(e){}}
+function ls(k,d){try{var v=localStorage.getItem('vnnctl_cl2_'+k);return v==null?d:v==='1'}catch(e){return d}}
+function ss(k,v){try{localStorage.setItem('vnnctl_cl2_'+k,v?'1':'0')}catch(e){}}
 var main=document.querySelector('main');
 Array.prototype.forEach.call(document.querySelectorAll('section.tab'),function(sec){
- var cards=sec.querySelectorAll(':scope>.card');if(cards.length<3||sec.id==='t-look')return;
+ var cards=sec.querySelectorAll(':scope>.card');if(cards.length<3||sec.id==='t-look'||sec.id==='t-home')return;
  var bar=document.createElement('div');bar.className='jump';
  Array.prototype.forEach.call(cards,function(c){var h=c.querySelector(':scope>h2');if(!h)return;var name=h.textContent.trim();var id=sec.id+'-'+slug(h.innerHTML);c.id=id;
-  var def=DEF[sec.id]?!(name in KEEP):false;if(sec.id==='t-light'&&/Speakers|City window|Performance/.test(name))def=true;
+  var def=false;
   if(ls(id,def))c.classList.add('cl');
   h.onclick=function(){c.classList.toggle('cl');ss(id,c.classList.contains('cl'))};
   var b=document.createElement('button');b.textContent=name.replace(/&/g,'&').replace(/\(.*\)/,'').trim();

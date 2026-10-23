@@ -70,7 +70,7 @@ var RIG = (function () {
   function len3(v) { return Math.hypot(v[0], v[1], v[2]); }
   /* ---- held drinks: vector sprites drawn in the hand, units match the rig (head radius = 116) ---- */
   function glassPath(c, pts) { c.beginPath(); pts.forEach(function (q, i) { if (i) c.lineTo(q[0], q[1]); else c.moveTo(q[0], q[1]); }); c.closePath(); }
-  var PROPK = 1.6, RIMS = { martini: 92, beer: 84, shot: 52, cocktail: 112, champagne: 128, wine: 96 };
+  var PROPK = 1.6, RIMS = { martini: 92, beer: 84, shot: 52, cocktail: 112, champagne: 128, wine: 96, starships: 120, cybertruck: 64, daq: 70, barbz: 64, phone: 110 };
   function drawProp(ctx, H, a, mouth) {
     var kind = H.kind, S0 = (H.s == null ? 1 : H.s); if (S0 <= 0.01) return;
     var gl = 30, gx = a.Wp[0] - Math.sin(a.a2) * gl, gy = a.Wp[1] + Math.cos(a.a2) * gl, lv = H.lvl == null ? 1 : H.lvl;
@@ -113,6 +113,35 @@ var RIG = (function () {
       fl(); c.fillStyle = GLASS; c.fill(); liquid(fl, -128, -22, '#fff0a8', '#f2c14e'); c.fillStyle = 'rgba(255,255,255,.85)';
       [[-5, -52, 3], [5, -78, 3.5], [-3, -98, 3], [6, -112, 3]].forEach(function (q) { c.beginPath(); c.arc(q[0], q[1], q[2], 0, 7); c.fill(); });
       fl(); c.strokeStyle = OUT; c.lineWidth = 6; c.stroke();
+    } else if (kind === 'phone') { /* phone held up to record: lit screen, red REC dot, the odd camera flash */
+      var rr = function (x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r); c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h); c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r); c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y); c.closePath(); };
+      rr(-34, -130, 68, 120, 12); c.fillStyle = '#121218'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 5; c.stroke();
+      var sg2 = c.createLinearGradient(0, -122, 0, -18); sg2.addColorStop(0, '#ffd6f0'); sg2.addColorStop(1, '#ff6cc0'); c.fillStyle = sg2; rr(-27, -122, 54, 104, 7); c.fill();
+      c.fillStyle = '#ff2a3d'; c.beginPath(); c.arc(-14, -110, 6, 0, 7); c.fill();
+      if (H.flash) { var fg = c.createRadialGradient(0, -140, 2, 0, -140, 90); fg.addColorStop(0, 'rgba(255,255,255,1)'); fg.addColorStop(.3, 'rgba(255,255,255,.55)'); fg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = fg; c.beginPath(); c.arc(0, -140, 90, 0, 7); c.fill(); }
+    } else if (kind === 'starships') { /* Starships Punch: hurricane glass, sunset rum punch, pineapple + cherry */
+      var hu = function () { c.beginPath(); c.moveTo(-30, -122); c.lineTo(30, -122); c.bezierCurveTo(40, -86, 14, -66, 18, -40); c.bezierCurveTo(22, -14, 30, 6, 10, 18); c.lineTo(-10, 18); c.bezierCurveTo(-30, 6, -22, -14, -18, -40); c.bezierCurveTo(-14, -66, -40, -86, -30, -122); c.closePath(); };
+      c.strokeStyle = '#ff4fa0'; c.lineWidth = 6; c.beginPath(); c.moveTo(8, -60); c.lineTo(30, -158); c.stroke();
+      c.strokeStyle = OUT; c.lineWidth = 6; c.beginPath(); c.moveTo(0, 18); c.lineTo(0, 34); c.stroke(); c.beginPath(); c.moveTo(-24, 36); c.lineTo(24, 36); c.stroke();
+      hu(); c.fillStyle = GLASS; c.fill(); liquid(hu, -122, 18, '#ffc247', '#ff3f6f'); hu(); c.strokeStyle = OUT; c.lineWidth = 6; c.stroke();
+      if (lv > 0.3) { c.fillStyle = '#ffd84a'; c.beginPath(); c.moveTo(-40, -118); c.lineTo(-6, -136); c.lineTo(-14, -108); c.closePath(); c.fill(); c.fillStyle = '#5fbf3a'; c.beginPath(); c.moveTo(-30, -130); c.lineTo(-34, -152); c.lineTo(-22, -134); c.closePath(); c.fill(); c.fillStyle = '#d6203a'; c.beginPath(); c.arc(22, -128, 9, 0, 7); c.fill(); c.strokeStyle = '#3c7a1e'; c.lineWidth = 3; c.beginPath(); c.moveTo(22, -136); c.lineTo(30, -150); c.stroke(); }
+    } else if (kind === 'cybertruck' || kind === 'barbz') { /* rocks glass: Cybertruck Smash (purple, blackberries, lime) or Barbz on the Rocks (watermelon pink, ice, wedge) */
+      var cy = kind === 'cybertruck', rk = function () { glassPath(c, [[-40, -64], [40, -64], [34, 34], [-34, 34]]); };
+      c.strokeStyle = cy ? '#1a1a1a' : '#ff6fae'; c.lineWidth = 6; c.beginPath(); c.moveTo(10, -20); c.lineTo(34, -112); c.stroke();
+      rk(); c.fillStyle = GLASS; c.fill(); liquid(rk, -64, 34, cy ? '#cfa6ff' : '#ffb0bf', cy ? '#7a2bd6' : '#ff4f6a');
+      c.fillStyle = 'rgba(255,255,255,.55)'; [[-16, -30, 18], [10, -8, 17], [-10, 14, 15]].forEach(function (q) { c.save(); c.translate(q[0], q[1]); c.rotate(0.35); c.fillRect(-q[2] / 2, -q[2] / 2, q[2], q[2]); c.restore(); });
+      if (cy && lv > 0.25) { c.fillStyle = '#2b1240'; [[-14, -50, 8], [-2, -56, 8], [-24, -58, 7]].forEach(function (q) { c.beginPath(); c.arc(q[0], q[1], q[2], 0, 7); c.fill(); }); }
+      rk(); c.strokeStyle = OUT; c.lineWidth = 7; c.stroke();
+      if (lv > 0.3) { if (cy) { c.fillStyle = '#9be15d'; c.beginPath(); c.arc(-34, -64, 19, 0, 7); c.fill(); c.strokeStyle = '#e9ffc9'; c.lineWidth = 3; c.beginPath(); c.arc(-34, -64, 13, 0, 7); c.stroke(); c.beginPath(); c.moveTo(-47, -64); c.lineTo(-21, -64); c.moveTo(-34, -77); c.lineTo(-34, -51); c.stroke(); }
+        else { c.save(); c.translate(-30, -66); c.rotate(-0.5); c.fillStyle = '#2f8f3a'; c.beginPath(); c.arc(0, 0, 26, Math.PI, 0); c.fill(); c.fillStyle = '#ff4f6a'; c.beginPath(); c.arc(0, 0, 21, Math.PI, 0); c.fill(); c.fillStyle = '#2a1010'; [[-10, -8], [0, -12], [10, -8]].forEach(function (q) { c.beginPath(); c.arc(q[0], q[1], 2.5, 0, 7); c.fill(); }); c.restore(); } }
+    } else if (kind === 'daq') { /* Nicki's Strawberry Daq': frozen coupe, strawberry on the rim */
+      var cp = function () { c.beginPath(); c.moveTo(-60, -84); c.lineTo(60, -84); c.bezierCurveTo(56, -40, 26, -28, 0, -28); c.bezierCurveTo(-26, -28, -56, -40, -60, -84); c.closePath(); };
+      c.strokeStyle = '#ff4fa0'; c.lineWidth = 6; c.beginPath(); c.moveTo(12, -60); c.lineTo(34, -140); c.stroke();
+      c.strokeStyle = OUT; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -28); c.lineTo(0, 34); c.stroke(); c.beginPath(); c.moveTo(-28, 36); c.lineTo(28, 36); c.stroke();
+      cp(); c.fillStyle = GLASS; c.fill(); liquid(cp, -84, -28, '#ff8a96', '#e8243f');
+      if (lv > 0.2) { c.fillStyle = '#ff8a96'; c.beginPath(); c.arc(-30, -84, 16, Math.PI, 0); c.arc(0, -86, 20, Math.PI, 0); c.arc(30, -84, 16, Math.PI, 0); c.fill(); c.fillStyle = 'rgba(255,255,255,.7)'; [[-20, -70], [8, -76], [26, -62], [-6, -52]].forEach(function (q) { c.beginPath(); c.arc(q[0], q[1], 3, 0, 7); c.fill(); }); }
+      cp(); c.strokeStyle = OUT; c.lineWidth = 6; c.stroke();
+      if (lv > 0.3) { c.fillStyle = '#e8243f'; c.beginPath(); c.moveTo(-58, -86); c.bezierCurveTo(-78, -104, -62, -122, -48, -112); c.bezierCurveTo(-34, -122, -24, -100, -40, -82); c.closePath(); c.fill(); c.fillStyle = '#4caf3a'; c.beginPath(); c.moveTo(-58, -112); c.lineTo(-50, -126); c.lineTo(-42, -112); c.closePath(); c.fill(); c.fillStyle = '#ffe08a'; [[-56, -100], [-48, -94], [-52, -106]].forEach(function (q) { c.beginPath(); c.arc(q[0], q[1], 1.8, 0, 7); c.fill(); }); }
     } else if (kind === 'wine') {
       var bw = function () { c.beginPath(); c.moveTo(-36, -96); c.bezierCurveTo(-44, -30, -22, -14, 0, -14); c.bezierCurveTo(22, -14, 44, -30, 36, -96); c.closePath(); };
       c.strokeStyle = OUT; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -14); c.lineTo(0, 34); c.stroke(); c.beginPath(); c.moveTo(-28, 36); c.lineTo(28, 36); c.stroke();
@@ -209,7 +238,7 @@ var RIG = (function () {
         /* two-bone IK: bring the hand to the mouth (sip) or up beside the head (cheers) */
         var L1 = ua.len * CFG.armK, L2 = fm.len * CFG.armK, sg = Sh[0] >= hc[0] ? 1 : -1;
         var RIM = (RIMS[HO.kind] || 100) * PROPK;
-        var T = HO.to === 'up' ? [Sh[0] + sg * HEADR * 0.95, hc[1] - HEADR * 0.35] : [hc[0] + sg * HEADR * 0.9, hc[1] + HEADR * 0.5 + 30 + 0.55 * RIM];
+        var T = HO.to === 'phone' ? [Sh[0] + sg * HEADR * 0.7, hc[1] - HEADR * 0.6] : HO.to === 'up' ? [Sh[0] + sg * HEADR * 0.95, hc[1] - HEADR * 0.35] : [hc[0] + sg * HEADR * 0.9, hc[1] + HEADR * 0.5 + 30 + 0.55 * RIM];
         var dx = T[0] - Sh[0], dy = T[1] - Sh[1], D = clamp(Math.hypot(dx, dy), Math.abs(L1 - L2) + 4, L1 + L2 - 2), ph = Math.atan2(dy, dx);
         var cA = clamp((L1 * L1 + D * D - L2 * L2) / (2 * L1 * D), -1, 1), A = Math.acos(cA);
         var e1 = [Sh[0] + L1 * Math.cos(ph + A), Sh[1] + L1 * Math.sin(ph + A)], e2 = [Sh[0] + L1 * Math.cos(ph - A), Sh[1] + L1 * Math.sin(ph - A)];
