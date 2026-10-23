@@ -20,8 +20,8 @@ var RIG = (function () {
     var x = c.getContext('2d'); x.clearRect(0, 0, w, h); x.drawImage(t, 0, 0); } catch (e) { } }
   function mkPart(im, d, q) {
     im = popImg(im);
-    q = q || 1; var w = im.width / q, h = im.height / q, tiers = [{ c: im, k: q }], prev = im, kk = q, i;
-    for (i = 0; i < 4; i++) { kk /= 2; var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * kk)); c.height = Math.max(1, Math.round(h * kk)); var x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(prev, 0, 0, c.width, c.height); tiers.push({ c: c, k: kk }); prev = c; }
+    q = q || 1; var w = im.width / q, h = im.height / q, tiers = [{ c: im, k: q }], i;
+    /* smaller copies are made only when an avatar is actually drawn that small (see tier()); most are never needed */
     /* no runtime sharpen: reading pixels back from the graphics card stalled OBS while avatars were building */
     return { ball: d.ball, ank: d.ank, disc: d.disc, w: w, h: h, piv: d.piv || [w / 2, 0], bone: d.bone || [0, 1], len: d.bone ? Math.hypot(d.bone[0], d.bone[1]) : 0, tiers: tiers };
   }
@@ -50,7 +50,11 @@ var RIG = (function () {
   }
   /* ---- drawing helpers ---- */
   function rot(v, a) { var c = Math.cos(a), s = Math.sin(a); return [v[0] * c - v[1] * s, v[0] * s + v[1] * c]; }
-  function tier(p, px) { var t = p.tiers[0], i; for (i = 0; i < p.tiers.length; i++) if (p.tiers[i].k >= px * 0.9) t = p.tiers[i]; return t; }
+  function tier(p, px) {
+    var T = p.tiers, last = T[T.length - 1];
+    while (T.length < 5 && last.k / 2 >= px * 0.9) { var kk = last.k / 2, c = document.createElement('canvas'); c.width = Math.max(1, Math.round(p.w * kk)); c.height = Math.max(1, Math.round(p.h * kk)); var x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(last.c, 0, 0, c.width, c.height); last = { c: c, k: kk }; T.push(last); }
+    var t = T[0], i; for (i = 0; i < T.length; i++) if (T[i].k >= px * 0.9) t = T[i]; return t;
+  }
   function blit(ctx, p, T, sx, sy, sw, sh, dx, dy) { ctx.drawImage(T.c, sx * T.k, sy * T.k, Math.max(1, sw * T.k), Math.max(1, sh * T.k), dx, dy, sw, sh); }
   function drawRot(ctx, name, x, y, a, flip, sy, px, sx) {
     var p = PART[name], T = tier(p, px), pv = p.piv; if (name === 'hand_open') { pv = [p.w * 0.49, p.h - 3]; a += Math.PI; } ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.scale((flip ? -1 : 1) * (sx || 1), sy || 1); blit(ctx, p, T, 0, 0, p.w, p.h, -pv[0], -pv[1]); ctx.restore();

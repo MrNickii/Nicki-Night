@@ -58,7 +58,7 @@ body.lite .p .sh { display: none !important; } body.lite .p .in2 canvas { filter
 #cmd b { color: var(--pink); }
 #cmd span { transition: opacity .4s; }
 #spk { position: absolute; inset: 0; pointer-events: none; }
-#spk img { position: absolute; transform-origin: 50% 100%; will-change: transform; filter: drop-shadow(0 0 8px rgba(255,79,176,.55)); }
+#spk img { will-change: transform; position: absolute; transform-origin: 50% 100%; will-change: transform; filter: drop-shadow(0 0 8px rgba(255,79,176,.55)); }
 #recap { z-index: 30000; position: absolute; left: 410px; top: 436px; width: 1100px; height: 642px; box-sizing: border-box; padding: 74px 100px 70px; display: flex; flex-direction: column; justify-content: center; background: url(vnn/ui/card.png) 0 0 / 100% 100% no-repeat; filter: drop-shadow(0 0 18px rgba(255,79,176,.8)) drop-shadow(0 0 50px rgba(255,79,176,.5)) drop-shadow(0 0 90px rgba(255,216,107,.25)); color: #fff; text-align: center; opacity: 0; transform: translateY(14px) scale(.97); transition: opacity .8s, transform .8s; pointer-events: none; font-family: system-ui, Arial, sans-serif; }
 #recap.show { opacity: 1; transform: none; }
 #recap .rct { font: 900 54px/1 "Arial Black", system-ui; letter-spacing: .06em; text-shadow: 0 0 24px #ff4fb0, 0 0 50px #ff4fb0; margin-bottom: 26px; }

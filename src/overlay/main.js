@@ -47,8 +47,10 @@
     clearTimeout(saveT);
     saveT = setTimeout(function () {
       try {
-        var us = {};
-        Object.keys(users).forEach(function (k) { var u = users[k]; us[k] = { name: u.name, plat: u.plat, photo: u.photo, look: u.look, dance: u.dance, dances: u.dances, chats: u.chats, show: u.show, inside: u.inside, atBar: u.atBar, sx: u.slot ? Math.round(u.slot.x) : (u._sx != null ? u._sx : null), sy: u.slot ? Math.round(u.slot.y) : (u._sy != null ? u._sy : null), nickiLook: u.nickiLook, grant: !!u.grant, ear: u.ear, pg: u.pg }; });
+        var us = {}, keep = {};
+        /* keep the save small on long shows: everyone inside plus the 600 most recently active people */
+        Object.keys(users).filter(function (k) { return !users[k].inside; }).sort(function (a, b) { return (users[b].lastActive || 0) - (users[a].lastActive || 0); }).slice(0, 600).forEach(function (k) { keep[k] = 1; });
+        Object.keys(users).forEach(function (k) { var u = users[k]; if (!u.inside && !keep[k]) return; us[k] = { name: u.name, plat: u.plat, photo: u.photo, look: u.look, dance: u.dance, dances: u.dances, chats: u.chats, show: u.show, inside: u.inside, atBar: u.atBar, sx: u.slot ? Math.round(u.slot.x) : (u._sx != null ? u._sx : null), sy: u.slot ? Math.round(u.slot.y) : (u._sy != null ? u._sy : null), nickiLook: u.nickiLook, grant: !!u.grant, ear: u.ear, pg: u.pg }; });
         S.users = us; S.room = R; S.k = CROWDK;
         localStorage.setItem(KEY, JSON.stringify(S));
       } catch (e) {}
@@ -235,8 +237,10 @@
   function headFor(u) {
     if (u._hf) return u._hf;
     var hue = (u.h32 * 47) % 360;
-    return u._hf = function (ctx, x, y, a, r) {
-      ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.save(); ctx.clip();
+    /* the head (photo, letter or bartender face, plus platform ring) is painted once into a small cached image and re-used every frame;
+       it is only repainted when the photo arrives, the size changes or the look changes */
+    var paint = function (ctx, r) {
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.save(); ctx.clip();
       var im = u.pimg;
       if (im && im.complete && im.naturalWidth) { var s = Math.max(2 * r / im.naturalWidth, 2 * r / im.naturalHeight); ctx.drawImage(im, -im.naturalWidth * s / 2, -im.naturalHeight * s / 2, im.naturalWidth * s, im.naturalHeight * s); }
       else if (u.bt) { btFace(ctx, r, u); }
@@ -244,7 +248,13 @@
         var g = ctx.createRadialGradient(-r * .3, -r * .35, r * .1, 0, 0, r); g.addColorStop(0, 'hsl(' + hue + ',85%,72%)'); g.addColorStop(1, 'hsl(' + ((hue + 40) % 360) + ',70%,36%)'); ctx.fillStyle = g; ctx.fillRect(-r, -r, 2 * r, 2 * r);
         ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.font = '800 ' + Math.round(r * 1.1) + 'px system-ui,Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(u.name || '?').replace(/^[@\W_]+/, '').charAt(0).toUpperCase() || '♪', 0, r * .06);
       }
-      ctx.restore(); if (u.plat !== 'none') { ctx.lineWidth = r * .09; ctx.strokeStyle = RING[u.plat] || '#fff'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.stroke(); } ctx.restore();
+      ctx.restore(); if (u.plat !== 'none') { ctx.lineWidth = r * .09; ctx.strokeStyle = RING[u.plat] || '#fff'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.stroke(); }
+    };
+    var hc = null, hk = '';
+    return u._hf = function (ctx, x, y, a, r) {
+      var m = ctx.getTransform(), sc = Math.hypot(m.a, m.b) || 1, pr = Math.max(4, Math.round(r * sc)), im = u.pimg, k = pr + '|' + (im && im.complete && im.naturalWidth ? 'p' : 'n') + (u.bt ? (u.look && u.look.skin) : '') + u.plat;
+      if (k !== hk) { hk = k; var E = Math.ceil(pr * 1.1) + 2; hc = hc || document.createElement('canvas'); hc.width = hc.height = E * 2; var g = hc.getContext('2d'); g.clearRect(0, 0, E * 2, E * 2); g.save(); g.translate(E, E); paint(g, pr); g.restore(); hc._e = E / pr; }
+      var e = hc._e * r; ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.drawImage(hc, -e, -e, e * 2, e * 2); ctx.restore();
     };
   }
   /* bartender faces: a drawn beauty-portrait face (until a generated photo is dropped into vnn/bartenders/) */
@@ -283,10 +293,13 @@
   function loadPhoto(u) { if (u.photo && !u.pimg && !u._pl) { u._pl = 1; var im = new Image(); im.onload = function () { u.pimg = im; }; im.onerror = function () { u._pl = 0; u.photoBad = 1; }; im.src = u.photo; } }
   function lookSig(u) { return JSON.stringify(lookFor(u)); }
   var BQ = [], BRUN = 0;
+  /* builds are spread out so they never pile into one long frame: two at a time, and a frame's breathing room before the next one starts */
+  var pumpT = null;
   function pumpBuild() {
-    while (BRUN < 5 && BQ.length) {
+    if (pumpT) return;
+    while (BRUN < 2 && BQ.length) {
       var j = BQ.shift(); if (j.u._bt !== j.my) continue; BRUN++;
-      VNNA.build(j.L).then(function (r) { if (this.u._bt === this.my) { this.u.set = r.set; this.u.spec = r.spec; this.u.dirty = 1; } }.bind(j)).catch(function (e) { console.error('build', e); }).then(function () { BRUN--; pumpBuild(); });
+      VNNA.build(j.L).then(function (r) { if (this.u._bt === this.my && (this.u.inside || this.u.el)) { this.u.set = r.set; this.u.spec = r.spec; this.u.dirty = 1; } }.bind(j)).catch(function (e) { console.error('build', e); }).then(function () { BRUN--; if (!pumpT) pumpT = setTimeout(function () { pumpT = null; pumpBuild(); }, 24); });
     }
   }
   function build(u) {
@@ -318,7 +331,7 @@
   }
   /* one shared animation loop for everyone on screen */
   var FPSCAP = Math.max(10, Math.min(60, Number(new URLSearchParams(location.search).get('fps')) || 30)), lastDraw = 0;
-  var dtRef = 17, dtSamp = [], bclk = 0, lastF = 0, frameN = 0, STRIDE = 1, dtAvg = 16, fpsMs = 0;
+  var dtRef = 17, dtSamp = [], bclk = 0, lastF = 0, frameN = 0, STRIDE = 1, dtAvg = 16, fpsMs = 0; var ADP = { n: 0, slow: 0, fast: 0 };
   function crowdList() { var a = []; order.forEach(function (k) { var u = users[k]; if (u && u.el && u.inside && u.cv) { if (u.set) a.push(u); else if (u.ghostD !== u.cw) { u.ghostD = u.cw; ghost(u); } } }); BT.forEach(function (u) { if (u.cv && u.set) a.push(u); }); return a; }
   /* speakers: placed on the room's floor planes; they thump with the beat clock (set the BPM in Lights) */
   /* laid out as mirrored pairs: PA towers on both side walls at one height, wall speakers under them, subs flanking Now Playing under the big screen */
@@ -345,8 +358,13 @@
     if (dtSamp && dtSamp.length < 140) { dtSamp.push(dt); if (dtSamp.length === 140) { var sm = dtSamp.slice(20).sort(function (a, b) { return a - b; }); dtRef = Math.max(15, Math.min(34, sm[Math.floor(sm.length * 0.25)])); dtSamp = null; } }
     dtAvg += (dt - dtAvg) * 0.05; bclk += dt / 1000 * LT.bpm / 60; spkTick(); if (LT.disco) discoDraw(false);
     if (now - lastDraw < 1000 / FPSCAP - 4) return; lastDraw = now; frameN++;
+    /* how often each dancer is redrawn (1 = every frame). Fully adaptive with hysteresis: a sudden big crowd starts on the safe setting,
+       half a second of slow frames steps it up, and 2.5 seconds of comfortably fast frames steps it back down toward full smoothness */
     var list = crowdList(), n = list.length, base = n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
-    if (dtAvg > dtRef * 1.5 && STRIDE < 6) STRIDE = Math.min(6, Math.max(STRIDE, base) + 1); else if (dtAvg < dtRef * 1.2 && STRIDE > base) STRIDE--; else if (STRIDE < base) STRIDE = base;
+    if (n > ADP.n + 20) STRIDE = Math.max(STRIDE, base); ADP.n = n;
+    if (dtAvg > dtRef * 1.5) { ADP.slow += dt; ADP.fast = 0; if (ADP.slow > 500 && STRIDE < 6) { STRIDE++; ADP.slow = 0; } }
+    else if (dtAvg < dtRef * 1.15 && fpsMs < 10) { ADP.fast += dt; ADP.slow = Math.max(0, ADP.slow - dt); if (ADP.fast > 2500 && STRIDE > 1) { STRIDE--; ADP.fast = 0; } }
+    else { ADP.slow = Math.max(0, ADP.slow - dt * 0.5); ADP.fast = Math.max(0, ADP.fast - dt * 0.5); }
     var t0 = performance.now();
     for (var i = 0; i < list.length; i++) {
       var u = list[i], wk = u.wk, nowMs = performance.now(), walkOpt = null, walking = false;
@@ -363,7 +381,7 @@
     if (!S.lite && STRIDE >= 6 && dtAvg > Math.max(45, dtRef * 2.2)) { slowT += dt; if (slowT > 8000) { S.lite = 'auto'; liteApply(); save(); try { log('Performance mode switched on automatically (slow frames)'); } catch (e) {} rcSnap(true); } } else slowT = Math.max(0, slowT - dt);
   }
   function rebuildAll() { order.forEach(function (k) { var u = users[k]; if (u && u.cv) { u._sg = null; build(u); } }); BT.forEach(function (u) { if (u.cv) { u._sg = null; build(u); } }); }
-  VNNA.setCache(260);
+  VNNA.setCache(60); /* built outfits kept for quick re-use; each holds many image canvases, so keep this modest */
   VNNA.init(AB + 'lib_lo/', AB + 'moc.json').then(function () { ENGINE = true; rebuildAll(); }).catch(function (e) { ENGERR = String(e && e.message || e); console.error('avatar assets', e); var b = document.getElementById('cstat'); if (b) b.title = 'Avatar assets: ' + ENGERR; });
   requestAnimationFrame(animate);
   /* walking: straight lines at a pace that follows the avatar's size; the legs follow the distance travelled */
@@ -437,6 +455,8 @@
     rankTag(u, s.z === 'stage');
     return true;
   }
+  /* free a departed avatar's built art (dozens of image canvases); it is rebuilt if they come back */
+  function dropArt(u) { if (u.inside || u.el) return; u.set = null; u.spec = null; u.cv = null; u.cx = null; u._sg = null; u.rst = null; u.cw = 0; u.ch = 0; u.d = 0; u.h = 0; }
   function unseat(u, walkOut) {
     release(u); u.overflow = false;
     if (!u.el) return;
@@ -445,8 +465,8 @@
       var dr = rect('door'), x = dr.x + dr.w / 2, y = dr.y + dr.h / 2, wd = walkTime(u, x, y);
       put(u, x, y, wd);
       setTimeout(function () { el.classList.remove('in'); }, Math.max(300, wd * 1000 - 450));
-      setTimeout(function () { if (u.el === el && !u.inside) { el.remove(); u.el = null; u.shown = false; u.wk = null; } }, wd * 1000 + 1100);
-    } else { el.classList.remove('in'); setTimeout(function () { el.remove(); }, 700); u.el = null; u.shown = false; }
+      setTimeout(function () { if (u.el === el && !u.inside) { el.remove(); u.el = null; u.shown = false; u.wk = null; dropArt(u); } }, wd * 1000 + 1100);
+    } else { el.classList.remove('in'); setTimeout(function () { el.remove(); dropArt(u); }, 700); u.el = null; u.shown = false; }
   }
   /* rebuild the slots (crowd size / top-5 / rules changed) WITHOUT shuffling anyone:
      people whose spot still exists stay on it; the rest take the nearest free spot to where they stand */
@@ -658,7 +678,7 @@
     'NICKI'.split('').forEach(function (c, j) { h += '<span style="animation-delay:' + (0.25 + j * 0.09) + 's">' + c + '</span>'; });
     h += '</div><div class="n2">IS IN THE BUILDING</div><div class="n3">Everybody make some room</div></div><div class="conf">';
     var cols = ['#ff4fb0', '#ffd86b', '#ffffff', '#ff8ad0', '#a07bff'];
-    for (i = 0; i < 110; i++) h += '<i style="left:' + (Math.random() * 100) + '%;--dx:' + Math.round(Math.random() * 300 - 150) + 'px;--r:' + Math.round(Math.random() * 900 - 450) + 'deg;--d:' + (3.6 + Math.random() * 3.2).toFixed(2) + 's;--dl:' + (0.5 + Math.random() * 3.4).toFixed(2) + 's;background:' + cols[i % 5] + ';width:' + (8 + Math.random() * 10).toFixed(0) + 'px;height:' + (14 + Math.random() * 14).toFixed(0) + 'px"></i>';
+    for (i = 0; i < 70; i++) h += '<i style="left:' + (Math.random() * 100) + '%;--dx:' + Math.round(Math.random() * 300 - 150) + 'px;--r:' + Math.round(Math.random() * 900 - 450) + 'deg;--d:' + (3.6 + Math.random() * 3.2).toFixed(2) + 's;--dl:' + (0.5 + Math.random() * 3.4).toFixed(2) + 's;background:' + cols[i % 5] + ';width:' + (8 + Math.random() * 10).toFixed(0) + 'px;height:' + (14 + Math.random() * 14).toFixed(0) + 'px"></i>';
     h += '</div><div class="paps">';
     for (i = 0; i < 16; i++) { var sz = 70 + Math.random() * 90; h += '<i style="left:' + (Math.random() * 1700 + 100) + 'px;top:' + (Math.random() * 500 + 480) + 'px;width:' + sz + 'px;height:' + sz + 'px;animation-delay:' + (0.6 + i * 0.38 + Math.random() * 0.2).toFixed(2) + 's"></i>'; }
     h += '</div>';

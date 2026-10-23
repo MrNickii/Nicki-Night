@@ -210,7 +210,8 @@ var VNNA = (function () {
   function clothHex(id, dflt) { var c = byId(CATALOG.colors.clothing, id); return c ? c.hex : dflt; }
 
   /* ------------------------------------------------ composer */
-  var LIB = null, BASE = '', Q = 1, IMG = {}, TINT = {}, CACHE = {}, CORDER = [];
+  var LIB = null, BASE = '', Q = 1, IMG = {}, TINT = {}, TORD = [], CACHE = {}, CORDER = [];
+  function tkeep(ck, c) { TINT[ck] = c; TORD.push(ck); while (TORD.length > 300) delete TINT[TORD.shift()]; return c; } /* recoloured layers: capped so long shows don't pile them up */
   function loadJSON(url) { return fetch(url + (url.indexOf('?') < 0 ? '?v=' + Math.floor(Date.now() / 600000) : '')).then(function (r) { return r.json(); }); }
   function img(f) { if (IMG[f]) return IMG[f]; return IMG[f] = new Promise(function (res, rej) { var i = new Image(); i.crossOrigin = 'anonymous'; i.onload = function () { res(i); }; i.onerror = function () { rej(new Error('img ' + f)); }; i.src = BASE + f; }); }
   function init(base, mocap) {
@@ -230,7 +231,7 @@ var VNNA = (function () {
       if (k <= 1) { r = cc[0] * k + lift; g = cc[1] * k + lift; bb = cc[2] * k + lift; } else { var tt = (k - 1) * 1.6; r = cc[0] + (255 - cc[0]) * tt + lift; g = cc[1] + (255 - cc[1]) * tt + lift; bb = cc[2] + (255 - cc[2]) * tt + lift; }
       p[i * 4] = r; p[i * 4 + 1] = g; p[i * 4 + 2] = bb;
     }
-    x.putImageData(d, 0, 0); return TINT[ck] = c;
+    x.putImageData(d, 0, 0); return tkeep(ck, c);
   }
   function skinRatio(skinHex) {
     var t = hex2(skinHex), best = 'M', bd = 1e9, sb = LIB.skinBase;
@@ -242,7 +243,7 @@ var VNNA = (function () {
     var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
     var d = x.getImageData(0, 0, c.width, c.height), p = d.data, i, n = p.length / 4, r = ratio.r;
     for (i = 0; i < n; i++) { p[i * 4] = Math.min(255, p[i * 4] * r[0]); p[i * 4 + 1] = Math.min(255, p[i * 4 + 1] * r[1]); p[i * 4 + 2] = Math.min(255, p[i * 4 + 2] * r[2]); }
-    x.putImageData(d, 0, 0); return TINT[ck] = c;
+    x.putImageData(d, 0, 0); return tkeep(ck, c);
   }
   function lyr(sheet, key, v) { var s = LIB.lib[sheet]; if (!s) return null; return s[v ? v + ' · ' + key : key] || null; }
   function resolveLayer(L, spec) {
@@ -272,7 +273,7 @@ var VNNA = (function () {
       var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W * Q)); c.height = Math.max(1, Math.round(H * Q)); var x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingQuality = 'high'; /* built in main memory: the sleeve fix below reads pixels back, which stalls the graphics card in OBS */
       R.forEach(function (r) {
         if (!r) return; var dx = (r.e.ox - minx) * Q, dy = (r.e.oy - miny) * Q, w = r.e.w * Q, h = r.e.h * Q;
-        if (r.garment) { var o = (r.big ? 8 : 3) * Q, A = [[o, 0], [-o, 0], [0, o], [0, -o], [o, o], [-o, -o], [o, -o], [-o, o]]; A.forEach(function (a) { x.drawImage(r.im, dx + a[0], dy + a[1], w, h); }); }
+        if (r.garment) { var o = (r.big ? 8 : 3) * Q, A = [[o, 0], [-o, 0], [0, o], [0, -o]]; A.forEach(function (a) { x.drawImage(r.im, dx + a[0], dy + a[1], w, h); }); }
         x.drawImage(r.im, dx, dy, w, h);
       });
       var d = { piv: [def.piv[0] - minx, def.piv[1] - miny], bone: def.bone }, sx = SCX[key] || SCU[key] || 1, sy = SCU[key] || 1;
@@ -388,8 +389,10 @@ var VNNA = (function () {
     var S = spec(look), k = sig(S);
     if (CACHE[k]) { touch(k); return CACHE[k].p.then(function (set) { return { set: set, spec: S }; }); }
     var keys = ['torso', 'torso34', 'pelvis', 'pelvis34', 'neck', 'uarm', 'farm', 'thigh', 'shin', 'hand_open', 'hand_relax', 'fist', 'farmcam'], PS = {};
-    var p = Promise.all(keys.map(function (kk) { return composePart(kk, S).then(function (r) { PS[kk === 'farmcam' ? 'ffarm' : kk] = RIG.mkPart(r.canvas, r.def, Q); if (r.extra) Object.keys(r.extra).forEach(function (ek) { PS[ek] = RIG.mkPart(r.extra[ek].canvas, r.extra[ek].def, Q); }); }); }))
-      .then(function () { return Promise.all([shoeParts(S), hairParts(S), skirtParts(S), accParts(S)]); })
+    /* each body piece is assembled in its own small task so a build never freezes the dancing for a whole frame */
+    var slot = function () { return new Promise(function (r) { setTimeout(r, 0); }); };
+    var p = Promise.all(keys.map(function (kk) { return slot().then(function () { return composePart(kk, S); }).then(function (r) { PS[kk === 'farmcam' ? 'ffarm' : kk] = RIG.mkPart(r.canvas, r.def, Q); if (r.extra) Object.keys(r.extra).forEach(function (ek) { PS[ek] = RIG.mkPart(r.extra[ek].canvas, r.extra[ek].def, Q); }); }); }))
+      .then(slot).then(function () { return Promise.all([shoeParts(S), hairParts(S), skirtParts(S), accParts(S)]); })
       .then(function (z) { z.forEach(function (m) { Object.keys(m).forEach(function (kk) { PS[kk] = RIG.mkPart(m[kk].canvas, m[kk].def, Q); }); }); return PS; });
     CACHE[k] = { p: p, n: 1 }; touch(k);
     return p.then(function (set) { return { set: set, spec: S }; });
