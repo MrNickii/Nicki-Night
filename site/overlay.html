@@ -43,7 +43,9 @@ body.lite .p .sh { display: none !important; } body.lite .p .in2 canvas { filter
 @keyframes bubIn { from { opacity: 0; transform: translateY(10px) scale(.88); } to { opacity: 1; transform: none; } }
 .p .ring { position: absolute; left: 50%; width: 120px; height: 36px; margin: -18px 0 0 -60px; border-radius: 50%; border: 3px solid var(--c); box-shadow: 0 0 14px var(--c), inset 0 0 12px var(--cg); opacity: 0; transition: opacity .25s; pointer-events: none; }
 .p.talk .ring { opacity: 1; animation: ringp 1.3s ease-in-out infinite; }
-.p.talk .in2 { filter: drop-shadow(0 0 7px var(--c)); }
+.p .in2::before { content: ''; position: absolute; left: 8%; right: 8%; top: 2%; bottom: 0; border-radius: 50%; background: radial-gradient(closest-side, var(--c, #ff4fb0), rgba(0,0,0,0)); opacity: 0; transition: opacity .3s; pointer-events: none; }
+.p.talk .in2::before { opacity: .42; }
+.p .in2 canvas { position: relative; }
 @keyframes ringp { 0%,100% { transform: scale(.94); } 50% { transform: scale(1.06); } }
 .drink { position: absolute; right: -4%; top: 50%; width: 22%; pointer-events: none; }
 .sil { position: absolute; left: 0; top: 0; pointer-events: none; opacity: .5; }
@@ -90,18 +92,23 @@ body.lite .p .sh { display: none !important; } body.lite .p .in2 canvas { filter
 @keyframes bshine { 0% { background-position: -150% 0; } 60%, 100% { background-position: 250% 0; } }
 @keyframes bpulse { 0%, 100% { opacity: 1; } 50% { opacity: .86; } }
 #banner small { display: block; margin-top: 9px; font: 700 17px/1 system-ui, Arial, sans-serif; color: var(--gold); text-shadow: 0 0 10px rgba(255,216,107,.6); letter-spacing: .14em; white-space: nowrap; }
-#glows { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; transition: opacity .8s; }
-#glows i { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); animation: glo var(--t, 4s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+#glows { position: absolute; inset: 0; pointer-events: none; transition: opacity .8s; }
+#glows .gg { position: absolute; inset: 0; will-change: opacity; animation: glo var(--t, 4s) ease-in-out infinite; animation-delay: var(--dl, 0s); }
+#glows i { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); }
 #glows i.p { background: radial-gradient(closest-side, rgba(255,150,210,.62), rgba(255,60,160,.2) 52%, rgba(255,60,160,0)); }
 #glows i.w { background: radial-gradient(closest-side, rgba(255,214,140,.6), rgba(255,150,60,.18) 52%, rgba(255,150,60,0)); }
-body.lite #glows i, body.lite #led *, body.lite #fog i, body.lite #banner.show, body.lite #banner.show::after, body.lite .p.talk .ring, body.lite #carpet .c2 { animation: none !important; }
-body.lite #glows { mix-blend-mode: normal; }
+body.lite #glows .gg, body.lite #ledm *, body.lite #fog i, body.lite #banner.show, body.lite #banner.show::after, body.lite .p.talk .ring, body.lite #carpet .c2 { animation: none !important; }
+body.lite #glows, body.lite #fxc, body.lite #fog, body.lite #pulse { mix-blend-mode: normal; }
+body.lite #wash { mix-blend-mode: soft-light; }
+body.lite #wash.rainbow::before { animation-duration: 18s; }
 body.lite .pill.show, body.lite .rk { filter: none; }
-@keyframes glo { 0%,100% { opacity: .55; transform: translate(-50%,-50%) scale(.92); } 50% { opacity: 1; transform: translate(-50%,-50%) scale(1.08); } }
-#led { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; transition: opacity .6s; }
+@keyframes glo { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+#led, #ledm { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; transition: opacity .6s; }
+#ledm { will-change: transform; }
 #led rect { fill: none; }
-#led .lb { stroke-width: 2.4; opacity: .95; animation: ledc 9s linear infinite; }
-#led .lc { stroke-width: 3; stroke-linecap: round; stroke: #fff; stroke-dasharray: 36 464; opacity: .55; animation: ledm 5s linear infinite; }
+#led .lb { stroke-width: 2.4; opacity: .95; stroke: #ff5fb6; }
+#ledm rect { fill: none; }
+#ledm .lc { stroke-width: 3; stroke-linecap: round; stroke: #fff; stroke-dasharray: 36 464; opacity: .55; animation: ledm 5s linear infinite; }
 @keyframes ledm { to { stroke-dashoffset: -500; } }
 @keyframes ledc { 0%,100% { stroke: #ff3fa6; } 25% { stroke: #ff86c6; } 50% { stroke: #e04bff; } 75% { stroke: #ff4f86; } }
 #np { position: absolute; z-index: 15000; left: 720px; top: 390px; width: 480px; height: 66px; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 28px 0 82px; background: url(vnn/ui/np.png) 0 0 / 100% 100% no-repeat; filter: drop-shadow(0 0 8px rgba(255,79,176,.85)) drop-shadow(0 0 22px rgba(255,79,176,.5)); color: #fff; font: 700 17px/1 system-ui, Arial, sans-serif; overflow: hidden; }
@@ -150,7 +157,7 @@ body.lite .pill.show, body.lite .rk { filter: none; }
 #carpet.on { opacity: 1; }
 #carpet polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 #carpet .c1 { stroke: rgba(255,79,176,.55); stroke-width: 34; filter: blur(10px); }
-#carpet .c2 { stroke: #ffd86b; stroke-width: 6; stroke-dasharray: 2 26; filter: drop-shadow(0 0 8px #ffd86b); animation: cmv 1.2s linear infinite; }
+#carpet .c2 { stroke: #ffd86b; stroke-width: 6; stroke-dasharray: 2 26; animation: cmv 1.2s linear infinite; }
 @keyframes cmv { to { stroke-dashoffset: -28; } }
 #zones .z { position: absolute; border: 2px dashed; font: 600 14px/1 monospace; padding: 4px 6px; }
 /* lighting */
@@ -162,8 +169,9 @@ body.lite .pill.show, body.lite .rk { filter: none; }
 #fog i:nth-child(3) { left: 900px; top: 540px; animation-duration: 27s; animation-delay: -18s; }
 @keyframes drift { 0% { transform: translateX(-300px); } 50% { transform: translateX(300px); } 100% { transform: translateX(-300px); } }
 #wash { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .6s, background-color .6s; mix-blend-mode: overlay; }
-#wash.rainbow { background: linear-gradient(100deg, #ff2f9e, #ff9a2f, #ffe22f, #2fff9a, #2fc8ff, #8a3cff, #ff2f9e); background-size: 200% 100%; animation: rb 6s linear infinite; }
-@keyframes rb { to { background-position: 200% 0; } }
+#wash.rainbow { background-color: transparent !important; overflow: hidden; }
+#wash.rainbow::before { content: ''; position: absolute; left: 0; top: 0; width: 400%; height: 100%; background: linear-gradient(100deg, #ff2f9e, #ff9a2f, #ffe22f, #2fff9a, #2fc8ff, #8a3cff, #ff2f9e) 0 0 / 50% 100% repeat-x; will-change: transform; animation: rbx 6s linear infinite; }
+@keyframes rbx { to { transform: translateX(-50%); } }
 #pulse { position: absolute; inset: 0; pointer-events: none; opacity: 0; mix-blend-mode: screen; background: radial-gradient(ellipse at 50% 70%, rgba(255,79,176,.75), rgba(255,79,176,0) 70%); }
 #pulse.on { animation: beat var(--beat, .48s) ease-out infinite; }
 @keyframes beat { 0% { opacity: var(--i, .6); } 100% { opacity: 0; } }
@@ -207,6 +215,7 @@ body.pan #panel { display: block; }
   <canvas id="fxc" width="1920" height="1080"></canvas>
   <div id="glows"></div>
   <svg id="led" viewBox="0 0 1920 1080"></svg>
+  <svg id="ledm" viewBox="0 0 1920 1080"></svg>
   <div id="fog"><i></i><i></i><i></i></div>
   <div id="stagefx"></div>
   <div id="spk"></div>
@@ -1375,7 +1384,7 @@ var VNNA = (function () {
       if (performance.now() - t0 > (u.dirty ? 34 : 14)) break;
     }
     fpsMs = performance.now() - t0;
-    if (!S.lite && STRIDE >= 6 && dtAvg > Math.max(45, dtRef * 2.2)) { slowT += dt; if (slowT > 20000) { S.lite = 'auto'; liteApply(); save(); try { log('Performance mode switched on automatically (slow frames)'); } catch (e) {} rcSnap(true); } } else slowT = Math.max(0, slowT - dt);
+    if (!S.lite && STRIDE >= 6 && dtAvg > Math.max(45, dtRef * 2.2)) { slowT += dt; if (slowT > 8000) { S.lite = 'auto'; liteApply(); save(); try { log('Performance mode switched on automatically (slow frames)'); } catch (e) {} rcSnap(true); } } else slowT = Math.max(0, slowT - dt);
   }
   function rebuildAll() { order.forEach(function (k) { var u = users[k]; if (u && u.cv) { u._sg = null; build(u); } }); BT.forEach(function (u) { if (u.cv) { u._sg = null; build(u); } }); }
   VNNA.setCache(260);
@@ -2089,23 +2098,26 @@ var VNNA = (function () {
   /* ---------- glows, LED strips, now playing ---------- */
   var GLOW = [[16,155,0],[14,99,0],[1713,652,0],[263,454,1],[1911,733,0],[1788,207,0],[0,641,0],[1371,498,0],[230,518,0],[1917,195,0],[45,558,0],[270,503,0],[872,383,0],[176,441,0],[104,577,0],[452,414,0],[348,296,0],[440,134,0],[1247,15,0],[487,14,0],[547,430,0],[112,104,0],[613,422,1],[320,440,0],[1131,423,1],[1919,314,1],[205,135,0],[1717,770,0],[1245,138,0],[873,21,0],[1468,117,0],[1462,140,0],[1532,149,0],[129,506,0],[508,141,0],[177,548,0],[174,515,1],[1355,83,0],[180,486,0],[253,302,0],[1240,256,0],[132,560,0],[1547,596,1],[1910,866,0],[1906,925,1],[1917,48,0],[87,525,0],[1619,643,0],[1579,181,0],[1507,571,1],[253,381,0],[1648,698,0],[138,532,0],[437,287,0],[1464,537,0],[53,673,0],[1542,258,0],[1835,211,0],[536,378,0],[1322,133,0],[102,662,0],[1743,147,0],[506,272,0],[110,244,0],[1688,142,0],[1577,613,0],[343,357,0],[1655,191,0]];
   function buildGlows() {
-    var h = '';
+    var h = ['', '', ''];
     GLOW.forEach(function (g, i) {
       var big = (g[1] < 300 && g[0] < 1900 && g[2] === 0) ? 1 : 0, r = g[2] ? 34 + (i % 4) * 5 : 52 + (i % 3) * 10;
-      h += '<i class="' + (g[2] ? 'w' : 'p') + '" style="left:' + g[0] + 'px;top:' + g[1] + 'px;width:' + r * 2 + 'px;height:' + r * 2 + 'px;--t:' + (3.2 + (i % 7) * 0.45).toFixed(2) + 's;--dl:-' + ((i * 0.77) % 5).toFixed(2) + 's"></i>';
+      h[i % 3] += '<i class="' + (g[2] ? 'w' : 'p') + '" style="left:' + g[0] + 'px;top:' + g[1] + 'px;width:' + r * 2 + 'px;height:' + r * 2 + 'px"></i>';
     });
-    $('glows').innerHTML = h;
+    /* three static groups that breathe out of step: each group is painted once and only its opacity animates (cheap), instead of dozens of separately animated glows */
+    $('glows').innerHTML = h.map(function (x, k) { return '<div class="gg" style="--t:' + [3.4, 4.3, 5.1][k] + 's;--dl:-' + [0, 1.7, 3.1][k] + 's">' + x + '</div>'; }).join('');
   }
   function buildLed() {
     /* thin LED tube with a tight bloom and a faint spill; cut off where the VIP platform and its railing sit in front of the screen */
     var h = '<defs><filter id="lgl" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="3.2" result="b1"/><feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
       '<clipPath id="ledclip"><polygon points="0,0 1920,0 1920,300 1176,300 1176,1080 0,1080"/></clipPath></defs><g clip-path="url(#ledclip)">';
+    var m = '';
     ['screen', 'dj'].forEach(function (id) {
       var r = rect(id), g = 1;
       var a = 'x="' + (r.x - g) + '" y="' + (r.y - g) + '" width="' + (r.w + g * 2) + '" height="' + (r.h + g * 2) + '" rx="3" pathLength="1000"';
-      h += '<g filter="url(#lgl)"><rect class="lb" ' + a + '/><rect class="lc" ' + a + '/></g>';
+      h += '<g filter="url(#lgl)"><rect class="lb" ' + a + '/></g>'; m += '<rect class="lc" ' + a + '/>';
     });
-    $('led').innerHTML = h + '</g>';
+    /* the blurred tube never changes, so it is painted once; only the thin unblurred chaser moves (in its own layer) */
+    $('led').innerHTML = h + '</g>'; $('ledm').innerHTML = '<g clip-path="url(#ledclip2)"><defs><clipPath id="ledclip2"><polygon points="0,0 1920,0 1920,300 1176,300 1176,1080 0,1080"/></clipPath></defs>' + m + '</g>';
   }
   function setNP(a, t) {
     S.np = { a: String(a || '').trim(), t: String(t || '').trim() };
@@ -2484,7 +2496,7 @@ var VNNA = (function () {
     var s = $('strobe'); s.style.setProperty('--i', I * 0.55); s.classList.toggle('on', on('strobe'));
     var sp = $('spot'), spotOn = on('spot') || LT._spotHold; sp.style.opacity = spotOn ? 1 : 0; sp.style.setProperty('--sa', 0.35 + I * 0.5);
     $('dark').style.opacity = on('dark') ? 0.82 : 0;
-    $('glows').style.opacity = on('glow') ? Math.min(1, 0.35 + I * 0.8) : 0; $('led').style.opacity = on('led') ? 1 : 0;
+    $('glows').style.opacity = on('glow') ? Math.min(1, 0.35 + I * 0.8) : 0; $('led').style.opacity = on('led') ? 1 : 0; $('ledm').style.opacity = on('led') ? 1 : 0;
     clearInterval(spotT);
     if (spotOn) { spotMove(); if (!LT._spotHold) spotT = setInterval(spotMove, 4500); }
     var any = LT.beams || LT.lasers || LT.ball; if (any && !raf) raf = requestAnimationFrame(frame);
@@ -2510,7 +2522,7 @@ var VNNA = (function () {
   function frame(t) {
     raf = null;
     if (!(LT.beams || LT.lasers || LT.ball)) { g.clearRect(0, 0, W, H); return; }
-    if (t - lastFx < 33) { raf = requestAnimationFrame(frame); return; }
+    if (t - lastFx < (S.lite ? 66 : 33)) { raf = requestAnimationFrame(frame); return; }
     lastFx = t; g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter';
     var I = LT.inten, i;
     var f = rect('floor'), fcx = f.x + f.w / 2;
@@ -2524,14 +2536,14 @@ var VNNA = (function () {
       }
     }
     if (LT.lasers) {
-      g.globalAlpha = 0.85 * I + 0.1; g.lineWidth = 2.5; g.shadowBlur = 14;
+      /* glow without shadowBlur (blurring 14 full-length lines every frame was the single biggest lag source): one batched wide soft pass, then thin bright cores */
+      var LZ = [];
       [[40, 30, 1], [W - 40, 30, -1]].forEach(function (s, si) {
-        for (i = 0; i < 7; i++) {
-          var a = s[2] * (0.25 + i * 0.12) + Math.sin(t / 650 + i * 0.8 + si) * 0.32, col = BCOL[(i + si * 2) % 5];
-          g.strokeStyle = col; g.shadowColor = col; g.beginPath(); g.moveTo(s[0], s[1]); g.lineTo(s[0] + Math.sin(a) * 2400, s[1] + Math.cos(a) * 2400); g.stroke();
-        }
+        for (i = 0; i < 7; i++) { var a = s[2] * (0.25 + i * 0.12) + Math.sin(t / 650 + i * 0.8 + si) * 0.32; LZ.push([s[0], s[1], s[0] + Math.sin(a) * 2400, s[1] + Math.cos(a) * 2400, BCOL[(i + si * 2) % 5]]); }
       });
-      g.shadowBlur = 0;
+      g.lineCap = 'round';
+      g.globalAlpha = (0.85 * I + 0.1) * 0.22; g.lineWidth = 11; LZ.forEach(function (z) { g.strokeStyle = z[4]; g.beginPath(); g.moveTo(z[0], z[1]); g.lineTo(z[2], z[3]); g.stroke(); });
+      g.globalAlpha = 0.85 * I + 0.1; g.lineWidth = 2.5; LZ.forEach(function (z) { g.strokeStyle = z[4]; g.beginPath(); g.moveTo(z[0], z[1]); g.lineTo(z[2], z[3]); g.stroke(); });
     }
     if (LT.ball) {
       var sp = R.sparkle;

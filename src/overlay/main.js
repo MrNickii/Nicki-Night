@@ -358,7 +358,7 @@
       if (performance.now() - t0 > (u.dirty ? 34 : 14)) break;
     }
     fpsMs = performance.now() - t0;
-    if (!S.lite && STRIDE >= 6 && dtAvg > Math.max(45, dtRef * 2.2)) { slowT += dt; if (slowT > 20000) { S.lite = 'auto'; liteApply(); save(); try { log('Performance mode switched on automatically (slow frames)'); } catch (e) {} rcSnap(true); } } else slowT = Math.max(0, slowT - dt);
+    if (!S.lite && STRIDE >= 6 && dtAvg > Math.max(45, dtRef * 2.2)) { slowT += dt; if (slowT > 8000) { S.lite = 'auto'; liteApply(); save(); try { log('Performance mode switched on automatically (slow frames)'); } catch (e) {} rcSnap(true); } } else slowT = Math.max(0, slowT - dt);
   }
   function rebuildAll() { order.forEach(function (k) { var u = users[k]; if (u && u.cv) { u._sg = null; build(u); } }); BT.forEach(function (u) { if (u.cv) { u._sg = null; build(u); } }); }
   VNNA.setCache(260);
@@ -931,23 +931,26 @@
   /* ---------- glows, LED strips, now playing ---------- */
   var GLOW = [[16,155,0],[14,99,0],[1713,652,0],[263,454,1],[1911,733,0],[1788,207,0],[0,641,0],[1371,498,0],[230,518,0],[1917,195,0],[45,558,0],[270,503,0],[872,383,0],[176,441,0],[104,577,0],[452,414,0],[348,296,0],[440,134,0],[1247,15,0],[487,14,0],[547,430,0],[112,104,0],[613,422,1],[320,440,0],[1131,423,1],[1919,314,1],[205,135,0],[1717,770,0],[1245,138,0],[873,21,0],[1468,117,0],[1462,140,0],[1532,149,0],[129,506,0],[508,141,0],[177,548,0],[174,515,1],[1355,83,0],[180,486,0],[253,302,0],[1240,256,0],[132,560,0],[1547,596,1],[1910,866,0],[1906,925,1],[1917,48,0],[87,525,0],[1619,643,0],[1579,181,0],[1507,571,1],[253,381,0],[1648,698,0],[138,532,0],[437,287,0],[1464,537,0],[53,673,0],[1542,258,0],[1835,211,0],[536,378,0],[1322,133,0],[102,662,0],[1743,147,0],[506,272,0],[110,244,0],[1688,142,0],[1577,613,0],[343,357,0],[1655,191,0]];
   function buildGlows() {
-    var h = '';
+    var h = ['', '', ''];
     GLOW.forEach(function (g, i) {
       var big = (g[1] < 300 && g[0] < 1900 && g[2] === 0) ? 1 : 0, r = g[2] ? 34 + (i % 4) * 5 : 52 + (i % 3) * 10;
-      h += '<i class="' + (g[2] ? 'w' : 'p') + '" style="left:' + g[0] + 'px;top:' + g[1] + 'px;width:' + r * 2 + 'px;height:' + r * 2 + 'px;--t:' + (3.2 + (i % 7) * 0.45).toFixed(2) + 's;--dl:-' + ((i * 0.77) % 5).toFixed(2) + 's"></i>';
+      h[i % 3] += '<i class="' + (g[2] ? 'w' : 'p') + '" style="left:' + g[0] + 'px;top:' + g[1] + 'px;width:' + r * 2 + 'px;height:' + r * 2 + 'px"></i>';
     });
-    $('glows').innerHTML = h;
+    /* three static groups that breathe out of step: each group is painted once and only its opacity animates (cheap), instead of dozens of separately animated glows */
+    $('glows').innerHTML = h.map(function (x, k) { return '<div class="gg" style="--t:' + [3.4, 4.3, 5.1][k] + 's;--dl:-' + [0, 1.7, 3.1][k] + 's">' + x + '</div>'; }).join('');
   }
   function buildLed() {
     /* thin LED tube with a tight bloom and a faint spill; cut off where the VIP platform and its railing sit in front of the screen */
     var h = '<defs><filter id="lgl" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="3.2" result="b1"/><feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
       '<clipPath id="ledclip"><polygon points="0,0 1920,0 1920,300 1176,300 1176,1080 0,1080"/></clipPath></defs><g clip-path="url(#ledclip)">';
+    var m = '';
     ['screen', 'dj'].forEach(function (id) {
       var r = rect(id), g = 1;
       var a = 'x="' + (r.x - g) + '" y="' + (r.y - g) + '" width="' + (r.w + g * 2) + '" height="' + (r.h + g * 2) + '" rx="3" pathLength="1000"';
-      h += '<g filter="url(#lgl)"><rect class="lb" ' + a + '/><rect class="lc" ' + a + '/></g>';
+      h += '<g filter="url(#lgl)"><rect class="lb" ' + a + '/></g>'; m += '<rect class="lc" ' + a + '/>';
     });
-    $('led').innerHTML = h + '</g>';
+    /* the blurred tube never changes, so it is painted once; only the thin unblurred chaser moves (in its own layer) */
+    $('led').innerHTML = h + '</g>'; $('ledm').innerHTML = '<g clip-path="url(#ledclip2)"><defs><clipPath id="ledclip2"><polygon points="0,0 1920,0 1920,300 1176,300 1176,1080 0,1080"/></clipPath></defs>' + m + '</g>';
   }
   function setNP(a, t) {
     S.np = { a: String(a || '').trim(), t: String(t || '').trim() };
@@ -1326,7 +1329,7 @@
     var s = $('strobe'); s.style.setProperty('--i', I * 0.55); s.classList.toggle('on', on('strobe'));
     var sp = $('spot'), spotOn = on('spot') || LT._spotHold; sp.style.opacity = spotOn ? 1 : 0; sp.style.setProperty('--sa', 0.35 + I * 0.5);
     $('dark').style.opacity = on('dark') ? 0.82 : 0;
-    $('glows').style.opacity = on('glow') ? Math.min(1, 0.35 + I * 0.8) : 0; $('led').style.opacity = on('led') ? 1 : 0;
+    $('glows').style.opacity = on('glow') ? Math.min(1, 0.35 + I * 0.8) : 0; $('led').style.opacity = on('led') ? 1 : 0; $('ledm').style.opacity = on('led') ? 1 : 0;
     clearInterval(spotT);
     if (spotOn) { spotMove(); if (!LT._spotHold) spotT = setInterval(spotMove, 4500); }
     var any = LT.beams || LT.lasers || LT.ball; if (any && !raf) raf = requestAnimationFrame(frame);
@@ -1352,7 +1355,7 @@
   function frame(t) {
     raf = null;
     if (!(LT.beams || LT.lasers || LT.ball)) { g.clearRect(0, 0, W, H); return; }
-    if (t - lastFx < 33) { raf = requestAnimationFrame(frame); return; }
+    if (t - lastFx < (S.lite ? 66 : 33)) { raf = requestAnimationFrame(frame); return; }
     lastFx = t; g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter';
     var I = LT.inten, i;
     var f = rect('floor'), fcx = f.x + f.w / 2;
@@ -1366,14 +1369,14 @@
       }
     }
     if (LT.lasers) {
-      g.globalAlpha = 0.85 * I + 0.1; g.lineWidth = 2.5; g.shadowBlur = 14;
+      /* glow without shadowBlur (blurring 14 full-length lines every frame was the single biggest lag source): one batched wide soft pass, then thin bright cores */
+      var LZ = [];
       [[40, 30, 1], [W - 40, 30, -1]].forEach(function (s, si) {
-        for (i = 0; i < 7; i++) {
-          var a = s[2] * (0.25 + i * 0.12) + Math.sin(t / 650 + i * 0.8 + si) * 0.32, col = BCOL[(i + si * 2) % 5];
-          g.strokeStyle = col; g.shadowColor = col; g.beginPath(); g.moveTo(s[0], s[1]); g.lineTo(s[0] + Math.sin(a) * 2400, s[1] + Math.cos(a) * 2400); g.stroke();
-        }
+        for (i = 0; i < 7; i++) { var a = s[2] * (0.25 + i * 0.12) + Math.sin(t / 650 + i * 0.8 + si) * 0.32; LZ.push([s[0], s[1], s[0] + Math.sin(a) * 2400, s[1] + Math.cos(a) * 2400, BCOL[(i + si * 2) % 5]]); }
       });
-      g.shadowBlur = 0;
+      g.lineCap = 'round';
+      g.globalAlpha = (0.85 * I + 0.1) * 0.22; g.lineWidth = 11; LZ.forEach(function (z) { g.strokeStyle = z[4]; g.beginPath(); g.moveTo(z[0], z[1]); g.lineTo(z[2], z[3]); g.stroke(); });
+      g.globalAlpha = 0.85 * I + 0.1; g.lineWidth = 2.5; LZ.forEach(function (z) { g.strokeStyle = z[4]; g.beginPath(); g.moveTo(z[0], z[1]); g.lineTo(z[2], z[3]); g.stroke(); });
     }
     if (LT.ball) {
       var sp = R.sparkle;
