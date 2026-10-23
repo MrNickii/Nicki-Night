@@ -1346,14 +1346,14 @@
     if (spotTarget) { clearTimeout(spotFollow); spotFollow = setTimeout(function () { if (spotTarget) spotMove(); }, 300); }
   }
   var spotFollow = null;
-  var raf = null, cv = $('fxc'), g = cv.getContext('2d'), SPK = [], lastF = 0, i0;
+  var raf = null, cv = $('fxc'), g = cv.getContext('2d'), SPK = [], lastFx = 0, i0; /* own timer: lastF belongs to the avatar loop */
   for (i0 = 0; i0 < 110; i0++) SPK.push({ a: Math.random() * 6.28, r: 60 + Math.random() * 520, s: 0.5 + Math.random() * 1.5, p: Math.random() * 6.28 });
   var BCOL = ['#ff4fb0', '#4fe3ff', '#a78bff', '#ffd86b', '#9bf06b'];
   function frame(t) {
     raf = null;
     if (!(LT.beams || LT.lasers || LT.ball)) { g.clearRect(0, 0, W, H); return; }
-    if (t - lastF < 33) { raf = requestAnimationFrame(frame); return; }
-    lastF = t; g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter';
+    if (t - lastFx < 33) { raf = requestAnimationFrame(frame); return; }
+    lastFx = t; g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter';
     var I = LT.inten, i;
     var f = rect('floor'), fcx = f.x + f.w / 2;
     if (LT.beams) {
