@@ -48,7 +48,7 @@
     document.querySelectorAll('[data-m]').forEach(function (b) { b.classList.toggle('on', L.mood === b.dataset.m); });
     $('menu').classList.toggle('on', !!st.specials); $('menu').textContent = st.specials ? 'Close drink menu' : 'Drink menu';
     $('top5').classList.toggle('on', !!st.top5); $('top5').textContent = st.top5 ? 'End Top 5' : 'Top 5 stage';
-    var rw = st.rw || {}; $('rw').classList.toggle('on', !!rw.on); $('rw').textContent = rw.on ? (rw.ph === 'vote' ? 'Voting ' + rw.left + 's · stop' : 'Stop runway') : 'Runway';
+    var rw = st.rw || {}; $('rw').classList.toggle('on', !!rw.on); $('rw').textContent = rw.on ? (rw.ph === 'vote' ? 'Voting ' + rw.left + 's · stop' : rw.ph === 'count' ? 'Counting votes · stop' : 'Stop runway') : 'Runway';
   });
   P.gate(function () { P.ident('host', ['alwaysshanell', 'sirdevinaire', 'killdadj_'], P.start); }, 'host');
 })();

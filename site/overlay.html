@@ -1299,6 +1299,7 @@ var VNNA = (function () {
   S.ss = Object.assign({ peak: 0, ent: {}, sd: {}, win: [] }, S.ss || {}); S.closing = S.closing || 'Thanks for coming! See you next time.';
   S.codes = Object.assign({ x_barb: { word: 'barbz', on: false }, x_pf2: { word: 'flight', on: false }, x_pink: { word: 'pinkprint', on: false }, x_gag: { word: 'gagcity', on: false } }, S.codes || {});
   S.spk = Object.assign({ on: true, amt: 0.7 }, S.spk || {});
+  S.lag = (S.lag == null || isNaN(S.lag)) ? 12 : Math.max(0, Math.min(45, Number(S.lag))); /* stream delay: viewers on X and Kick watch a few seconds behind, so timed votes stay open this long after the on-screen timer ends */
   S.lite = S.lite === true ? true : false; /* an automatic Performance mode never survives a reload; only the manual switch is remembered */
   S.blocked = S.blocked || {}; S.nophoto = S.nophoto || {}; var lastMsg = 0;
   /* event staff and guest list (added once; the operator can still edit the lists afterwards) */
@@ -1886,7 +1887,7 @@ var VNNA = (function () {
     var t = text.trim(), tl = t.toLowerCase(), cmd = tl.split(/\s+/)[0], rest = t.slice(cmd.length).trim();
     u.chats++; u.show = (u.show || 0) + 1; activate(u);
     if (isNicki(u) && !S.nickiDone && !nickiBusy) { nickiEntrance(u, false); }
-    if (RW.on && RW.phase === 'vote' && /^[1-9]$/.test(t)) { rwVote(u, Number(t)); return; }
+    if (RW.on && (RW.phase === 'vote' || RW.phase === 'count') && /^[1-9]$/.test(t)) { rwVote(u, Number(t)); return; }
     if (cmd.charAt(0) !== '!') { if (u.inside) { bumpFront(u, t); evalTasks(u); } save(); return; }
     var mod = isMod(u);
     if (cmd === '!enter') { if (isNicki(u) && !u.inside) { nickiEntrance(u, false); return; } enter(u); return; }
@@ -2125,7 +2126,7 @@ var VNNA = (function () {
     if (!RW.on || RW.phase === '' || RW.phase === 'enter' || RW.phase === 'result') { h.classList.remove('show'); return; }
     var tot = 0, cnt = RW.picks.map(function () { return 0; }), k;
     for (k in RW.votes) { cnt[RW.votes[k] - 1]++; tot++; }
-    var left = Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)), win = RW.phase === 'result' ? RW.win : -1, html = '<div class="rwh">' + (RW.phase === 'result' ? 'BEST DRESSED' : 'VOTE NOW · type ' + (RW.picks.length > 1 ? '1 to ' + RW.picks.length : '1')) + '<b>' + (RW.phase === 'vote' ? left + 's' : '') + '</b></div><div class="rwc">';
+    var left = Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)), win = RW.phase === 'result' ? RW.win : -1, html = '<div class="rwh">' + (RW.phase === 'result' ? 'BEST DRESSED' : RW.phase === 'count' ? 'COUNTING VOTES…' : 'VOTE NOW · type ' + (RW.picks.length > 1 ? '1 to ' + RW.picks.length : '1')) + '<b>' + (RW.phase === 'vote' ? left + 's' : '') + '</b></div><div class="rwc">';
     RW.picks.forEach(function (u, i) { if (!u) { html += '<div class="rwi"><span class="rwn">' + (i + 1) + '</span><span class="rwm">left</span></div>'; return; } var pc = tot ? Math.round(cnt[i] * 100 / tot) : 0; html += '<div class="rwi' + (win === i ? ' win' : '') + '"><span class="rwn">' + (i + 1) + '</span><span class="rwm">' + esc2(u.name) + '</span><i style="width:' + pc + '%"></i><em>' + cnt[i] + '</em></div>'; });
     h.innerHTML = html + '</div>'; h.classList.add('show');
   }
@@ -2137,7 +2138,7 @@ var VNNA = (function () {
   function rwDrop(u) {
     var i = RW.picks.indexOf(u); if (i < 0) return;
     u.stage = false; u.rank = null; rankTag(u, false);
-    if (RW.phase === 'vote' || RW.phase === 'enter') { RW.picks[i] = null; }
+    if (RW.phase === 'vote' || RW.phase === 'count' || RW.phase === 'enter') { RW.picks[i] = null; }
     var left = RW.picks.filter(function (x) { return x && x.inside; }).length;
     if (left < 2) setTimeout(runwayStop, 200);
   }
@@ -2164,12 +2165,13 @@ var VNNA = (function () {
       if (!RW.on) return;
       RW.phase = 'vote'; RW.end = Date.now() + sec * 1000; rwHud();
       RW.t.push(setInterval(rwHud, 500));
-      rwAt(sec * 1000, rwResult);
+      /* when the timer ends, votes still count for the stream delay, so people watching a few seconds behind are not cut off */
+      rwAt(sec * 1000, function () { if (!RW.on || RW.phase !== 'vote') return; if (S.lag > 0) { RW.phase = 'count'; rwHud(); rcSnap(true); rwAt(S.lag * 1000, rwResult); } else rwResult(); });
     });
     rcSnap(true);
   }
   function rwResult() {
-    if (!RW.on || RW.phase !== 'vote') return;
+    if (!RW.on || (RW.phase !== 'vote' && RW.phase !== 'count')) return;
     var cnt = RW.picks.map(function () { return 0; }), k, best = -1, i;
     for (k in RW.votes) cnt[RW.votes[k] - 1]++;
     cnt.forEach(function (v, j) { if (RW.picks[j] && (best < 0 || v > cnt[best] || (v === cnt[best] && Math.random() < 0.5))) best = j; });
@@ -3075,6 +3077,7 @@ var VNNA = (function () {
     light: function (a) { lightCmd(String(a.n)); },
     'panels.set': function (a) { if (a.host !== undefined) S.panels.host = !!a.host; if (a.mod !== undefined) S.panels.mod = !!a.mod; save(); rcSnap(true); },
     'specials': function (a) { specials(a.on !== false, a.on === false ? 0 : (Number(a.sec) || 20) * 1000); },
+    'lag.set': function (a) { S.lag = Math.max(0, Math.min(45, Math.round(Number(a.sec) || 0))); save(); rcSnap(true); },
     'lite.set': function (a) { S.lite = a.on ? true : false; slowT = 0; liteApply(); save(); rcSnap(true); },
     'spk.set': function (a) { if (a.on != null) S.spk.on = !!a.on; if (a.amt != null) S.spk.amt = Math.max(0, Math.min(1.5, Number(a.amt) || 0)); spkShow(); save(); rcSnap(true); },
     'city.set': function (a) { S.cityOn = a.on !== false; setBg(); save(); rcSnap(true); },
@@ -3207,7 +3210,7 @@ var VNNA = (function () {
     people.sort(function (a, b) { return b.la - a.la; });
     var top = []; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.stage && S.top5 && !RW.on) top[u.rank || 0] = { n: u.name, s: u.show }; });
     var L = {}; Object.keys(LT).forEach(function (k) { if (k.charAt(0) !== '_') L[k] = LT[k]; });
-    var snap = { t: 'state', ver: 1, panels: S.panels, staff: STAFF, specials: !!($('specials') && $('specials').classList.contains('show')), ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, spk: S.spk, lite: !!S.lite, liteAuto: S.lite === 'auto', codes: Object.keys(S.codes).map(function (t) { return { t: t, w: S.codes[t].word, on: S.codes[t].on, item: itemName(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })[0]) }; }), cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
+    var snap = { t: 'state', ver: 1, lag: S.lag, panels: S.panels, staff: STAFF, specials: !!($('specials') && $('specials').classList.contains('show')), ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, spk: S.spk, lite: !!S.lite, liteAuto: S.lite === 'auto', codes: Object.keys(S.codes).map(function (t) { return { t: t, w: S.codes[t].word, on: S.codes[t].on, item: itemName(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })[0]) }; }), cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
     var sig = JSON.stringify(snap); if (!force && sig === RC.lastSnap) return; RC.lastSnap = sig; rcSend(snap);
   }
   function rcStart() {
