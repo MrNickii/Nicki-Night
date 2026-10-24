@@ -13,7 +13,9 @@
   <div id="people" style="margin-top:8px"></div></div>
 
  <div class="card needon"><h2>Emergency</h2><p class="how">Chat flooded with nasty messages? Pause the bubbles. Turn them back on when it calms down.</p>
-  <button class="b big" id="bub">Chat bubbles</button></div>
+  <button class="b big" id="bub">Chat bubbles</button>
+  <p class="how" style="margin-top:12px">Runway, Top 5 or an entrance stuck? This ends it and puts everyone back.</p>
+  <button class="b big" id="evend">⏹ End event</button></div>
 
  <div class="card needon"><h2>Add a VIP</h2><p class="how">Type their X @. They go to the VIP lounge.</p>
   <div class="row"><input type="text" id="vh" placeholder="@handle" autocapitalize="off" autocorrect="off"><button class="b go" id="vadd" style="flex:0 0 100px">Add</button></div></div>
@@ -40,6 +42,7 @@
     if (bl) P.armed(bl, function () { cmd('mod.block', { key: bl.dataset.bl, n: bl.dataset.n }, 'Blocked ' + bl.dataset.n); });
   }
   $('people').onclick = act; $('undo').onclick = act;
+  $('evend').onclick = function () { if (!P.st()) { P.toast('Waiting for the club to connect…', 'bad'); return; } cmd('event.end', {}, 'Back to normal'); };
   $('bub').onclick = function () { var st = P.st(); if (!st || !st.bub) { P.toast('Waiting for the club to connect…', 'bad'); return; } cmd('bub.set', { on: !st.bub.on }); };
   $('vadd').onclick = function () { var h = $('vh').value.trim(); if (!h) return; cmd('user.vip', { h: h }, 'Added ' + h).then(function (r) { if (r.ok !== false) $('vh').value = ''; }); };
   P.on(function (st) {

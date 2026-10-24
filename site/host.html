@@ -17,7 +17,8 @@
    <button class="b big" data-c="bar.round">Round on the house</button>
    <button class="b big" id="top5">Top 5 stage</button>
    <button class="b big" id="rw">Runway</button>
-  </div></div>
+  </div>
+  <button class="b big" id="evend" style="width:100%;margin-top:10px">⏹ End event · everyone back to normal</button></div>
 
  <div class="card needon"><h2>Shout</h2><p class="how">Big text across the club, like <b>HAPPY BIRTHDAY KAY</b>.</p>
   <div class="row"><input type="text" id="bn" maxlength="40" placeholder="Type it here"><button class="b go" id="bnsend" style="flex:0 0 100px">Show</button></div></div>
@@ -35,6 +36,7 @@
   var MOODS = [['chill', 'Chill'], ['party', 'Party'], ['drop', 'The drop'], ['off', 'Lights off']];
   $('moods').innerHTML = MOODS.map(function (m) { return '<button class="b big' + (m[0] === 'drop' ? ' go' : '') + '" data-m="' + m[0] + '">' + m[1] + '</button>'; }).join('');
   $('moods').onclick = function (e) { var b = e.target.closest('[data-m]'); if (b) cmd('light', { n: b.dataset.m }, b.textContent + '!'); };
+  $('evend').onclick = function () { if (!need()) return; cmd('event.end', {}, 'Back to normal'); };
   document.querySelectorAll('[data-c]').forEach(function (b) { b.onclick = function () { cmd(b.dataset.c, {}, 'Done'); }; });
   function need() { var s = P.st(); if (!s) P.toast('Waiting for the club to connect…', 'bad'); return s; }
   $('menu').onclick = function () { var s = need(); if (s) cmd('specials', s.specials ? { on: false } : { sec: 20 }); };

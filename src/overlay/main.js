@@ -498,9 +498,17 @@
   }
   /* rebuild the slots (crowd size / top-5 / rules changed) WITHOUT shuffling anyone:
      people whose spot still exists stay on it; the rest take the nearest free spot to where they stand */
+  /* events that open up the floor (runway, Top 5) remember where everyone stood, and put them back when the event ends */
+  var crowdPreK = null;
+  function crowdMark() { if (crowdPreK == null) crowdPreK = CROWDK; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.slot && !isNicki(u) && !u._pre) u._pre = [u.slot.x, u.slot.y]; }); }
+  function crowdRestore() {
+    order.forEach(function (k) { var u = users[k]; if (!u) return; if (u.inside && u._pre && !u.stage && !isNicki(u)) { u._back = u._pre.slice(); u._re = true; } u._pre = null; });
+    if (crowdPreK != null) { CROWDK = crowdPreK; crowdPreK = null; } /* the crowd goes back to its size from before the event too */
+    relayout(); scheduleFit();
+  }
   function relayout() {
     var list = order.map(function (k) { return users[k]; }).filter(function (u) { return u.inside; }), keys = {};
-    list.forEach(function (u) { u._pk = u.slot ? slotKey(u.slot) : null; u._ox = u._back ? u._back[0] : (u.shown ? u.x : u._sx); u._oy = u._back ? u._back[1] : (u.shown ? u.y : u._sy); u._back = null; u.slot = null; });
+    list.forEach(function (u) { u._pk = (u.slot && !u._re) ? slotKey(u.slot) : null; u._re = false; u._ox = u._back ? u._back[0] : (u.shown ? u.x : u._sx); u._oy = u._back ? u._back[1] : (u.shown ? u.y : u._sy); u._back = null; u.slot = null; });
     buildSlots(); if (typeof stageFx === 'function') stageFx();
     ['floor', 'bar', 'vip', 'stage'].forEach(function (z) { SL[z].forEach(function (q) { keys[slotKey(q)] = q; }); });
     var pend = [];
@@ -694,7 +702,7 @@
   setInterval(function () { top5Update(); }, 6000);
 
   /* ---------- Nicki ---------- */
-  var nickiBusy = false;
+  var nickiBusy = false, nickiAbort = false;
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   function banner(t, sub, ms, low) {
     var b = $('banner'); b.classList.toggle('low', !!low); b.innerHTML = '<span class="bt">' + t + '</span>' + (sub ? '<small>' + sub + '</small>' : ''); b.classList.add('show');
@@ -760,9 +768,10 @@
       });
       lightFor('spot', true, u);
       spectacle(7800);
-      await sleep(2600);
+      if (!nickiAbort) await sleep(2600);
       var i;
       for (i = 1; i < P.length; i++) {
+        if (nickiAbort) break;
         var dist = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]), dur = Math.max(0.5, dist / 170);
         if (!u.el || !u.inside) throw new Error('nicki removed during entrance');
         u.sc = dAtY(P[i][1]) / BASE; put(u, P[i][0], P[i][1], dur);
@@ -772,13 +781,11 @@
       u.el.style.transitionTimingFunction = '';
       u.d = 0; u.sc = 1; draw(u, spot.d); put(u, spot.x, spot.y, 0, true);
       spot.occ = u.key; u.slot = spot;
-      await sleep(500);
-      say(u, '@NickiMinaj', 4000, true);
-      await sleep(1800);
+      if (!nickiAbort) { await sleep(500); say(u, '@NickiMinaj', 4000, true); await sleep(1800); }
       order.forEach(function (k) { var o = users[k]; if (!o) return; if (o.parted) { o.ox = 0; if (o.el && o.inside) put(o, o.x, o.y, 1.4, true); o.parted = false; } if (o.phone) o.phone.until = Math.min(o.phone.until, nowS() + 1.2); });
       lightFor('spot', false); carpetOff();
     } catch (e) { if (!/removed during/.test(e.message)) console.error(e); order.forEach(function (k) { var o = users[k]; if (o && o.parted) { o.ox = 0; if (o.el && o.inside) put(o, o.x, o.y, 1, true); o.parted = false; } }); lightFor('spot', false); carpetOff(); }
-    nickiBusy = false; overflowUI(); save();
+    nickiBusy = false; nickiAbort = false; overflowUI(); save();
   }
   async function nickiWalkOut(u) {
     if (nickiBusy || !u.inside) return; nickiBusy = true;
@@ -789,11 +796,11 @@
       u.el.style.transitionTimingFunction = 'linear';
       say(u, 'See you next time', 2400, true);
       await sleep(900);
-      for (i = P.length - 2; i >= 0; i--) { if (!u.el) break; var dd = Math.hypot(P[i + 1][0] - P[i][0], P[i + 1][1] - P[i][1]), du = Math.max(0.5, dd / 170); u.sc = dAtY(P[i][1]) / BASE; put(u, P[i][0], P[i][1], du); await sleep(du * 1000); }
+      for (i = P.length - 2; i >= 0; i--) { if (!u.el || nickiAbort) break; var dd = Math.hypot(P[i + 1][0] - P[i][0], P[i + 1][1] - P[i][1]), du = Math.max(0.5, dd / 170); u.sc = dAtY(P[i][1]) / BASE; put(u, P[i][0], P[i][1], du); await sleep(du * 1000); }
       if (u.el) u.el.style.transitionTimingFunction = '';
       u.inside = false; u.top = false; unseat(u, false);
     } catch (e) { console.error(e); }
-    nickiBusy = false; overflowUI(); save();
+    nickiBusy = false; nickiAbort = false; overflowUI(); save();
   }
   function nickiRehearse() {
     var u = newUser('x:nickiminaj', 'NickiMinaj', 'x', null); u.hnd = 'nickiminaj'; u.nickiLook = u.nickiLook || NICKI_LOOKS[Math.floor(Math.random() * 4)].id;
@@ -837,8 +844,9 @@
     var b = stageBox(CROWDK), w = b.d * 7.2, hh = b.d * 2.2; f.style.left = (R.stage.x - w / 2) + 'px'; f.style.top = (R.stage.y - hh * 0.62) + 'px'; f.style.width = w + 'px'; f.style.height = hh + 'px';
   }
   function setTop5(on) {
+    var was = stageOn(); if (on && !was) crowdMark();
     S.top5 = !!on; var b = $('top5btn'); if (b) b.setAttribute('aria-pressed', String(S.top5));
-    top5Sig = ''; top5Update(true); stageFx(); save();
+    top5Sig = ''; top5Update(true); stageFx(); if (was && !stageOn()) crowdRestore(); save();
     if (S.top5) banner('TOP 5 CHATTERS', 'Take the floor', 3600);
   }
 
@@ -877,7 +885,7 @@
     c.sort(function () { return Math.random() - 0.5; });
     c.sort(function (a, b) { return (b.look && b.look.top ? 1 : 0) - (a.look && a.look.top ? 1 : 0); });
     var picks = c.slice(0, Math.min(n, c.length));
-    RW.on = true; RW.phase = 'enter'; RW.picks = picks; RW.ords = rwOrds(picks.length); RW.votes = {}; RW.win = -1;
+    crowdMark(); RW.on = true; RW.phase = 'enter'; RW.picks = picks; RW.ords = rwOrds(picks.length); RW.votes = {}; RW.win = -1;
     relayout();
     banner('RUNWAY', 'Best dressed wins · vote with a number', 4200, true);
     picks.forEach(function (u, i) {
@@ -913,7 +921,7 @@
     rwClear(); RW.phase = ''; var picks = RW.picks.slice(); RW.on = false; RW.picks = [];
     picks.forEach(function (u) { if (u) { u.stage = false; u.rank = null; rankTag(u, false); } });
     var h = $('rwhud'); if (h) h.classList.remove('show');
-    lightFor('spot', false, null); stageFx(); relayout(); rcSnap(true);
+    lightFor('spot', false, null); stageFx(); if (!stageOn()) crowdRestore(); else relayout(); rcSnap(true);
   }
 
 
@@ -1705,6 +1713,7 @@
     'club.msg': function (a) { S.closing = String(a.msg || '').slice(0, 120); save(); },
     'runway.start': function (a) { runwayStart(a.n, a.sec); },
     'runway.stop': function () { runwayStop(); },
+    'event.end': function () { eventEnd(); },
     'mod.photo': function (a) {
       var u = rcFind(a); if (!u) throw new Error('not found');
       if (a.hide) { S.nophoto[u.key] = u.name || 1; u.photo = null; u.pimg = null; u._pl = 0; u.photoBad = 0; } else { delete S.nophoto[u.key]; }
@@ -1731,8 +1740,21 @@
       return notes.length ? notes.join(' · ') : '';
     }
   };
+  /* force-end anything that moved the crowd: runway, Top 5, Nicki's walk-in or walk-out, last call. Everyone goes back to normal. */
+  function eventEnd() {
+    var did = [];
+    if (RW.on) { runwayStop(); did.push('runway'); }
+    if (S.top5) { setTop5(false); did.push('top5'); }
+    if (nickiBusy) { nickiAbort = true; did.push('nicki'); }
+    if (CL.on) { closingReopen(); did.push('closing'); }
+    order.forEach(function (k) { var o = users[k]; if (!o) return; if (o.parted) { o.ox = 0; o.parted = false; if (o.el && o.inside) put(o, o.x, o.y, 0.8, true); } if (o.phone) o.phone.until = Math.min(o.phone.until, nowS() + 0.5); });
+    lightFor('spot', false, null); carpetOff(); var h = $('rwhud'); if (h) h.classList.remove('show');
+    order.forEach(function (k) { var u = users[k]; if (u && u.inside && !isNicki(u) && u.stage) { u.stage = false; u.rank = null; rankTag(u, false); } });
+    crowdRestore(); reseatHidden(); stageFx(); save(); rcSnap(true);
+    return did.length ? '' : 'Nothing was running; crowd reset';
+  }
   function RCMD_clear() { bubClear(); order.slice().forEach(function (k) { var u = users[k]; u.inside = false; unseat(u, false); }); order = []; Object.keys(users).forEach(function (k) { delete users[k]; }); S.users = {}; overflowUI(); save(); }
-  var PANEL_OK = { host: ['ping', 'light', 'specials', 'bar.round', 'top5', 'runway.start', 'runway.stop', 'banner', 'np'], mod: ['ping', 'mod.photo', 'mod.block', 'bub.set', 'user.vip', 'user.unvip'] };
+  var PANEL_OK = { host: ['ping', 'light', 'specials', 'bar.round', 'top5', 'runway.start', 'runway.stop', 'banner', 'np', 'event.end'], mod: ['ping', 'mod.photo', 'mod.block', 'bub.set', 'user.vip', 'user.unvip', 'event.end'] };
   /* when a host or mod acts from their panel, the room sees it: a staff pill on screen, and their own avatar says it if they're inside */
   var LNAME = { chill: 'Chill lights', party: 'Party lights', drop: 'THE DROP', dark: 'Dark + spotlight', off: 'Lights off', disco: 'Disco floor', strobe: 'Strobe', lasers: 'Lasers', blackout: 'Blackout' };
   function staffNote(role, by, c, a) {
@@ -1743,6 +1765,7 @@
     else if (c === 'top5') t = S.top5 ? 'called the Top 5 to the stage' : 'ended the Top 5';
     else if (c === 'runway.start') t = 'started the runway \uD83D\uDC60';
     else if (c === 'runway.stop') t = 'stopped the runway';
+    else if (c === 'event.end') t = 'wrapped it up, back to the party';
     else if (c === 'np') t = a.t ? 'now playing: ' + String(a.t).slice(0, 40) : '';
     else if (c === 'bub.set' && a.on !== undefined) t = a.on ? 'turned chat bubbles back on' : 'paused chat bubbles';
     else if (c === 'user.vip') t = 'added a VIP \uD83D\uDC51';
