@@ -43,13 +43,20 @@ var PANEL = (function () {
     else { d.className = 'dot warn'; s.textContent = cs[1] || 'Waiting for the overlay…'; }
   }
   setInterval(function () { paint(); if (up && Date.now() - lastSeen > 9000) raw({ t: 'hello' }); }, 3000);
-  /* same PIN as the main control panel; remembered on this device */
-  function gate(cb) {
-    var H = 'fc97275e3a4221bf48abec981a60b96422fd39fa9c0a0e2b3404db4e18a390be', g = $('gate');
+  /* each panel has its own PIN (not case-sensitive); the main control PIN also opens it. Remembered on this device */
+  var RH = { host: 'e44959a8f257cffcecbd826e8ecc9f1dbf73dff2d6a3b19fcc7d67479c8cae0a', mod: '0d5297fc3af43c0f727f69754a3ee710623854818b08eda132ec15be3895edb0' }, MH = 'fc97275e3a4221bf48abec981a60b96422fd39fa9c0a0e2b3404db4e18a390be';
+  function gate(cb, role) {
+    var R = RH[role] || MH, g = $('gate'), KEY = 'vnn_pin_' + (role || 'main');
     function ok() { if (g) g.remove(); cb(); }
-    try { if (localStorage.getItem('vnn_pin') === H) { ok(); return; } } catch (e) { }
+    try { var sv0 = localStorage.getItem(KEY); if (sv0 === R || sv0 === MH) { ok(); return; } } catch (e) { }
     function sha(t) { return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then(function (d) { return Array.prototype.map.call(new Uint8Array(d), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }); }
-    function go() { var v = $('gin').value.trim(); sha('vnn-pin:' + v).then(function (h) { if (h === H) { try { localStorage.setItem('vnn_pin', H); } catch (e) { } ok(); } else { $('gmsg').textContent = 'Wrong PIN'; $('gin').value = ''; } }); }
+    function go() {
+      var v = $('gin').value.trim();
+      Promise.all([sha('vnn-pin:' + v.toLowerCase()), sha('vnn-pin:' + v)]).then(function (h) {
+        var m = h[0] === R ? R : (h[1] === MH ? MH : null);
+        if (m) { try { localStorage.setItem(KEY, m); } catch (e) { } ok(); } else { $('gmsg').textContent = 'Wrong PIN'; $('gin').value = ''; }
+      });
+    }
     $('gbtn').onclick = go; $('gin').onkeydown = function (e) { if (e.key === 'Enter') go(); };
   }
   /* a button that needs a second tap within 3 seconds (for blocking people) */

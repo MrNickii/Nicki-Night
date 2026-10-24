@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="icon" href="vnn/ui/icon.png">
 <title>Nicki Night · Mods</title><link rel="stylesheet" href="vnn/panel.css"></head>
 <body>
-<div id="gate"><div style="font:900 22px system-ui;letter-spacing:.08em">NICKI NIGHT · MODS</div><input id="gin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN"><button id="gbtn">Unlock</button><div id="gmsg" style="color:#ff8ad0;min-height:22px"></div></div>
+<div id="gate"><div style="font:900 22px system-ui;letter-spacing:.08em">NICKI NIGHT · MODS</div><input id="gin" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="PIN"><button id="gbtn">Unlock</button><div id="gmsg" style="color:#ff8ad0;min-height:22px"></div></div>
 <header><h1>NICKI <b>NIGHT</b> · Mods</h1><span class="pill"><i class="dot" id="d1"></i><span id="s1">Connecting…</span></span><span id="who"></span></header>
 <main>
  <div id="offmsg">The Mod panel is switched off right now. The buttons will work again when the show's control turns it back on.</div>
@@ -50,7 +50,7 @@
     (m.nophoto || []).forEach(function (x) { h += '<div class="person"><div style="flex:1" class="nm">' + esc(x.n) + ' <span class="tag">photo hidden</span></div><button class="b sm" data-up="' + esc(x.k) + '">Show photo</button></div>'; });
     $('undo').innerHTML = h || '<p class="how">Nothing to undo.</p>';
   });
-  P.gate(function () { P.ident('mod', ['marajestyelitev', 'breythebarbie'], P.start); });
+  P.gate(function () { P.ident('mod', ['marajestyelitev', 'breythebarbie'], P.start); }, 'mod');
 })();
 </script>
 </body></html>
