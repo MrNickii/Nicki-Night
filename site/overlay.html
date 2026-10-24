@@ -34,6 +34,14 @@ body.lite .p .sh { display: none !important; } body.lite .p .in2 canvas { filter
 .bub .bt { display: block; font: 600 19px/1.22 system-ui, Arial, sans-serif; word-break: break-word; overflow-wrap: anywhere; }
 .bub.solid .bbox { background: var(--c); border-color: rgba(255,255,255,.9); color: #170a22; }
 .bub.solid .bn { color: #170a22; opacity: .72; }
+.bub .bt { text-shadow: 0 1px 2px rgba(0,0,0,.55); font-weight: 700; }
+.bub.solid .bt { text-shadow: none; }
+.bub.mid .bbox { max-width: 380px; padding: 8px 15px 9px; border-radius: 16px; }
+.bub.mid .bn { font-size: 16px; max-width: 350px; }
+.bub.mid .bt { font-size: 25px; }
+.bub.big .bbox { max-width: 470px; padding: 10px 18px 12px; border-radius: 18px; border-width: 3px; }
+.bub.big .bn { font-size: 19px; max-width: 434px; }
+.bub.big .bt { font-size: 32px; line-height: 1.18; }
 .bub.dense .bt { font-size: 16px; }
 .bub.dense .bn { font-size: 12px; }
 .bub.gold .bbox { border-color: var(--gold); }
@@ -1363,7 +1371,7 @@ var VNNA = (function () {
     var vx = b[0] - a[0], vy = b[1] - a[1], L2 = vx * vx + vy * vy || 1, t = Math.max(0, Math.min(1, ((px - a[0]) * vx + (py - a[1]) * vy) / L2)), cx = a[0] + t * vx, cy = a[1] + t * vy;
     return { d: Math.sqrt((px - cx) * (px - cx) + (py - cy) * (py - cy)), cx: cx, cy: cy, vx: vx, vy: vy, L: Math.sqrt(L2) };
   }
-  var SL = { floor: [], bar: [], vip: [], stage: [], nicki: null }, CROWDK = 1, K_STEPS = [1.18, 1.08, 1, 0.92, 0.85, 0.78, 0.7, 0.64, 0.58, 0.52, 0.46, 0.4, 0.35, 0.3, 0.26, 0.22];
+  var SL = { floor: [], bar: [], vip: [], stage: [], nicki: null }, CROWDK = 1, K_STEPS = [1.75, 1.55, 1.38, 1.18, 1.08, 1, 0.92, 0.85, 0.78, 0.7, 0.64, 0.58, 0.52, 0.46, 0.4, 0.35, 0.3, 0.26, 0.22];
   function stageBox(k) { var d = Math.max(30, avW(R.stage.y) * 1.2 * Math.max(k, 0.8)) * (RW.on ? 1.75 : 1); /* runway contestants are shown much larger so outfits read on stream */ return { d: d, x0: R.stage.x - d * 3.5, x1: R.stage.x + d * 3.5, y0: R.stage.y - d * 2.2, y1: R.stage.y + d * 1.35 + (RW.on ? 70 : 0) }; }
   function makeSlots(k) {
     var out = { floor: [], bar: [], vip: [], stage: [], nicki: null }, i;
@@ -2238,9 +2246,11 @@ var VNNA = (function () {
       var o = makeSlots(k), needF = nF + Math.max(0, nB - o.bar.length) + Math.max(0, nV - o.vip.length);
       return o.floor.length >= Math.ceil(needF * margin) + 1;
     }
-    var pick = K_STEPS[K_STEPS.length - 1];
-    for (i = 0; i < K_STEPS.length; i++) { if (fits(K_STEPS[i], K_STEPS[i] > CROWDK ? 1.15 : 1.0)) { pick = K_STEPS[i]; break; } }
-    if (pick > CROWDK && !fits(pick, 1.15)) pick = CROWDK;
+    var pick = K_STEPS[K_STEPS.length - 1], tot = nF + nB + nV;
+    /* a small room gets big characters; they step down as the club fills so nobody is crammed */
+    var maxK = tot <= 8 ? 1.75 : tot <= 13 ? 1.55 : tot <= 19 ? 1.38 : 1.18;
+    for (i = 0; i < K_STEPS.length; i++) { if (K_STEPS[i] > maxK) continue; if (fits(K_STEPS[i], K_STEPS[i] > CROWDK ? 1.15 : 1.0)) { pick = K_STEPS[i]; break; } }
+    if (pick > CROWDK && !fits(pick, 1.15)) pick = Math.min(CROWDK, maxK);
     if (pick !== CROWDK) { CROWDK = pick; relayout(); }
     else { var un = 0; order.forEach(function (k) { var u = users[k]; if (u.inside && !u.slot) un++; }); if (un) { relayout(); } }
     reseatHidden();
@@ -2459,7 +2469,7 @@ var VNNA = (function () {
   /* Rules: quiet club = everyone gets a bubble and it stays up longer. Busy club = shorter, smaller, solid-colour bubbles.
      Packed club = only the front half of the room (plus VIPs and Nicki), newest messages win, capped. */
   var BUBK = { deep: 12, packed: 24 };
-  var BUB = { map: {}, list: [], run: false };
+  var BUB = { map: {}, list: [], run: false, times: [] };
   var BAD_AUTO = /(https?:\/\/|www\.|\b[a-z0-9-]{2,}\.(com|net|org|io|gg|tv|ly|co|me|xyz|live|ru|cn|info|shop|store)\b|\d[\d\s().-]{8,}\d)/i;
   var LEET = { '0': 'o', '1': 'i', '!': 'i', '3': 'e', '4': 'a', '@': 'a', '5': 's', '$': 's', '7': 't' };
   function leet(s) { return String(s).toLowerCase().replace(/[01!345@$7]/g, function (c) { return LEET[c]; }); }
@@ -2494,7 +2504,10 @@ var VNNA = (function () {
     var n = 0, ys = [];
     order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.slot) { n++; ys.push(u.y || 0); } });
     ys.sort(function (a, b) { return a - b; });
-    return { n: n, hold: Math.max(3200, Math.min(10000, 10600 - n * 260)), cap: n < BUBK.deep ? 14 : n < BUBK.packed ? 10 : 7, solid: n >= BUBK.deep, dense: n >= BUBK.deep, packed: n >= BUBK.packed, cut: ys.length ? ys[Math.floor(ys.length / 2)] : 0 };
+    /* bubble size follows the flow of chat: slow chat and a small room get big, easy-to-read bubbles; a busy room gets compact ones */
+    var now = performance.now(); while (BUB.times.length && now - BUB.times[0] > 20000) BUB.times.shift(); var rate = BUB.times.length;
+    var size = (rate <= 6 && n < BUBK.packed) ? 'big' : (rate <= 14 && n < BUBK.packed) || rate <= 9 ? 'mid' : '';
+    return { n: n, rate: rate, size: size, hold: Math.max(3200, Math.min(10000, 10600 - n * 260)), cap: size === 'big' ? 8 : n < BUBK.deep ? 14 : n < BUBK.packed ? 10 : 7, solid: n >= BUBK.deep, dense: n >= BUBK.deep && !size, packed: n >= BUBK.packed, cut: ys.length ? ys[Math.floor(ys.length / 2)] : 0 };
   }
   function talk(u, col, on) {
     var el = u.el; if (!el) return;
@@ -2513,7 +2526,7 @@ var VNNA = (function () {
     if (!S.bub || S.bub.on === false || !$('bubs')) return;
     var nk = isNicki(u);
     if (!(u.inside && u.el && u.x != null && (u.slot || nk))) return;
-    var rl = bubRule(), t = bubText(text, rl.packed ? 32 : rl.dense ? 40 : 56);
+    BUB.times.push(performance.now()); var rl = bubRule(), t = bubText(text, rl.packed ? 32 : rl.dense ? 40 : 56);
     if (!t) return;
     if (rl.packed && !nk && !u.vip && (u.y || 0) < rl.cut) return;
     var b = BUB.map[u.key], now = performance.now(), col = bubColor(u);
@@ -2523,7 +2536,7 @@ var VNNA = (function () {
       b.box = b.el.firstChild; b.nm = b.box.firstChild; b.tx = b.nm.nextSibling; b.stem = b.box.nextSibling;
       $('bubs').appendChild(b.el); BUB.list.push(b);
     } else { clearTimeout(b.rm); b.fading = 0; b.box.style.animation = 'none'; void b.box.offsetWidth; b.box.style.animation = ''; }
-    b.el.className = 'bub' + (rl.solid ? ' solid' : '') + (rl.dense ? ' dense' : '') + (nk ? ' gold' : '');
+    b.el.className = 'bub' + (rl.solid ? ' solid' : '') + (rl.dense ? ' dense' : '') + (rl.size ? ' ' + rl.size : '') + (nk ? ' gold' : '');
     b.el.style.setProperty('--c', col.c); b.el.style.setProperty('--cg', col.g);
     b.nm.textContent = (u.vip && !nk ? '★ ' : '') + String(u.name || '').slice(0, 22);
     b.hi = col.i; b.tx.textContent = t; b.born = now; b.until = now + rl.hold * (nk ? 1.6 : 1); b.w = 0;
@@ -2578,6 +2591,15 @@ var VNNA = (function () {
       }
       by = clearZones(bx, by, w, h, it.ay);
       if (by < 4) by = 4;
+      /* still touching another bubble (for example after being pushed off a video window)? slide sideways, then up, until it is clear */
+      var hitAt = function (x, y) { for (var q = 0; q < placed.length; q++) { var p2 = placed[q]; if (x < p2.x + p2.w + 6 && x + w + 6 > p2.x && y < p2.y + p2.h + 6 && y + h + 6 > p2.y) return p2; } return null; };
+      if (hitAt(bx, by)) {
+        var best = null, sx0 = bx, sy0 = by, tries = [], st2;
+        for (st2 = 1; st2 <= 4; st2++) { tries.push([sx0 + st2 * (w * 0.55 + 8), sy0], [sx0 - st2 * (w * 0.55 + 8), sy0]); }
+        for (st2 = 1; st2 <= 4; st2++) { tries.push([sx0, sy0 + st2 * (h + 8)], [sx0 + (w * 0.6), sy0 + st2 * (h + 8)], [sx0 - (w * 0.6), sy0 + st2 * (h + 8)]); }
+        for (st2 = 0; st2 < tries.length; st2++) { var tx2 = Math.max(8, Math.min(W - w - 8, tries[st2][0])), ty2 = Math.max(4, tries[st2][1]); if (ty2 + h > it.ay + 40) continue; if (clearZones(tx2, ty2, w, h, it.ay) !== ty2) continue; if (!hitAt(tx2, ty2)) { best = [tx2, ty2]; break; } }
+        if (best) { bx = best[0]; by = best[1]; }
+      }
       placed.push({ x: bx, y: by, w: w, h: h });
       b.el.style.transform = 'translate3d(' + Math.round(bx) + 'px,' + Math.round(by) + 'px,0)'; b.el.style.zIndex = String(Math.round(it.ay) + 100);
       b.stem.style.cssText = 'left:' + Math.round(Math.max(10, Math.min(w - 10, it.ax - bx))) + 'px;top:' + (h - 1) + 'px;height:' + Math.max(8, Math.round(it.ay - (by + h)) + 1) + 'px';
