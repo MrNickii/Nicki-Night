@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><link rel="icon" href="data:,"><meta charset="utf-8">
+<html lang="en"><head><link rel="icon" href="data:,"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#14061f">
 <title>Nicki Night Control</title>
@@ -82,7 +82,7 @@ document.getElementById('pinbtn').onclick=go;document.getElementById('pinin').on
  <div class="card"><h2>Shout to the room</h2><div class="row"><input type="text" id="hbn" placeholder="Big text"><button class="b go fit" id="hbsend" style="min-width:120px">Show</button></div></div>
  <div class="card"><h2>Nicki</h2><div class="grid g2"><button class="b go" data-c="nicki.rehearse">Rehearse her entrance</button><button class="b" data-c="nicki.out">She walks out</button></div><p class="note" id="hnstat"></p></div>
  <div class="card"><h2>End of night</h2><div class="grid g2"><button class="b warn" id="hclose">Last call (30s)</button><button class="b" data-c="club.reopen">Cancel / reopen</button></div></div>
- <div class="card"><h2>Panels for your team</h2><p class="note" style="margin-top:0">Send these to your hosts and mods. They use the same PIN as this panel. The Host panel has lights, drinks, runway, Top 5, banners and Now Playing. The Mod panel has search, block, hide photo, word filter and VIP.</p><div class="grid g2" style="margin-top:10px"><button class="b" id="hhost">Copy Host link</button><button class="b" id="hmod">Copy Mod link</button></div></div>
+ <div class="card"><h2>Panels for your team</h2><p class="note" style="margin-top:0">Send these to your hosts and mods. They use the same PIN as this panel. The Host panel has lights, drinks, runway, Top 5, banners and Now Playing. The Mod panel has search, block, hide photo, word filter and VIP.</p><div class="grid g2" style="margin-top:10px"><button class="b" id="pnH">Host panel</button><button class="b" id="pnM">Mod panel</button></div><p class="note">Lit up = that panel works. Tap to switch it off (their buttons stop working and they see a message) or back on.</p><div class="grid g2" style="margin-top:10px"><button class="b" id="hhost">Copy Host link</button><button class="b" id="hmod">Copy Mod link</button></div><p class="note">Hosts: @alwaysshanell, @sirdevinaire (DJ @killdadj_ can use it too). Mods: @marajestyelitev, @breythebarbie. When they press something, their name shows on stream.</p></div>
 </section>
 <section class="tab" id="t-show">
  <div class="card"><h2>Nicki</h2><div class="grid g3"><button class="b go" data-c="nicki.rehearse">Rehearse entrance</button><button class="b" data-c="nicki.out">Walks out</button><button class="b warn" data-c="show.new">New show<small>resets counts</small></button></div><p class="note" id="nstat"></p></div>
@@ -295,6 +295,7 @@ $('hrw').onclick=function(){if(st&&st.rw&&st.rw.on)cmd('runway.stop',{});else cm
 $('hbsend').onclick=function(){var t=$('hbn').value.trim();if(t)cmd('banner',{t:t,s:''}).then(function(r){if(r.ok)toast('Shown','ok')})};
 $('hclose').onclick=function(){cmd('club.close',{sec:30})};
 function plink(f){var u=location.href.split('?')[0].replace(/control\.html$/,'')+f+'?session='+encodeURIComponent(C.session);try{navigator.clipboard.writeText(u).then(function(){toast('Link copied','ok')},function(){prompt('Copy this link',u)})}catch(e){prompt('Copy this link',u)}}
+$('pnH').onclick=function(){if(st)cmd('panels.set',{host:!(st.panels&&st.panels.host!==false)})};$('pnM').onclick=function(){if(st)cmd('panels.set',{mod:!(st.panels&&st.panels.mod!==false)})};
 $('hhost').onclick=function(){plink('host.html')};$('hmod').onclick=function(){plink('mod.html')};
 function homeRender(){if(!st)return;var L=st.light||{};
  Array.prototype.forEach.call(document.querySelectorAll('[data-hm]'),function(b){b.classList.toggle('on',L.mood===b.dataset.hm)});
@@ -302,6 +303,7 @@ function homeRender(){if(!st)return;var L=st.light||{};
  $('hmenu').classList.toggle('on',!!st.specials);$('hmenu').textContent=st.specials?'Hide drink menu':'Show drink menu';
  $('htop5').classList.toggle('on',!!st.top5);$('htop5').textContent=st.top5?'Top 5 is ON':'Top 5 stage';
  var rw=st.rw||{};$('hrw').classList.toggle('on',!!rw.on);$('hrw').textContent=rw.on?(rw.ph==='vote'?'Voting '+rw.left+'s · stop':'Runway on · stop'):'Start runway';
+ var pn=st.panels||{};$('pnH').classList.toggle('on',pn.host!==false);$('pnH').textContent=pn.host!==false?'Host panel ON':'Host panel OFF';$('pnM').classList.toggle('on',pn.mod!==false);$('pnM').textContent=pn.mod!==false?'Mod panel ON':'Mod panel OFF';
  $('hclose').disabled=!!(st.cl&&st.cl.on);$('hnstat').textContent=st.nicki.inside?'Nicki is in the club.':(st.nicki.done?'Her entrance already played this show.':'Her entrance plays the first time @NickiMinaj chats.')}
 var _render=render;render=function(){_render();homeRender()};
 if(window.navigator.standalone===undefined){}start();render();

@@ -30,3 +30,11 @@ textarea{min-height:90px}
 #gate input{font:700 28px system-ui;text-align:center;width:220px;padding:12px;border-radius:14px;border:2px solid var(--pink);background:#1e1230;color:#fff;letter-spacing:.3em}
 #gate button{font:800 18px system-ui;padding:12px 34px;border-radius:14px;border:0;background:var(--pink);color:#fff}
 .hide{display:none!important}
+
+#whobox{position:fixed;inset:0;z-index:900;background:#000c;display:flex;align-items:center;justify-content:center;padding:18px}
+#whobox .wb{background:var(--card);border:1px solid var(--pink2);border-radius:22px;padding:20px;max-width:440px;width:100%}
+#whobox h2{margin:0 0 4px;font-size:22px}#whobox p{margin:0 0 14px;color:var(--dim)}
+#who{font-size:13px;color:var(--dim)}#who b{color:#fff}#who button{background:none;border:1px solid var(--line);color:var(--dim);border-radius:99px;padding:3px 9px;font-size:12px;margin-left:4px;cursor:pointer}
+#offmsg{display:none;margin:0 0 14px;padding:16px;border-radius:16px;background:#3a1020;border:2px solid var(--bad);color:#fff;font-weight:700;text-align:center}
+body.off #offmsg{display:block}body.off .needon{opacity:.35;pointer-events:none}
+.big{font-size:19px;min-height:72px}

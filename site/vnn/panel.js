@@ -6,13 +6,13 @@ var PANEL = (function () {
   function sv(k, v) { try { localStorage.setItem('vnnctl_' + k, v); } catch (e) { } }
   var C = { session: Q.get('session') || ld('session', ''), pin: Q.get('pin') || ld('pin', ''), relay: Q.get('relay') || ld('relay', '') };
   if (Q.get('session')) sv('session', C.session);
-  var me = Math.random().toString(36).slice(2, 8), ws = null, bc = null, up = false, tries = 0, T = null, st = null, lastSeen = 0, pend = {}, seq = 0, hooks = [];
+  var ROLE = '', BY = '', me = Math.random().toString(36).slice(2, 8), ws = null, bc = null, up = false, tries = 0, T = null, st = null, lastSeen = 0, pend = {}, seq = 0, hooks = [];
   function room() { return 'vnn-' + (C.session || 'local') + (C.pin ? '-' + C.pin : ''); }
   function toast(t, k) { var e = $('toast'); if (!e) return; e.textContent = t; e.className = 'on ' + (k || ''); clearTimeout(toast.t); toast.t = setTimeout(function () { e.className = ''; }, 2200); }
   function raw(o) { o.from = me; var s = JSON.stringify({ vnn: o }); if (ws && ws.readyState === 1) try { ws.send(s); } catch (e) { } if (bc) try { bc.postMessage(s); } catch (e) { } }
   function cmd(c, a, okMsg) {
     return new Promise(function (res) {
-      var id = ++seq + '-' + me; pend[id] = res; raw({ t: 'cmd', c: c, a: a || {}, id: id });
+      var id = ++seq + '-' + me; pend[id] = res; raw({ t: 'cmd', c: c, a: a || {}, id: id, role: ROLE, by: BY });
       setTimeout(function () { if (pend[id]) { delete pend[id]; res({ ok: false, msg: 'No answer from the overlay' }); } }, 4500);
     }).then(function (r) { if (r && r.ok === false) toast(r.msg || 'Did not work', 'bad'); else if (okMsg) toast(okMsg, 'ok'); return r; });
   }
@@ -55,5 +55,18 @@ var PANEL = (function () {
   /* a button that needs a second tap within 3 seconds (for blocking people) */
   function armed(b, f) { if (b.classList.contains('arm')) { b.classList.remove('arm'); clearTimeout(b._t); b.textContent = b._lbl; f(); return; } b._lbl = b.textContent; b.classList.add('arm'); b.textContent = 'Tap again'; b._t = setTimeout(function () { b.classList.remove('arm'); b.textContent = b._lbl; }, 3000); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  return { $: $, cmd: cmd, toast: toast, start: start, gate: gate, on: function (f) { hooks.push(f); }, st: function () { return st; }, armed: armed, esc: esc };
+  /* who is using this panel: picked once per device, sent with every action so the room can say who did it */
+  function ident(role, names, cb) {
+    ROLE = role; var saved = ld('me_' + role, '');
+    function done(n) { BY = n; sv('me_' + role, n); var w = $('who'); if (w) w.innerHTML = 'You: <b>@' + esc(n) + '</b> <button type="button" id="whochg">change</button>'; var c = $('whochg'); if (c) c.onclick = function () { pick(); }; cb && cb(); cb = null; }
+    function pick() {
+      var d = document.createElement('div'); d.id = 'whobox';
+      d.innerHTML = '<div class="wb"><h2>Who are you?</h2><p>Pick your name. It shows on stream when you press a button.</p><div class="grid">' + names.map(function (n) { return '<button class="b go" data-n="' + esc(n) + '">@' + esc(n) + '</button>'; }).join('') + '</div><div class="row" style="margin-top:12px"><input type="text" id="whoin" placeholder="Someone else? Type your @" autocapitalize="off" autocorrect="off"><button class="b" id="whook" style="flex:0 0 90px">OK</button></div></div>';
+      document.body.appendChild(d);
+      d.onclick = function (e) { var b = e.target.closest('[data-n]'); if (b) { d.remove(); done(b.dataset.n); } };
+      $('whook').onclick = function () { var v = $('whoin').value.replace(/[^A-Za-z0-9_.]/g, '').slice(0, 24); if (v) { d.remove(); done(v); } };
+    }
+    if (saved) done(saved); else pick();
+  }
+  return { ident: ident, $: $, cmd: cmd, toast: toast, start: start, gate: gate, on: function (f) { hooks.push(f); }, st: function () { return st; }, armed: armed, esc: esc };
 })();

@@ -1,69 +1,54 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="icon" href="data:,">
-<title>Nicki Night Host Panel</title><link rel="stylesheet" href="vnn/panel.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="icon" href="vnn/ui/icon.png">
+<title>Nicki Night · Host</title><link rel="stylesheet" href="vnn/panel.css"></head>
 <body>
 <div id="gate"><div style="font:900 22px system-ui;letter-spacing:.08em">NICKI NIGHT · HOST</div><input id="gin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN"><button id="gbtn">Unlock</button><div id="gmsg" style="color:#ff8ad0;min-height:22px"></div></div>
-<header><h1>NICKI <b>NIGHT</b> · Host</h1><span class="pill"><i class="dot" id="d1"></i><span id="s1">Connecting…</span></span></header>
+<header><h1>NICKI <b>NIGHT</b> · Host</h1><span class="pill"><i class="dot" id="d1"></i><span id="s1">Connecting…</span></span><span id="who"></span></header>
 <main>
- <div class="card"><h2>Welcome, host</h2><p class="how" style="margin:0">Everything here shows up live on stream the moment you tap it. Buttons that are <b>lit up</b> are on right now. Tap once, then watch the stream to see it. Nothing here can break the show.</p></div>
+ <div id="offmsg">The Host panel is switched off right now. The buttons will work again when the show's control turns it back on.</div>
+ <p class="how" style="font-size:15px">Tap a button and it happens on stream right away, with your name on screen. <b>Lit-up</b> buttons are on.</p>
 
- <div class="card"><h2>1 · Set the vibe</h2><p class="how">One tap changes all the lights. Use <b>The drop</b> right when the DJ drops a big song.</p>
-  <div class="grid" id="moods"></div>
-  <div class="grid g2" style="margin-top:10px"><button class="b" data-fx="disco">Disco floor<small>light-up dance floor</small></button><button class="b" data-fx="strobe">Strobe<small>short bursts only</small></button></div>
-  <p class="how now" id="lnow" style="margin:10px 0 0"></p></div>
+ <div class="card needon"><h2>Lights</h2><p class="how">Pick the vibe. Tap <b>The drop</b> when the DJ drops a big song.</p>
+  <div class="grid g2" id="moods"></div></div>
 
- <div class="card"><h2>2 · Big moments</h2><p class="how">Run one at a time. Say it on the mic first, then tap.</p>
+ <div class="card needon"><h2>Moments</h2><p class="how">Say it on the mic first, then tap.</p>
   <div class="grid g2">
-   <button class="b go" id="menu">Show drink menu<small>20 seconds on screen</small></button>
-   <button class="b" data-c="bar.round">Round on the house<small>everyone at the bar cheers</small></button>
-   <button class="b" id="top5">Top 5 stage<small>loudest chatters dance center</small></button>
-   <button class="b" id="rw">Start runway<small>4 people, chat votes 30s</small></button>
+   <button class="b big go" id="menu">Drink menu</button>
+   <button class="b big" data-c="bar.round">Round on the house</button>
+   <button class="b big" id="top5">Top 5 stage</button>
+   <button class="b big" id="rw">Runway</button>
   </div></div>
 
- <div class="card"><h2>3 · Shout to the room</h2><p class="how">Big text across the club for a few seconds. Keep it short, like <b>DRINK SPECIAL</b> or <b>HAPPY BIRTHDAY KAY</b>.</p>
-  <div class="row"><input type="text" id="bn" maxlength="40" placeholder="Big text"><input type="text" id="bs" maxlength="60" placeholder="Small text (optional)"></div>
-  <button class="b go" id="bnsend">Show it</button></div>
+ <div class="card needon"><h2>Shout</h2><p class="how">Big text across the club, like <b>HAPPY BIRTHDAY KAY</b>.</p>
+  <div class="row"><input type="text" id="bn" maxlength="40" placeholder="Type it here"><button class="b go" id="bnsend" style="flex:0 0 100px">Show</button></div></div>
 
- <div class="card"><h2>4 · Now playing</h2><p class="how">Shows the song on the bar under the big screen. Clear it between sets.</p>
-  <div class="row"><input type="text" id="npa" placeholder="Artist"><input type="text" id="npt" placeholder="Song"></div>
-  <div class="grid g2"><button class="b go" id="npset">Show song</button><button class="b" id="npclr">Clear</button></div></div>
-
- <div class="card"><h2>What to tell chat</h2><p class="how">Read these out on the mic. Viewers type them in the live chat.</p>
-  <div class="say"><code>!enter</code> walk into the club as your own character</div>
-  <div class="say"><code>!dance twerk</code> or groove, pump, wave, shuffle, bboy, snake</div>
-  <div class="say"><code>!starships</code> <code>!cybertruck</code> <code>!daq</code> <code>!barbz</code> order a house special</div>
-  <div class="say"><code>!menu</code> shows the drink specials · <code>!cheers</code> raise your glass</div>
-  <div class="say"><code>!look varsity pink cargo</code> change your outfit (style it ahead in the Style Studio)</div>
-  <div class="say">During the runway: <code>1</code> to <code>5</code> votes for best dressed</div>
-  <div class="say"><code>!earned</code> see what you've unlocked tonight</div></div>
+ <div class="card"><h2>Tell chat</h2>
+  <div class="say">Paste your look from the Style Studio to walk in, or type <code>!enter</code></div>
+  <div class="say"><code>!dance twerk</code> · <code>!starships</code> · <code>!cheers</code></div>
+  <div class="say">Runway: type <code>1</code> to <code>5</code> to vote</div></div>
 </main>
 <div id="toast"></div>
 <script src="vnn/panel.js"></script>
 <script>
 (function () {
   var P = PANEL, $ = P.$, cmd = P.cmd;
-  var MOODS = [['chill', 'Chill', 'warm, easy'], ['party', 'Party', 'lasers, beams, disco'], ['drop', 'The drop', '8 seconds of chaos'], ['dark', 'Dark + spot', 'moody spotlight'], ['off', 'Lights off', 'clean room']];
-  $('moods').innerHTML = MOODS.map(function (m) { return '<button class="b' + (m[0] === 'drop' ? ' go' : '') + '" data-m="' + m[0] + '">' + m[1] + '<small>' + m[2] + '</small></button>'; }).join('');
-  $('moods').onclick = function (e) { var b = e.target.closest('[data-m]'); if (b) cmd('light', { n: b.dataset.m }, 'Lights: ' + b.firstChild.textContent); };
-  document.querySelectorAll('[data-fx]').forEach(function (b) { b.onclick = function () { cmd('light', { n: b.dataset.fx }); }; });
+  var MOODS = [['chill', 'Chill'], ['party', 'Party'], ['drop', 'The drop'], ['off', 'Lights off']];
+  $('moods').innerHTML = MOODS.map(function (m) { return '<button class="b big' + (m[0] === 'drop' ? ' go' : '') + '" data-m="' + m[0] + '">' + m[1] + '</button>'; }).join('');
+  $('moods').onclick = function (e) { var b = e.target.closest('[data-m]'); if (b) cmd('light', { n: b.dataset.m }, b.textContent + '!'); };
   document.querySelectorAll('[data-c]').forEach(function (b) { b.onclick = function () { cmd(b.dataset.c, {}, 'Done'); }; });
-  $('menu').onclick = function () { var s = P.st(); if (!s) { P.toast('Waiting for the overlay…', 'bad'); return; } cmd('specials', s && s.specials ? { on: false } : { sec: 20 }); };
-  $('top5').onclick = function () { cmd('top5', {}); };
-  $('rw').onclick = function () { var s = P.st(); if (!s) { P.toast('Waiting for the overlay…', 'bad'); return; } if (s && s.rw && s.rw.on) cmd('runway.stop', {}, 'Runway stopped'); else cmd('runway.start', { n: 4, sec: 30 }, 'Runway starting'); };
-  $('bnsend').onclick = function () { var t = $('bn').value.trim(); if (!t) { P.toast('Type the big text first', 'bad'); return; } cmd('banner', { t: t, s: $('bs').value.trim() }, 'Shown'); };
-  $('npset').onclick = function () { cmd('np', { a: $('npa').value.trim(), t: $('npt').value.trim() }, 'Song shown'); };
-  $('npclr').onclick = function () { $('npa').value = ''; $('npt').value = ''; cmd('np', { a: '', t: '' }, 'Cleared'); };
-  var NAMES = { chill: 'Chill', party: 'Party', drop: 'The drop', dark: 'Dark + spot', off: 'Lights off', custom: 'Custom mix' };
+  function need() { var s = P.st(); if (!s) P.toast('Waiting for the club to connect…', 'bad'); return s; }
+  $('menu').onclick = function () { var s = need(); if (s) cmd('specials', s.specials ? { on: false } : { sec: 20 }); };
+  $('top5').onclick = function () { if (need()) cmd('top5', {}); };
+  $('rw').onclick = function () { var s = need(); if (!s) return; if (s.rw && s.rw.on) cmd('runway.stop', {}, 'Runway stopped'); else cmd('runway.start', { n: 4, sec: 30 }, 'Runway starting'); };
+  $('bnsend').onclick = function () { var t = $('bn').value.trim(); if (!t) { P.toast('Type the text first', 'bad'); return; } cmd('banner', { t: t, s: '' }, 'Shown'); $('bn').value = ''; };
   P.on(function (st) {
-    var L = st.light || {};
+    var L = st.light || {}; document.body.classList.toggle('off', !!(st.panels && st.panels.host === false));
     document.querySelectorAll('[data-m]').forEach(function (b) { b.classList.toggle('on', L.mood === b.dataset.m); });
-    document.querySelectorAll('[data-fx]').forEach(function (b) { b.classList.toggle('on', !!L[b.dataset.fx]); });
-    $('lnow').innerHTML = 'Right now: <b>' + (NAMES[L.mood] || 'no mood picked') + '</b>' + (L.dark ? ' · <b>blackout is on</b>' : '');
-    $('menu').classList.toggle('on', !!st.specials); $('menu').firstChild.textContent = st.specials ? 'Hide drink menu' : 'Show drink menu';
-    $('top5').classList.toggle('on', !!st.top5); $('top5').firstChild.textContent = st.top5 ? 'Top 5 is ON (tap to stop)' : 'Top 5 stage';
-    var rw = st.rw || {}; $('rw').classList.toggle('on', !!rw.on); $('rw').firstChild.textContent = rw.on ? (rw.ph === 'vote' ? 'Voting: ' + rw.left + 's (tap to stop)' : 'Runway running (tap to stop)') : 'Start runway';
+    $('menu').classList.toggle('on', !!st.specials); $('menu').textContent = st.specials ? 'Close drink menu' : 'Drink menu';
+    $('top5').classList.toggle('on', !!st.top5); $('top5').textContent = st.top5 ? 'End Top 5' : 'Top 5 stage';
+    var rw = st.rw || {}; $('rw').classList.toggle('on', !!rw.on); $('rw').textContent = rw.on ? (rw.ph === 'vote' ? 'Voting ' + rw.left + 's · stop' : 'Stop runway') : 'Runway';
   });
-  P.gate(P.start);
+  P.gate(function () { P.ident('host', ['alwaysshanell', 'sirdevinaire', 'killdadj_'], P.start); });
 })();
 </script>
 </body></html>

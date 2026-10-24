@@ -36,6 +36,15 @@
   S.spk = Object.assign({ on: true, amt: 0.7 }, S.spk || {});
   S.lite = S.lite === true ? true : false; /* an automatic Performance mode never survives a reload; only the manual switch is remembered */
   S.blocked = S.blocked || {}; S.nophoto = S.nophoto || {}; var lastMsg = 0;
+  /* event staff and guest list (added once; the operator can still edit the lists afterwards) */
+  var STAFF = { alwaysshanell: 'HOST', sirdevinaire: 'HOST', killdadj_: 'DJ', marajestyelitev: 'MOD', breythebarbie: 'MOD' };
+  var GUESTS = ['keron_ave', 'mayaminaj', 'ceejaylongway', 'beammeupscotty', 'taylorxreneeee', 'keylove_minaj', 'vvideovixxen', 'kayb_lux'];
+  if (!S.seed1) {
+    S.seed1 = 1; S.mods = (S.mods || []).filter(function (h) { return h !== 'kildadj_'; });
+    ['mrnicki'].concat(Object.keys(STAFF)).forEach(function (h) { if (S.mods.indexOf(h) < 0) S.mods.push(h); });
+    S.vip = S.vip || []; GUESTS.forEach(function (h) { if (S.vip.map(function (v) { return String(v).toLowerCase().replace(/^@/, ''); }).indexOf(h) < 0) S.vip.push('@' + h); });
+  }
+  S.panels = Object.assign({ host: true, mod: true }, S.panels || {});
   S.bub = Object.assign({ on: true, words: [], emoji: true }, S.bub || {}); if (!Array.isArray(S.bub.words)) S.bub.words = [];
   if (Q.get('session')) S.session = Q.get('session');
   if (Q.get('ws')) S.ws = Q.get('ws');
@@ -594,7 +603,8 @@
     u.inside = true; activate(u); refreshVip(u);
     if (order.indexOf(u.key) < 0) order.push(u.key);
     var pe = PG(u); if (!pe.entered) { pe.entered = 1; if (Object.keys(S.ss.ent).length <= 10) pe.early = 1; }
-    if (seat(u, false)) say(u, (u.vip ? 'VIP ' : '') + u.name, 3500, u.vip); else overflowUI();
+    var role = STAFF[u.hnd] && u.plat === 'x' ? STAFF[u.hnd] : '';
+    if (seat(u, false)) say(u, role ? role + ' \u00b7 ' + u.name : (u.vip ? 'VIP ' : '') + u.name, 4200, !!role || u.vip); else overflowUI();
     evalTasks(u);
     overflowUI(); save(); scheduleFit();
   }
@@ -607,6 +617,8 @@
     if (cmd.charAt(0) !== '!') { if (u.inside) { bumpFront(u, t); evalTasks(u); } save(); return; }
     var mod = isMod(u);
     if (cmd === '!enter') { if (isNicki(u) && !u.inside) { nickiEntrance(u, false); return; } enter(u); return; }
+    /* pasting a look from the Style Studio also walks you in wearing it */
+    if (cmd === '!look' && !u.inside && !isNicki(u) && rest) { applyLook(u, rest); PG(u).lk++; enter(u); save(); return; }
     if (!u.inside && !(mod && /^!(vip|unvip|light|top5|np|nicki)$/.test(cmd))) { return; }
     if (cmd === '!leave') { if (isNicki(u)) nickiWalkOut(u); else leave(u); return; }
     if (cmd === '!dance') {
@@ -1647,6 +1659,7 @@
   var RCMD = {
     ping: function () { rcSnap(true); },
     light: function (a) { lightCmd(String(a.n)); },
+    'panels.set': function (a) { if (a.host !== undefined) S.panels.host = !!a.host; if (a.mod !== undefined) S.panels.mod = !!a.mod; save(); rcSnap(true); },
     'specials': function (a) { specials(a.on !== false, a.on === false ? 0 : (Number(a.sec) || 20) * 1000); },
     'lite.set': function (a) { S.lite = a.on ? true : false; slowT = 0; liteApply(); save(); rcSnap(true); },
     'spk.set': function (a) { if (a.on != null) S.spk.on = !!a.on; if (a.amt != null) S.spk.amt = Math.max(0, Math.min(1.5, Number(a.amt) || 0)); spkShow(); save(); rcSnap(true); },
@@ -1719,13 +1732,39 @@
     }
   };
   function RCMD_clear() { bubClear(); order.slice().forEach(function (k) { var u = users[k]; u.inside = false; unseat(u, false); }); order = []; Object.keys(users).forEach(function (k) { delete users[k]; }); S.users = {}; overflowUI(); save(); }
+  var PANEL_OK = { host: ['ping', 'light', 'specials', 'bar.round', 'top5', 'runway.start', 'runway.stop', 'banner', 'np'], mod: ['ping', 'mod.photo', 'mod.block', 'bub.set', 'user.vip', 'user.unvip'] };
+  /* when a host or mod acts from their panel, the room sees it: a staff pill on screen, and their own avatar says it if they're inside */
+  var LNAME = { chill: 'Chill lights', party: 'Party lights', drop: 'THE DROP', dark: 'Dark + spotlight', off: 'Lights off', disco: 'Disco floor', strobe: 'Strobe', lasers: 'Lasers', blackout: 'Blackout' };
+  function staffNote(role, by, c, a) {
+    var t = '';
+    if (c === 'light') t = (LNAME[a.n] || 'the lights') + (a.n === 'drop' ? '' : ' on');
+    else if (c === 'specials') t = a.on === false ? 'closed the drink menu' : 'opened the drink menu \uD83C\uDF79';
+    else if (c === 'bar.round') t = 'bought a round on the house \uD83E\uDD42';
+    else if (c === 'top5') t = S.top5 ? 'called the Top 5 to the stage' : 'ended the Top 5';
+    else if (c === 'runway.start') t = 'started the runway \uD83D\uDC60';
+    else if (c === 'runway.stop') t = 'stopped the runway';
+    else if (c === 'np') t = a.t ? 'now playing: ' + String(a.t).slice(0, 40) : '';
+    else if (c === 'bub.set' && a.on !== undefined) t = a.on ? 'turned chat bubbles back on' : 'paused chat bubbles';
+    else if (c === 'user.vip') t = 'added a VIP \uD83D\uDC51';
+    else if (c === 'mod.block') t = a.on === false ? '' : 'kept the club safe \uD83D\uDEE1\uFE0F';
+    if (!t) return;
+    var who = String(by || '').replace(/[^A-Za-z0-9_.]/g, '').slice(0, 24), tag = role === 'host' ? (STAFF[who.toLowerCase()] === 'DJ' ? 'DJ' : 'HOST') : 'MOD';
+    log(tag + ' ' + (who ? '@' + who : '') + ': ' + t);
+    var el = $('staffmsg'); if (el) { el.innerHTML = '<b>' + tag + '</b>' + (who ? '<i>@' + esc2(who) + '</i>' : '') + '<span>' + esc2(t) + '</span>'; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show'); clearTimeout(staffNote.t); staffNote.t = setTimeout(function () { el.classList.remove('show'); }, 5000); }
+    var u = who && users['x:' + who.toLowerCase()]; if (u && u.inside) say(u, t, 4000, true);
+  }
   function rcRecv(d) {
     var p = d && d.vnn; if (!p || p.from === RC.id) return;
     if (p.t === 'hello') { rcSnap(true); return; }
     if (p.t !== 'cmd') return;
     var f = RCMD[p.c];
     if (!f) { rcAck(p.id, false, 'unknown command'); return; }
-    try { var r = f(p.a || {}); rcAck(p.id, true, r || ''); } catch (e) { rcAck(p.id, false, e.message); }
+    /* host and mod panels: only their own buttons, and only while the operator has their panel switched on */
+    if (p.role === 'host' || p.role === 'mod') {
+      if (S.panels[p.role] === false) { rcAck(p.id, false, 'The ' + (p.role === 'host' ? 'Host' : 'Mod') + ' panel is turned off right now'); return; }
+      if ((PANEL_OK[p.role] || []).indexOf(p.c) < 0) { rcAck(p.id, false, 'Not available on this panel'); return; }
+    }
+    try { var r = f(p.a || {}); rcAck(p.id, true, r || ''); if (p.role) staffNote(p.role, p.by, p.c, p.a || {}); } catch (e) { rcAck(p.id, false, e.message); }
     setTimeout(function () { rcSnap(true); }, 120);
   }
   function rcUnwrap(data) {
@@ -1739,7 +1778,7 @@
     people.sort(function (a, b) { return b.la - a.la; });
     var top = []; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.stage && S.top5 && !RW.on) top[u.rank || 0] = { n: u.name, s: u.show }; });
     var L = {}; Object.keys(LT).forEach(function (k) { if (k.charAt(0) !== '_') L[k] = LT[k]; });
-    var snap = { t: 'state', ver: 1, specials: !!($('specials') && $('specials').classList.contains('show')), ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, spk: S.spk, lite: !!S.lite, liteAuto: S.lite === 'auto', codes: Object.keys(S.codes).map(function (t) { return { t: t, w: S.codes[t].word, on: S.codes[t].on, item: itemName(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })[0]) }; }), cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
+    var snap = { t: 'state', ver: 1, panels: S.panels, staff: STAFF, specials: !!($('specials') && $('specials').classList.contains('show')), ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, spk: S.spk, lite: !!S.lite, liteAuto: S.lite === 'auto', codes: Object.keys(S.codes).map(function (t) { return { t: t, w: S.codes[t].word, on: S.codes[t].on, item: itemName(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })[0]) }; }), cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
     var sig = JSON.stringify(snap); if (!force && sig === RC.lastSnap) return; RC.lastSnap = sig; rcSend(snap);
   }
   function rcStart() {
