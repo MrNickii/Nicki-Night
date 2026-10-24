@@ -78,7 +78,7 @@ document.getElementById('pinbtn').onclick=go;document.getElementById('pinin').on
 <main>
 <section class="tab on" id="t-home">
  <div class="card"><h2>Lights</h2><div class="grid" id="hmoods"></div><div class="grid g3" style="margin-top:10px"><button class="b" data-hf="disco">Disco floor</button><button class="b" data-hf="lasers">Lasers</button><button class="b" data-hf="blackout" data-hs="dark">Blackout</button></div></div>
- <div class="card"><h2>Moments</h2><div class="grid g2"><button class="b go" id="hmenu">Show drink menu</button><button class="b" data-c="bar.round">Round on the house</button><button class="b" id="htop5">Top 5 stage</button><button class="b" id="hrw">Start runway</button><button class="b" data-c="event.end" style="grid-column:1/-1">⏹ End event · everyone back to normal</button></div></div>
+ <div class="card"><h2>Moments</h2><div class="grid g2"><button class="b go" id="hmenu">Show drink menu</button><button class="b" data-c="bar.round">Round on the house</button><button class="b" id="htop5">Top 5 stage</button><button class="b" id="hrw">Start runway</button><button class="b" id="cfF">💬 Chat on floor</button><button class="b" id="cfT">🚂 Soul Train</button><button class="b" data-c="event.end" style="grid-column:1/-1">⏹ End event · everyone back to normal</button></div></div>
  <div class="card"><h2>Shout to the room</h2><div class="row"><input type="text" id="hbn" placeholder="Big text"><button class="b go fit" id="hbsend" style="min-width:120px">Show</button></div></div>
  <div class="card"><h2>Nicki</h2><div class="grid g2"><button class="b go" data-c="nicki.rehearse">Rehearse her entrance</button><button class="b" data-c="nicki.out">She walks out</button></div><p class="note" id="hnstat"></p></div>
  <div class="card"><h2>End of night</h2><div class="grid g2"><button class="b warn" id="hclose">Last call (30s)</button><button class="b" data-c="club.reopen">Cancel / reopen</button></div></div>
@@ -293,6 +293,7 @@ $('hmoods').onclick=function(e){var b=e.target.closest('[data-hm]');if(b)cmd('li
 Array.prototype.forEach.call(document.querySelectorAll('[data-hf]'),function(b){b.onclick=function(){cmd('light',{n:b.dataset.hf})}});
 $('hmenu').onclick=function(){cmd('specials',st&&st.specials?{on:false}:{sec:20})};
 $('htop5').onclick=function(){cmd('top5',{})};
+$('cfF').onclick=function(){cmd('floor.mode',{m:'floor'})};$('cfT').onclick=function(){cmd('floor.mode',{m:'train'})};
 $('hrw').onclick=function(){if(st&&st.rw&&st.rw.on)cmd('runway.stop',{});else cmd('runway.start',{n:4,sec:30})};
 $('hbsend').onclick=function(){var t=$('hbn').value.trim();if(t)cmd('banner',{t:t,s:''}).then(function(r){if(r.ok)toast('Shown','ok')})};
 $('hclose').onclick=function(){cmd('club.close',{sec:30})};
@@ -304,6 +305,7 @@ function homeRender(){if(!st)return;var L=st.light||{};
  Array.prototype.forEach.call(document.querySelectorAll('[data-hf]'),function(b){b.classList.toggle('on',!!L[b.dataset.hs||b.dataset.hf])});
  $('hmenu').classList.toggle('on',!!st.specials);$('hmenu').textContent=st.specials?'Hide drink menu':'Show drink menu';
  $('htop5').classList.toggle('on',!!st.top5);$('htop5').textContent=st.top5?'Top 5 is ON':'Top 5 stage';
+ $('cfF').classList.toggle('on',st.cf==='floor');$('cfF').textContent=st.cf==='floor'?'💬 Chat on floor · off':'💬 Chat on floor';$('cfT').classList.toggle('on',st.cf==='train');$('cfT').textContent=st.cf==='train'?'🚂 Soul Train · stop':'🚂 Soul Train';
  var rw=st.rw||{};$('hrw').classList.toggle('on',!!rw.on);$('hrw').textContent=rw.on?(rw.ph==='vote'?'Voting '+rw.left+'s · stop':rw.ph==='count'?'Counting votes · stop':'Runway on · stop'):'Start runway';
  var pn=st.panels||{};$('pnH').classList.toggle('on',pn.host!==false);$('pnH').textContent=pn.host!==false?'Host panel ON':'Host panel OFF';$('pnM').classList.toggle('on',pn.mod!==false);$('pnM').textContent=pn.mod!==false?'Mod panel ON':'Mod panel OFF';
  $('hclose').disabled=!!(st.cl&&st.cl.on);$('hnstat').textContent=st.nicki.inside?'Nicki is in the club.':(st.nicki.done?'Her entrance already played this show.':'Her entrance plays the first time @NickiMinaj chats.')}

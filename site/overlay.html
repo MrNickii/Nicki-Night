@@ -180,6 +180,8 @@ body.lite .pill.show, body.lite .rk { filter: none; }
 /* lighting */
 #disco { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; opacity: 0; transition: opacity .8s; mix-blend-mode: screen; }
 body.lite #disco { mix-blend-mode: normal; }
+#cfloor { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; opacity: 0; transition: opacity .6s; }
+#cfloor.on { opacity: 1; }
 #fxc { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; mix-blend-mode: screen; }
 #fog { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1s; mix-blend-mode: screen; overflow: hidden; }
 #fog i { position: absolute; width: 1100px; height: 360px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.55), rgba(255,255,255,0)); filter: blur(30px); animation: drift 22s linear infinite; }
@@ -231,6 +233,7 @@ body.pan #panel { display: block; }
 <div id="stage">
   <div id="art" class="layer"></div>
   <canvas id="disco" width="1920" height="1080"></canvas>
+  <canvas id="cfloor" width="1920" height="1080"></canvas>
   <canvas id="city" width="340" height="330" style="position:absolute;left:1553px;top:0;width:340px;height:330px;pointer-events:none;display:none"></canvas>
   <canvas id="fxc" width="1920" height="1080"></canvas>
   <div id="glows"></div>
@@ -1308,6 +1311,7 @@ var VNNA = (function () {
   S.codes = Object.assign({ x_barb: { word: 'barbz', on: false }, x_pf2: { word: 'flight', on: false }, x_pink: { word: 'pinkprint', on: false }, x_gag: { word: 'gagcity', on: false } }, S.codes || {});
   S.spk = Object.assign({ on: true, amt: 0.7 }, S.spk || {});
   S.lag = (S.lag == null || isNaN(S.lag)) ? 12 : Math.max(0, Math.min(45, Number(S.lag))); /* stream delay: viewers on X and Kick watch a few seconds behind, so timed votes stay open this long after the on-screen timer ends */
+  S.cf = ''; /* chat floor / Soul Train always start off */
   S.lite = S.lite === true ? true : false; /* an automatic Performance mode never survives a reload; only the manual switch is remembered */
   S.blocked = S.blocked || {}; S.nophoto = S.nophoto || {}; var lastMsg = 0;
   /* event staff and guest list (added once; the operator can still edit the lists afterwards) */
@@ -1389,6 +1393,7 @@ var VNNA = (function () {
       for (i2 = 0; i2 < n; i2++) {
         var x = q.x0 + (i2 + 0.5) * (q.x1 - q.x0) / n;
         if (sb && x > sb.x0 && x < sb.x1 && q.y > sb.y0 && q.y < sb.y1) continue;
+        if (S.cf === 'train' && Math.abs(x - CF_CX) < laneHalf(q.y) + d * 0.55) continue; /* Soul Train: the middle of the floor stays open */
         out.floor.push({ x: x, y: q.y, d: d, r: r, z: 'floor', occ: null });
       }
     });
@@ -1669,7 +1674,7 @@ var VNNA = (function () {
       if (!u.dirty && st > 1 && ((frameN + (u.h32 % st)) % st)) continue;
       var cx = u.cx; cx.clearRect(0, 0, u.cw, u.ch); u.dirty = 0;
       try {
-        VNNA.draw(cx, u.set, u.spec, { st: u.rst || (u.rst = {}), now: performance.now() / 1000, x: u.cw / 2, y: 2005 * u.s0, h: u.fh, clip: VNNA.clipOf(u.dance), walk: walkOpt, t: bclk * 0.5, beat: 0.5, ph: (u.h32 % 16) / 4, amp: (u.stage && S.top5) ? 1.25 : (u.bt ? 0.7 : (u.dr ? 0.8 : 1)), hold: holdFor(u, performance.now() / 1000), head: headFor(u) });
+        VNNA.draw(cx, u.set, u.spec, { st: u.rst || (u.rst = {}), now: performance.now() / 1000, x: u.cw / 2, y: 2005 * u.s0, h: u.fh, clip: VNNA.clipOf(u.dance), walk: walkOpt, t: bclk * 0.5, beat: 0.5, ph: (u.h32 % 16) / 4, amp: u.train ? 1.3 : (u.stage && S.top5) ? 1.25 : (u.bt ? 0.7 : (u.dr ? 0.8 : 1)), hold: holdFor(u, performance.now() / 1000), head: headFor(u) });
       } catch (e) { if (!u.err) { u.err = 1; console.error('draw', u.key, e); } }
       if (performance.now() - t0 > (u.dirty ? 34 : 14)) break;
     }
@@ -1740,6 +1745,7 @@ var VNNA = (function () {
   function place(u, s, instant) {
     var nick = isNicki(u);
     s.occ = u.key; u.slot = s; u.overflow = false;
+    if (u.train) return true; /* on the Soul Train line: keeps the new spot and goes there when their turn ends */
     if (!u.el) makeEl(u);
     var firstTime = !u.shown;
     if (u.d !== s.d || !u.h) draw(u, s.d);
@@ -1896,7 +1902,7 @@ var VNNA = (function () {
     u.chats++; u.show = (u.show || 0) + 1; activate(u);
     if (isNicki(u) && !S.nickiDone && !nickiBusy) { nickiEntrance(u, false); }
     if (RW.on && (RW.phase === 'vote' || RW.phase === 'count') && /^[1-9]$/.test(t)) { rwVote(u, Number(t)); return; }
-    if (cmd.charAt(0) !== '!') { if (u.inside) { bumpFront(u, t); evalTasks(u); } save(); return; }
+    if (cmd.charAt(0) !== '!') { cfPush(u, t); if (u.inside) { bumpFront(u, t); evalTasks(u); } save(); return; }
     var mod = isMod(u);
     if (cmd === '!enter') { if (isNicki(u) && !u.inside) { nickiEntrance(u, false); return; } enter(u); return; }
     /* pasting a look from the Style Studio also walks you in wearing it */
@@ -2118,6 +2124,7 @@ var VNNA = (function () {
     var b = stageBox(CROWDK), w = b.d * 7.2, hh = b.d * 2.2; f.style.left = (R.stage.x - w / 2) + 'px'; f.style.top = (R.stage.y - hh * 0.62) + 'px'; f.style.width = w + 'px'; f.style.height = hh + 'px';
   }
   function setTop5(on) {
+    if (on && S.cf === 'train') cfSet('');
     var was = stageOn(); if (on && !was) crowdMark();
     S.top5 = !!on; var b = $('top5btn'); if (b) b.setAttribute('aria-pressed', String(S.top5));
     top5Sig = ''; top5Update(true); stageFx(); if (was && !stageOn()) crowdRestore(); save();
@@ -2153,6 +2160,7 @@ var VNNA = (function () {
   function runwayStart(n, sec) {
     if (RW.on) throw new Error('Runway is already running');
     if (S.top5) throw new Error('Turn off Top 5 first');
+    if (S.cf === 'train') cfSet('');
     n = Math.max(2, Math.min(5, Number(n) || 4)); sec = Math.max(10, Math.min(90, Number(sec) || 30));
     var c = order.map(function (k) { return users[k]; }).filter(function (u) { return u && u.inside && !isNicki(u) && u.slot && u.set && !u.overflow; });
     if (c.length < 2) throw new Error('Need at least 2 people with avatars inside');
@@ -3145,6 +3153,7 @@ var VNNA = (function () {
     'runway.start': function (a) { runwayStart(a.n, a.sec); },
     'runway.stop': function () { runwayStop(); },
     'event.end': function () { eventEnd(); },
+    'floor.mode': function (a) { var m = a.m === 'floor' || a.m === 'train' ? a.m : ''; cfSet(S.cf === m ? '' : m); },
     'mod.photo': function (a) {
       var u = rcFind(a); if (!u) throw new Error('not found');
       if (a.hide) { S.nophoto[u.key] = u.name || 1; u.photo = null; u.pimg = null; u._pl = 0; u.photoBad = 0; } else { delete S.nophoto[u.key]; }
@@ -3171,6 +3180,110 @@ var VNNA = (function () {
       return notes.length ? notes.join(' · ') : '';
     }
   };
+
+  /* ---------- chat on the dance floor ----------
+     'floor': the live chat laid across the whole floor in perspective, see-through like the disco floor.
+     'train': a bright chat lane down the middle; the crowd splits to both sides and a Soul Train line runs down the lane, one dancer at a time.
+     The floor art repaints only when a message arrives (plus a short slide-in), never every frame. */
+  var CF_CX = 868, CF = { list: [], t0: 0, raf: 0, flat: null, q: [], next: 0, runT: null, act: [] };
+  function cfS(y) { return (y - 150) / 286; }
+  function laneHalf(y) { return 95 * cfS(y); }
+  function cfPush(u, t) {
+    var tx = bubText(t, 90); if (!tx) return;
+    CF.list.push({ n: (u.vip && !isNicki(u) ? '★ ' : '') + String(u.name || '').slice(0, 22), t: tx, c: isNicki(u) ? '#ffd86b' : 'hsl(' + BUBH[(u.h32 || 0) % BUBH.length] + ' 92% 70%)' });
+    if (CF.list.length > 30) CF.list.shift();
+    if (S.cf) cfKick();
+  }
+  function cfKick() { CF.t0 = performance.now(); if (!CF.raf) CF.raf = requestAnimationFrame(cfFrame); }
+  function cfFrame() { CF.raf = 0; var p = Math.min(1, (performance.now() - CF.t0) / 420); cfDraw(1 - (1 - p) * (1 - p)); if (p < 1 && S.cf && !S.lite) CF.raf = requestAnimationFrame(cfFrame); }
+  function fitLine(g, t, max) { if (g.measureText(t).width <= max) return t; var a = Array.from(t); while (a.length > 1 && g.measureText(a.join('') + '…').width > max) a.pop(); return a.join('') + '…'; }
+  function wrap2(g, t, max) { var w = t.split(' '), l1 = '', i; for (i = 0; i < w.length; i++) { var tr = l1 ? l1 + ' ' + w[i] : w[i]; if (g.measureText(tr).width > max && l1) break; l1 = tr; } var rest = w.slice(i).join(' '); return rest ? [fitLine(g, l1, max), fitLine(g, rest, max)] : [fitLine(g, l1, max)]; }
+  /* lay a flat picture onto the floor in perspective: thin horizontal slices, each as wide as the floor is at that depth */
+  function warp(g, src, yTop, yBot, hw0, N) {
+    for (var i = 0; i < N; i++) {
+      var t0 = i / N, t1 = (i + 1) / N, y0 = yTop + (yBot - yTop) * t0, y1 = yTop + (yBot - yTop) * t1, hw = hw0 * cfS((y0 + y1) / 2);
+      g.drawImage(src, 0, src.height * t0, src.width, Math.max(1, src.height * (t1 - t0)), CF_CX - hw, y0, hw * 2, y1 - y0 + 1);
+    }
+  }
+  function cfDraw(p) {
+    var c = $('cfloor'); if (!c) return; var g = c.getContext('2d'); g.clearRect(0, 0, W, H);
+    if (!S.cf) return;
+    var train = S.cf === 'train', SW = train ? 560 : 1700, SH = train ? 1000 : 900, f = CF.flat || (CF.flat = document.createElement('canvas'));
+    if (f.width !== SW || f.height !== SH) { f.width = SW; f.height = SH; }
+    var x = f.getContext('2d'); x.clearRect(0, 0, SW, SH); x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.lineJoin = 'round';
+    var list = CF.list, i, y;
+    if (train) {
+      var lg = x.createLinearGradient(0, 0, 0, SH); lg.addColorStop(0, 'rgba(14,6,28,.55)'); lg.addColorStop(0.25, 'rgba(14,6,28,.86)'); lg.addColorStop(1, 'rgba(14,6,28,.92)');
+      x.fillStyle = lg; x.fillRect(0, 0, SW, SH);
+      x.font = '900 46px system-ui, Arial, sans-serif'; x.fillStyle = '#ff4fb0'; x.fillText('SOUL TRAIN', SW / 2, 70); x.font = '800 24px system-ui, Arial, sans-serif'; x.fillStyle = 'rgba(255,255,255,.75)'; x.fillText('LIVE CHAT', SW / 2, 104);
+      var EH = 128; y = SH - 28 + (1 - p) * EH;
+      for (i = list.length - 1; i >= 0 && y > 150; i--) {
+        var m = list[i]; x.font = '700 40px system-ui, Arial, sans-serif'; var ln = wrap2(x, m.t, SW - 44);
+        var top = y - ln.length * 46 - 34; if (top < 120) break;
+        x.globalAlpha = i === list.length - 1 ? Math.max(0.15, p) : 1;
+        x.font = '800 30px system-ui, Arial, sans-serif'; x.fillStyle = m.c; x.fillText(fitLine(x, m.n, SW - 40), SW / 2, top + 28);
+        x.font = '700 40px system-ui, Arial, sans-serif'; x.fillStyle = '#fff'; ln.forEach(function (l, j) { x.fillText(l, SW / 2, top + 34 + 40 + j * 46); });
+        x.globalAlpha = 1; y = top - 16;
+      }
+      g.save(); warp(g, f, 470, 1078, 95, 96);
+      /* glowing edges of the lane */
+      [[14, 'rgba(255,79,176,.28)'], [5, '#ff4fb0']].forEach(function (st) { g.strokeStyle = st[1]; g.lineWidth = st[0]; [-1, 1].forEach(function (sd) { g.beginPath(); g.moveTo(CF_CX + sd * laneHalf(470), 470); g.lineTo(CF_CX + sd * laneHalf(1078), 1078); g.stroke(); }); });
+      g.restore();
+    } else {
+      x.fillStyle = 'rgba(12,4,24,.32)'; x.fillRect(0, 0, SW, SH);
+      var LH = 84; y = SH - 30 + (1 - p) * LH;
+      for (i = list.length - 1; i >= 0 && y > 40; i--) {
+        var mm = list[i]; x.globalAlpha = i === list.length - 1 ? Math.max(0.15, p) : Math.max(0.35, 1 - (SH - y) / SH * 0.5);
+        x.font = '800 40px system-ui, Arial, sans-serif'; var nm = mm.n + '  ', nw = x.measureText(nm).width; x.font = '700 46px system-ui, Arial, sans-serif'; var tt = fitLine(x, mm.t, SW * 0.62 - nw), tw2 = x.measureText(tt).width, x0 = SW / 2 - (nw + tw2) / 2;
+        x.textAlign = 'left'; x.lineWidth = 7; x.strokeStyle = 'rgba(8,2,16,.8)';
+        x.font = '800 40px system-ui, Arial, sans-serif'; x.strokeText(nm, x0, y); x.fillStyle = mm.c; x.fillText(nm, x0, y);
+        x.font = '700 46px system-ui, Arial, sans-serif'; x.strokeText(tt, x0 + nw, y); x.fillStyle = '#fff'; x.fillText(tt, x0 + nw, y);
+        y -= LH;
+      }
+      x.globalAlpha = 1; x.textAlign = 'center';
+      g.save(); g.beginPath(); DFLOOR.forEach(function (q, k) { if (k) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.closePath(); g.clip();
+      g.globalAlpha = 0.9; warp(g, f, 446, 1036, 330, 110); g.restore(); g.globalAlpha = 1;
+    }
+  }
+  function cfSet(m) {
+    var was = S.cf || '';
+    if (m === was) return;
+    if (m === 'train') { if (RW.on) runwayStop(); if (S.top5) setTop5(false); }
+    if (was === 'train') trainStop();
+    if (m === 'train' && was !== 'train') crowdMark();
+    S.cf = m;
+    $('cfloor').classList.toggle('on', !!m);
+    if (m === 'train') { relayout(); scheduleFit(); banner('SOUL TRAIN', 'Clear the middle · everybody gets a turn', 4200); trainStart(); }
+    else if (was === 'train') crowdRestore();
+    if (m === 'floor') banner('LIVE CHAT', 'Your messages are on the dance floor', 3600);
+    cfDraw(1); rcSnap(true);
+  }
+  /* the Soul Train line: one dancer at a time walks to the top of the lane, then dances all the way down to the front, then goes back to their side */
+  function trainPool() { return order.map(function (k) { return users[k]; }).filter(function (u) { return u && u.inside && u.slot && u.el && u.set && !isNicki(u) && !u.train && !u.atBar && !u.overflow; }); }
+  function scAt(u, y) { return Math.max(0.6, Math.min(2.4, avW(y) / Math.max(20, avW(u.slot ? u.slot.y : y)))); }
+  function trainStart() { CF.q = []; CF.runT = setTimeout(trainNext, 2600); }
+  function trainStop() { clearTimeout(CF.runT); CF.runT = null; CF.act.slice().forEach(function (r) { r.dead = true; trainHome(r.u, 0.8); }); CF.act = []; }
+  function trainHome(u, dur) { u.train = false; u.sc = 1; u.top = false; if (u.el && u.slot && u.inside) put(u, u.slot.x, u.slot.y, dur || walkTime(u, u.slot.x, u.slot.y)); }
+  function trainNext() {
+    if (S.cf !== 'train') return;
+    if (!CF.q.length) { CF.q = trainPool(); CF.q.sort(function () { return Math.random() - 0.5; }); }
+    var u = null; while (CF.q.length && !u) { var c = CF.q.shift(); if (c && c.inside && c.slot && !c.train && c.el) u = c; }
+    if (!u) { CF.runT = setTimeout(trainNext, 2500); return; }
+    var r = { u: u, dead: false }; CF.act.push(r); u.train = true;
+    var yA = 520, yB = 1010, wA = walkTime(u, CF_CX, yA), down = 5.2;
+    u.sc = scAt(u, yA); put(u, CF_CX, yA, wA);
+    setTimeout(function () {
+      if (r.dead || !u.inside) return;
+      say(u, '🚂 ' + String(u.name || '').slice(0, 18), 3800, true);
+      u.sc = scAt(u, yB); put(u, CF_CX, yB, down, true);
+      setTimeout(function () {
+        if (r.dead) return; var i = CF.act.indexOf(r); if (i >= 0) CF.act.splice(i, 1);
+        if (u.inside) trainHome(u); else u.train = false;
+      }, down * 1000 + 300);
+    }, wA * 1000 + 150);
+    CF.runT = setTimeout(trainNext, (wA + down * 0.62) * 1000);
+  }
+
   /* force-end anything that moved the crowd: runway, Top 5, Nicki's walk-in or walk-out, last call. Everyone goes back to normal. */
   function eventEnd() {
     var did = [];
@@ -3178,14 +3291,15 @@ var VNNA = (function () {
     if (S.top5) { setTop5(false); did.push('top5'); }
     if (nickiBusy) { nickiAbort = true; did.push('nicki'); }
     if (CL.on) { closingReopen(); did.push('closing'); }
+    if (S.cf) { cfSet(''); did.push('chat floor'); }
     order.forEach(function (k) { var o = users[k]; if (!o) return; if (o.parted) { o.ox = 0; o.parted = false; if (o.el && o.inside) put(o, o.x, o.y, 0.8, true); } if (o.phone) o.phone.until = Math.min(o.phone.until, nowS() + 0.5); });
     lightFor('spot', false, null); carpetOff(); var h = $('rwhud'); if (h) h.classList.remove('show');
-    order.forEach(function (k) { var u = users[k]; if (u && u.inside && !isNicki(u) && u.stage) { u.stage = false; u.rank = null; rankTag(u, false); } });
+    order.forEach(function (k) { var u = users[k]; if (u && u.inside && !isNicki(u) && u.stage) { u.stage = false; u.rank = null; rankTag(u, false); } if (u && u.train) trainHome(u, 0.8); });
     crowdRestore(); reseatHidden(); stageFx(); save(); rcSnap(true);
     return did.length ? '' : 'Nothing was running; crowd reset';
   }
   function RCMD_clear() { bubClear(); order.slice().forEach(function (k) { var u = users[k]; u.inside = false; unseat(u, false); }); order = []; Object.keys(users).forEach(function (k) { delete users[k]; }); S.users = {}; overflowUI(); save(); }
-  var PANEL_OK = { host: ['ping', 'light', 'specials', 'bar.round', 'top5', 'runway.start', 'runway.stop', 'banner', 'np', 'event.end'], mod: ['ping', 'mod.photo', 'mod.block', 'bub.set', 'user.vip', 'user.unvip', 'event.end'] };
+  var PANEL_OK = { host: ['ping', 'light', 'specials', 'bar.round', 'top5', 'runway.start', 'runway.stop', 'banner', 'np', 'event.end', 'floor.mode'], mod: ['ping', 'mod.photo', 'mod.block', 'bub.set', 'user.vip', 'user.unvip', 'event.end'] };
   /* when a host or mod acts from their panel, the room sees it: a staff pill on screen, and their own avatar says it if they're inside */
   var LNAME = { chill: 'Chill lights', party: 'Party lights', drop: 'THE DROP', dark: 'Dark + spotlight', off: 'Lights off', disco: 'Disco floor', strobe: 'Strobe', lasers: 'Lasers', blackout: 'Blackout' };
   function staffNote(role, by, c, a) {
@@ -3197,6 +3311,7 @@ var VNNA = (function () {
     else if (c === 'runway.start') t = 'started the runway \uD83D\uDC60';
     else if (c === 'runway.stop') t = 'stopped the runway';
     else if (c === 'event.end') t = 'wrapped it up, back to the party';
+    else if (c === 'floor.mode') t = S.cf === 'train' ? 'started the Soul Train 🚂' : S.cf === 'floor' ? 'put the chat on the floor' : 'cleared the floor';
     else if (c === 'np') t = a.t ? 'now playing: ' + String(a.t).slice(0, 40) : '';
     else if (c === 'bub.set' && a.on !== undefined) t = a.on ? 'turned chat bubbles back on' : 'paused chat bubbles';
     else if (c === 'user.vip') t = 'added a VIP \uD83D\uDC51';
@@ -3232,7 +3347,7 @@ var VNNA = (function () {
     people.sort(function (a, b) { return b.la - a.la; });
     var top = []; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.stage && S.top5 && !RW.on) top[u.rank || 0] = { n: u.name, s: u.show }; });
     var L = {}; Object.keys(LT).forEach(function (k) { if (k.charAt(0) !== '_') L[k] = LT[k]; });
-    var snap = { t: 'state', ver: 1, lag: S.lag, panels: S.panels, staff: STAFF, specials: !!($('specials') && $('specials').classList.contains('show')), ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, spk: S.spk, lite: !!S.lite, liteAuto: S.lite === 'auto', codes: Object.keys(S.codes).map(function (t) { return { t: t, w: S.codes[t].word, on: S.codes[t].on, item: itemName(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })[0]) }; }), cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
+    var snap = { t: 'state', ver: 1, lag: S.lag, cf: S.cf || '', panels: S.panels, staff: STAFF, specials: !!($('specials') && $('specials').classList.contains('show')), ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, spk: S.spk, lite: !!S.lite, liteAuto: S.lite === 'auto', codes: Object.keys(S.codes).map(function (t) { return { t: t, w: S.codes[t].word, on: S.codes[t].on, item: itemName(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })[0]) }; }), cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
     var sig = JSON.stringify(snap); if (!force && sig === RC.lastSnap) return; RC.lastSnap = sig; rcSend(snap);
   }
   function rcStart() {

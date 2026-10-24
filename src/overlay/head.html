@@ -180,6 +180,8 @@ body.lite .pill.show, body.lite .rk { filter: none; }
 /* lighting */
 #disco { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; opacity: 0; transition: opacity .8s; mix-blend-mode: screen; }
 body.lite #disco { mix-blend-mode: normal; }
+#cfloor { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; opacity: 0; transition: opacity .6s; }
+#cfloor.on { opacity: 1; }
 #fxc { position: absolute; inset: 0; width: 1920px; height: 1080px; pointer-events: none; mix-blend-mode: screen; }
 #fog { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1s; mix-blend-mode: screen; overflow: hidden; }
 #fog i { position: absolute; width: 1100px; height: 360px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.55), rgba(255,255,255,0)); filter: blur(30px); animation: drift 22s linear infinite; }
@@ -231,6 +233,7 @@ body.pan #panel { display: block; }
 <div id="stage">
   <div id="art" class="layer"></div>
   <canvas id="disco" width="1920" height="1080"></canvas>
+  <canvas id="cfloor" width="1920" height="1080"></canvas>
   <canvas id="city" width="340" height="330" style="position:absolute;left:1553px;top:0;width:340px;height:330px;pointer-events:none;display:none"></canvas>
   <canvas id="fxc" width="1920" height="1080"></canvas>
   <div id="glows"></div>

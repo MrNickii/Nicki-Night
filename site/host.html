@@ -17,6 +17,8 @@
    <button class="b big" data-c="bar.round">Round on the house</button>
    <button class="b big" id="top5">Top 5 stage</button>
    <button class="b big" id="rw">Runway</button>
+   <button class="b big" id="cfF">💬 Chat on floor</button>
+   <button class="b big" id="cfT">🚂 Soul Train</button>
   </div>
   <button class="b big" id="evend" style="width:100%;margin-top:10px">⏹ End event · everyone back to normal</button></div>
 
@@ -36,6 +38,8 @@
   var MOODS = [['chill', 'Chill'], ['party', 'Party'], ['drop', 'The drop'], ['off', 'Lights off']];
   $('moods').innerHTML = MOODS.map(function (m) { return '<button class="b big' + (m[0] === 'drop' ? ' go' : '') + '" data-m="' + m[0] + '">' + m[1] + '</button>'; }).join('');
   $('moods').onclick = function (e) { var b = e.target.closest('[data-m]'); if (b) cmd('light', { n: b.dataset.m }, b.textContent + '!'); };
+  $('cfF').onclick = function () { if (!need()) return; cmd('floor.mode', { m: 'floor' }); };
+  $('cfT').onclick = function () { if (!need()) return; cmd('floor.mode', { m: 'train' }); };
   $('evend').onclick = function () { if (!need()) return; cmd('event.end', {}, 'Back to normal'); };
   document.querySelectorAll('[data-c]').forEach(function (b) { b.onclick = function () { cmd(b.dataset.c, {}, 'Done'); }; });
   function need() { var s = P.st(); if (!s) P.toast('Waiting for the club to connect…', 'bad'); return s; }
@@ -48,6 +52,7 @@
     document.querySelectorAll('[data-m]').forEach(function (b) { b.classList.toggle('on', L.mood === b.dataset.m); });
     $('menu').classList.toggle('on', !!st.specials); $('menu').textContent = st.specials ? 'Close drink menu' : 'Drink menu';
     $('top5').classList.toggle('on', !!st.top5); $('top5').textContent = st.top5 ? 'End Top 5' : 'Top 5 stage';
+    $('cfF').classList.toggle('on', st.cf === 'floor'); $('cfF').textContent = st.cf === 'floor' ? '💬 Chat on floor · off' : '💬 Chat on floor'; $('cfT').classList.toggle('on', st.cf === 'train'); $('cfT').textContent = st.cf === 'train' ? '🚂 Soul Train · stop' : '🚂 Soul Train';
     var rw = st.rw || {}; $('rw').classList.toggle('on', !!rw.on); $('rw').textContent = rw.on ? (rw.ph === 'vote' ? 'Voting ' + rw.left + 's · stop' : rw.ph === 'count' ? 'Counting votes · stop' : 'Stop runway') : 'Runway';
   });
   P.gate(function () { P.ident('host', ['alwaysshanell', 'sirdevinaire', 'killdadj_'], P.start); }, 'host');
