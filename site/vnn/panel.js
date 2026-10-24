@@ -13,7 +13,7 @@ var PANEL = (function () {
   function cmd(c, a, okMsg) {
     return new Promise(function (res) {
       var id = ++seq + '-' + me; pend[id] = res; raw({ t: 'cmd', c: c, a: a || {}, id: id, role: ROLE, by: BY });
-      setTimeout(function () { if (pend[id]) { delete pend[id]; res({ ok: false, msg: 'No answer from the overlay' }); } }, 4500);
+      setTimeout(function () { if (pend[id]) { delete pend[id]; res({ ok: false, msg: 'No answer from the club. Try again' }); } }, 4500);
     }).then(function (r) { if (r && r.ok === false) toast(r.msg || 'Did not work', 'bad'); else if (okMsg) toast(okMsg, 'ok'); return r; });
   }
   function parse(s) { try { return JSON.parse(s); } catch (e) { return null; } }
@@ -28,10 +28,10 @@ var PANEL = (function () {
     clearTimeout(T);
     try { if (!bc && window.BroadcastChannel) { bc = new BroadcastChannel(room()); bc.onmessage = function (e) { recv(parse(e.data)); }; } } catch (e) { }
     if (ws) { try { ws.onclose = null; ws.close(); } catch (e) { } ws = null; }
-    if (!C.session && !C.relay) { cs = [false, 'Open the link you were sent (it has the session in it)']; paint(); return; }
-    try { ws = new WebSocket(C.relay || 'wss://io.socialstream.ninja'); } catch (e) { cs = [false, 'Bad relay address']; paint(); return; }
+    if (!C.session && !C.relay) { cs = [false, 'Open the staff link you were sent']; paint(); return; }
+    try { ws = new WebSocket(C.relay || 'wss://io.socialstream.ninja'); } catch (e) { cs = [false, 'Connection problem. Refresh the page']; paint(); return; }
     cs = [null, 'Connecting…']; paint();
-    ws.onopen = function () { tries = 0; up = true; ws.send(JSON.stringify({ join: room(), in: 6, out: 5 })); raw({ t: 'hello' }); cs = [null, 'Waiting for the overlay…']; paint(); };
+    ws.onopen = function () { tries = 0; up = true; ws.send(JSON.stringify({ join: room(), in: 6, out: 5 })); raw({ t: 'hello' }); cs = [null, 'Waiting for the club…']; paint(); };
     ws.onmessage = function (e) { recv(parse(e.data)); };
     ws.onclose = function () { up = false; tries++; cs = [false, 'Reconnecting…']; paint(); T = setTimeout(start, Math.min(12000, 1200 * tries)); };
     ws.onerror = function () { };
@@ -40,7 +40,7 @@ var PANEL = (function () {
     var live = st && Date.now() - lastSeen < 20000, d = $('d1'), s = $('s1'); if (!d) return;
     if (live) { d.className = 'dot ok'; s.textContent = 'Connected · ' + (st.cnt ? st.cnt.total : 0) + ' inside'; }
     else if (cs[0] === false) { d.className = 'dot'; s.textContent = cs[1]; }
-    else { d.className = 'dot warn'; s.textContent = cs[1] || 'Waiting for the overlay…'; }
+    else { d.className = 'dot warn'; s.textContent = cs[1] || 'Waiting for the club…'; }
   }
   setInterval(function () { paint(); if (up && Date.now() - lastSeen > 9000) raw({ t: 'hello' }); }, 3000);
   /* each panel has its own PIN (not case-sensitive); the main control PIN also opens it. Remembered on this device */
