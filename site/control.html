@@ -155,7 +155,8 @@ document.getElementById('pinbtn').onclick=go;document.getElementById('pinin').on
 var $=function(i){return document.getElementById(i)},LS=window.localStorage;
 function ld(k,d){try{var v=LS.getItem('vnnctl_'+k);return v==null?d:v}catch(e){return d}}function sv(k,v){try{LS.setItem('vnnctl_'+k,v)}catch(e){}}
 var Q=new URLSearchParams(location.search);
-var C={session:Q.get('session')||ld('session',''),pin:Q.get('pin')||ld('pin',''),relay:Q.get('relay')||ld('relay','')};
+/* a link with a session ID is the source of truth: leftover PIN or relay settings saved on this device are ignored so the panel always lands in the overlay's room */
+var QS=Q.get('session'),C=QS?{session:QS,pin:Q.get('pin')||'',relay:Q.get('relay')||''}:{session:ld('session',''),pin:ld('pin',''),relay:ld('relay','')};if(QS){sv('session',C.session);sv('pin',C.pin);sv('relay',C.relay)}
 var me=Math.random().toString(36).slice(2,8),ws=null,bc=null,up=false,tries=0,T=null,st=null,lastSeen=0,pend={},seq=0;
 function room(){return 'vnn-'+(C.session||'local')+(C.pin?'-'+C.pin:'')}
 function toast(t,k){var e=$('toast');e.textContent=t;e.className='on '+(k||'');clearTimeout(toast.t);toast.t=setTimeout(function(){e.className=''},2200)}

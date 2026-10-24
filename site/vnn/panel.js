@@ -4,7 +4,8 @@ var PANEL = (function () {
   var Q = new URLSearchParams(location.search);
   function ld(k, d) { try { var v = localStorage.getItem('vnnctl_' + k); return v == null ? d : v; } catch (e) { return d; } }
   function sv(k, v) { try { localStorage.setItem('vnnctl_' + k, v); } catch (e) { } }
-  var C = { session: Q.get('session') || ld('session', ''), pin: Q.get('pin') || ld('pin', ''), relay: Q.get('relay') || ld('relay', '') };
+  var QS = Q.get('session'), C = QS ? { session: QS, pin: Q.get('pin') || '', relay: Q.get('relay') || '' } : { session: ld('session', ''), pin: ld('pin', ''), relay: ld('relay', '') }; /* the link wins over anything saved on this device */
+  if (QS) { sv('session', C.session); sv('pin', C.pin); sv('relay', C.relay); }
   if (Q.get('session')) sv('session', C.session);
   var ROLE = '', BY = '', me = Math.random().toString(36).slice(2, 8), ws = null, bc = null, up = false, tries = 0, T = null, st = null, lastSeen = 0, pend = {}, seq = 0, hooks = [];
   function room() { return 'vnn-' + (C.session || 'local') + (C.pin ? '-' + C.pin : ''); }
