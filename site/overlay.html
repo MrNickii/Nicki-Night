@@ -1943,7 +1943,10 @@ var VNNA = (function () {
       var allE = Object.keys(EARN.items), nE = allE.filter(function (i) { return itemEarned(u, i); }).length, left = allE.filter(function (i) { return !itemEarned(u, i); });
       if (!left.length) { say(u, '\uD83D\uDD13 Everything unlocked \u2014 you did it all', 4200, true); return; }
       var hs = {}; left.forEach(function (i) { hs[EARN.items[i]] = 1; }); var ks = Object.keys(hs), hk = ks[Math.floor(Math.random() * ks.length)];
-      say(u, '\uD83D\uDD13 ' + nE + '/' + allE.length + ' \u00b7 ' + EARN.tasks[hk], 4800); return;
+      var mine = allE.filter(function (i) { return itemEarned(u, i); }).map(itemName);
+      if (mine.length) { say(u, '\uD83D\uDD13 ' + nE + '/' + allE.length + ' unlocked \u00b7 ' + mine.slice(-3).join(', ') + (mine.length > 3 ? ' +' + (mine.length - 3) : ''), 5000); setTimeout(function () { if (u.inside) say(u, '\uD83D\uDCA1 ' + EARN.tasks[hk], 5000); }, 5200); }
+      else say(u, '\uD83D\uDD13 0/' + allE.length + ' \u00b7 ' + EARN.tasks[hk], 5200);
+      return;
     }
     if (cmd === '!code') {
       var cw = rest.toLowerCase().replace(/[^a-z0-9]/g, ''), ct = Object.keys(S.codes).filter(function (t) { return S.codes[t].on && S.codes[t].word === cw; })[0];
@@ -2983,7 +2986,7 @@ var VNNA = (function () {
   }
 
   /* ---------- tips strip ---------- */
-  var TIPS = [['Type', '!enter', 'to join the club'], ['Pick a move:', '!dance', 'groove · pump · wave · shuffle · bboy · twerk · snake'], ['Change your fit:', '!look', 'varsity black cargo green ankle'], ['House specials:', '!starships', '· !cybertruck · !daq · !barbz'], ['Grab a drink:', '!bar', '· !menu shows the specials · !cheers'], ['Back to dancing:', '!floor', '· !leave any time']], ti = 0;
+  var TIPS = [['Type', '!enter', 'to walk into the club'], ['Pick a move:', '!dance', 'groove · pump · wave · shuffle · bboy · twerk · snake'], ['Your outfit:', '!look', '· build yours in the Style Studio (link in bio)'], ['Thirsty?', '!bar', '· !menu for tonight\u2019s specials · !cheers'], ['House specials:', '!starships', '· !cybertruck · !daq · !barbz'], ['Locked outfits?', '!earned', 'shows your progress + a hint'], ['Heard a secret code?', '!code', 'word'], ['Chat to stay up front ·', '!floor', 'to dance · !leave any time']], ti = 0;
   function tip() {
     var c = $('cmd'), t = TIPS[ti++ % TIPS.length]; c.innerHTML = '<span>' + t[0] + ' <b>' + t[1] + '</b> ' + t[2] + '</span>';
   }

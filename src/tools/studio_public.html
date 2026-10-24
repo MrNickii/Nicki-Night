@@ -100,6 +100,23 @@ button{font-family:inherit}
 #boot{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;font-weight:800;color:var(--pink2);transition:opacity .5s}
 #boot.off{opacity:0;pointer-events:none}
 #boot b{font-size:30px;color:#fff;text-shadow:0 0 18px #ff2f9e}
+#howbtn{margin-top:12px;border:1px solid #ff6cc0;background:#2a1238cc;color:#fff;border-radius:999px;padding:9px 18px;font-weight:800;font-size:15px;cursor:pointer}
+#howto{position:fixed;inset:0;z-index:45;background:#000c;display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:auto}
+#howto.on{display:flex}
+#howto .gbox{max-width:640px;width:100%;background:#1d0d29;border:1px solid #ff6cc0;border-radius:24px;padding:20px 20px 16px;box-shadow:0 0 40px #ff2f9e55;margin:auto 0}
+#howto .gtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+#howto h2{margin:0;font-size:24px}#howto h2 b{color:var(--pink2)}
+#howto .gx{border:0;background:#ffffff1f;color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;flex:none}
+.g-sec{margin:14px 0 4px}.g-sec h3{margin:0 0 8px;font-size:18px;color:var(--gold)}
+.g-sec p{margin:6px 0;line-height:1.5;color:#eadcf7}
+.g-steps{margin:0;padding-left:22px;line-height:1.55;color:#eadcf7}.g-steps li{margin:5px 0}.g-steps b{color:#fff}
+.g-cmds{display:grid;gap:6px}.g-cmds>div{display:flex;gap:10px;align-items:baseline;background:#2a1238;border-radius:12px;padding:8px 10px}
+.g-cmds code,.g-cmds>div>b{flex:0 0 132px;color:var(--pink2);font-weight:900;font-family:inherit;font-size:15px}
+.g-cmds span{color:#eadcf7;font-size:14.5px;line-height:1.35}
+.g-sec code{color:var(--pink2);font-weight:900;font-family:inherit}
+.g-note{font-size:13px;color:#b9a3cf!important}
+.g-list{margin:0;padding-left:20px;line-height:1.55;color:#eadcf7}
+@media (max-width:520px){.g-cmds>div{flex-direction:column;gap:2px}.g-cmds code,.g-cmds>div>b{flex:none}}
 #foot{text-align:center;color:#9d86b3;font-size:12px;margin:18px 12px 0}
 @media (max-width:820px){
  #app{grid-template-columns:1fr}
@@ -117,6 +134,7 @@ button{font-family:inherit}
  <span class="tag">VIRTUAL NICKI NIGHT</span>
  <h1>STYLE <b>STUDIO</b></h1>
  <p>Build your look before the doors open. When the live starts, you'll walk into the club wearing it.</p>
+ <button id="howbtn" type="button">📖 How to play</button>
 </header>
 <div id="steps">
  <div class="st"><i>1</i><span><b>Pick your look.</b> Tap the icons: 👚 tops, 👖 bottoms, 👟 shoes, 💇 hair, 💎 extras, 🎨 skin, 📏 body.</span></div>
@@ -129,12 +147,74 @@ button{font-family:inherit}
   <div id="sbar"><button class="pill hot" id="rnd">🎲 Surprise me</button><button class="pill" id="rst">Start over</button></div>
   <div id="lock"></div>
   <div id="fig"></div>
-  <div id="pst" role="status" aria-live="polite"></div><div id="me"><input type="text" id="h" placeholder="Your @ (optional): see your pic" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="30"><select id="pl" aria-label="Platform"><option value="x">X</option><option value="tiktok">TikTok</option><option value="kick">Kick</option></select></div>
+  <div id="pst" role="status" aria-live="polite"></div><div id="me"><input type="text" id="h" placeholder="Your @ (optional): see your pic" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="30"><select id="pl" aria-label="Platform"><option value="x">X</option><option value="kick">Kick</option></select></div>
  </section>
  <section id="panel" aria-label="Wardrobe"><nav id="cats"></nav><div id="opts"></div></section>
 </main>
 <p id="foot">Nothing to sign up for and nothing to download. Your @ is only used to show your public profile picture on this page (pictures via <a href="https://unavatar.io" target="_blank" rel="noopener" style="color:inherit">unavatar.io</a> and FxTwitter).</p>
 <div id="bar"><div id="barin"><div id="cmd" aria-label="Your look command"></div><button id="copy">Copy my look</button></div></div>
+<div id="howto" role="dialog" aria-modal="true" aria-label="How to play"><div class="gbox"><div class="gtop"><h2>How to <b>play</b></h2><button class="gx" id="hx" aria-label="Close">✕</button></div>
+<section class="g-sec"><h3>✨ Get ready before the show</h3>
+<ol class="g-steps">
+<li><b>Build your look</b> in the Style Studio: top, bottoms, shoes, hair, extras, skin tone and body. Add your @ to see your profile pic on your character.</li>
+<li>Tap <b>Copy my look</b>. Save the line somewhere handy, like your notes.</li>
+<li>Come to the live on <b>X</b> or <b>Kick</b>. Nothing to sign up for, nothing to download.</li>
+</ol></section>
+
+<section class="g-sec"><h3>🪩 Getting in</h3>
+<ol class="g-steps">
+<li>Type <code>!enter</code> in the live chat. Your character walks in through the door.</li>
+<li>Paste your <code>!look …</code> line to change into your outfit. Change it as often as you like.</li>
+<li>Just chat! Your messages pop up in a bubble over your character.</li>
+</ol></section>
+
+<section class="g-sec"><h3>💃 Commands</h3>
+<div class="g-cmds">
+<div><code>!enter</code><span>Walk into the club</span></div>
+<div><code>!look …</code><span>Change your outfit (build it in the Style Studio)</span></div>
+<div><code>!dance</code><span>Dance. Add a move: groove, bounce, rock, shuffle, pump, wave, bboy, twerk, snake</span></div>
+<div><code>!bar</code><span>Head to the bar</span></div>
+<div><code>!drink</code><span>Order a drink: martini, shot, beer, cocktail, champagne, wine</span></div>
+<div><code>!menu</code><span>Show tonight's house specials</span></div>
+<div><code>!starships</code><span>House special: Starships Punch 🚀</span></div>
+<div><code>!cybertruck</code><span>House special: Cybertruck Smash ⚡</span></div>
+<div><code>!daq</code><span>House special: Nicki's Strawberry Daq' 🍓</span></div>
+<div><code>!barbz</code><span>House special: Barbz on the Rocks 🍉</span></div>
+<div><code>!cheers</code><span>Raise your glass (grab a drink first)</span></div>
+<div><code>!floor</code><span>Back to the dance floor</span></div>
+<div><code>!earned</code><span>See how many outfits you've unlocked, plus a hint for the next one</span></div>
+<div><code>!earned @name</code><span>Peek at a friend's unlocks</span></div>
+<div><code>!code word</code><span>Heard a secret code? Type it here</span></div>
+<div><code>!leave</code><span>Head home</span></div>
+</div>
+<p class="g-note">Commands start with <b>!</b> and go in the live chat. They never show up as chat bubbles.</p></section>
+
+<section class="g-sec"><h3>🔓 Unlock more outfits</h3>
+<p>Some pieces wear a little lock 🔒. Each one unlocks by taking part during the live. The riddle on the lock is your hint. Some come quick, some take effort, and a few are secret, so listen for clues from the hosts.</p>
+<p>Type <code>!earned</code> any time to see your progress and get a hint. Pieces with a 👑 are for the VIP list.</p>
+<p class="g-note">Everyone starts fresh each live. Wearing a locked piece shows its riddle, and the rest of your look still works.</p></section>
+
+<section class="g-sec"><h3>🎉 Moments to watch for</h3>
+<div class="g-cmds">
+<div><b>Top 5</b><span>The five biggest chatters take the center stage with medals.</span></div>
+<div><b>Runway</b><span>A few guests model on stage. Vote for best dressed by typing their number.</span></div>
+<div><b>Soul Train</b><span>The crowd splits, the chat runs down the middle, and guests take turns dancing down the line.</span></div>
+<div><b>Chat on the floor</b><span>Your messages light up across the whole dance floor.</span></div>
+<div><b>House specials</b><span>Order a special and watch it go off.</span></div>
+<div><b>VIP lounge</b><span>Upper right, for the VIP list.</span></div>
+<div><b>Last call</b><span>At the end everyone heads out and a thank-you card shows the night's highlights.</span></div>
+</div></section>
+
+<section class="g-sec"><h3>💗 Good to know</h3>
+<ul class="g-list">
+<li>Quiet for a while and you drift to the back. Chat and you're back up front.</li>
+<li>When the club gets busy, characters get a little smaller so everyone fits.</li>
+<li>Links, phone numbers and filtered words never show on screen.</li>
+<li>Be kind. The hosts can remove anyone who isn't.</li>
+<li>Lights can flash during drops. Take care if that bothers you.</li>
+</ul></section>
+
+</div></div>
 <div id="done" role="dialog" aria-modal="true"><div class="box"><h2>Copied! <b>You're on the list.</b></h2>
  <ol><li>Keep this line handy (it's on your clipboard).</li><li>When <b>Virtual Nicki Night</b> goes live on X or Kick, <b>paste it in the live chat</b>.</li><li>You'll walk into the club wearing your look, with your profile picture as your face.</li></ol>
  <button id="ok">Got it</button></div></div>
@@ -334,6 +414,7 @@ button{font-family:inherit}
     sel.shoes = pk(CAT.shoes.filter(isFree)).id; sel.shoesColor = Math.random() < .5 ? pk(CLR).id : null; sel.skin = pk(CAT.skin).id; sel.hair = pk(CAT.hair.styles.filter(isFree)).id; sel.hairColor = pk(HC).id;
     sel.acc = Math.random() < .7 ? [pk(ITEMS.filter(isFree)).id] : []; sel.accColor = pk(AC).id; sel.height = pk(CAT.heights).id; sel.body = pk(CAT.bodies); all();
   };
+  $('howbtn').onclick = function () { $('howto').classList.add('on'); }; $('hx').onclick = function () { $('howto').classList.remove('on'); }; $('howto').onclick = function (e) { if (e.target === this) this.classList.remove('on'); };
   $('rst').onclick = function () { sel = fresh(); all(); };
   function copied() { $('done').classList.add('on'); }
   $('copy').onclick = function () {

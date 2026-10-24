@@ -14,32 +14,76 @@ button.c{cursor:pointer;margin:2px 3px 2px 0}button.c.ok{background:var(--pink);
 .nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}.nav a{color:var(--txt);text-decoration:none;background:var(--card2);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:700}
 .step{display:flex;gap:12px;background:var(--card2);border-radius:14px;padding:12px;margin:8px 0}.step i{flex:none;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7a2bd6,#ff2f9e);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800}
 @media (max-width:520px){.r{flex-direction:column;gap:4px}.r .k{min-width:0}}
+
+.g-sec{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}.g-sec h3{margin:0 0 8px;font-size:19px;letter-spacing:0;text-transform:none;color:var(--gold)}
+.g-steps{margin:0;padding-left:22px}.g-steps li{margin:6px 0}.g-steps b{color:#fff}
+.g-cmds{display:grid;gap:6px}.g-cmds>div{display:flex;gap:12px;align-items:baseline;background:var(--card2);border-radius:12px;padding:8px 10px}
+.g-cmds code,.g-cmds>div>b{flex:0 0 140px;color:var(--pink2);white-space:nowrap}.g-cmds>div>b{font-weight:900}
+.g-cmds span{color:#eadcf7}.g-note{font-size:13.5px;color:var(--dim)}.g-list{margin:0;padding-left:20px}
+@media (max-width:520px){.g-cmds>div{flex-direction:column;gap:3px}.g-cmds code,.g-cmds>div>b{flex:none}}
 </style></head><body><div class="w">
-<h1>VIRTUAL <b>NICKI NIGHT</b></h1><p class="sub">Your own animated character in the club. Your chat messages are your controls. No app, no download.</p>
-<a class="btn" href="./">Style your outfit now</a>
-<div class="card"><h2>Get ready (before the show)</h2>
-<div class="step"><i>1</i><div><b>Style your look.</b> Open the Style Studio link, pick your top, bottoms, shoes, hair and extras, then tap <b>Copy my look</b>. Add your @ handle to see your profile pic on your character.</div></div>
-<div class="step"><i>2</i><div><b>Save your command.</b> Paste it in your notes. It looks like <button class="c" data-copy="!look varsity black cargo green">!look varsity black cargo green</button></div></div>
-<div class="step"><i>3</i><div><b>Come to the live.</b> The show runs in the live chat on X, TikTok or Kick. You do not need to sign up for anything.</div></div></div>
-<div class="card"><h2>During the show</h2>
-<div class="step"><i>1</i><div>Type <button class="c" data-copy="!enter">!enter</button> in the live chat. Your character walks in through the door.</div></div>
-<div class="step"><i>2</i><div>Paste your <button class="c" data-copy="!look …">!look …</button> command to change into your outfit. You can change it any time.</div></div>
-<div class="step"><i>3</i><div>Dance, grab a drink, chat. Your messages pop up as bubbles over your character.</div></div>
-<h3>Commands</h3>
-<div class="r"><div class="k"><button class="c" data-copy="!enter">!enter</button></div><div class="t">Join the club</div></div><div class="r"><div class="k"><button class="c" data-copy="!leave">!leave</button></div><div class="t">Leave</div></div><div class="r"><div class="k"><button class="c" data-copy="!look …">!look …</button></div><div class="t">Change what you wear (build it in the Style Studio)</div></div><div class="r"><div class="k"><button class="c" data-copy="!dance">!dance</button></div><div class="t">Dance. Add a name to pick: groove, bounce, shuffle, pump, wave, bboy, twerk, snake</div></div><div class="r"><div class="k"><button class="c" data-copy="!bar">!bar</button></div><div class="t">Walk to a bar</div></div><div class="r"><div class="k"><button class="c" data-copy="!drink">!drink</button></div><div class="t">Get a drink (martini, shot, beer, cocktail, champagne, wine)</div></div><div class="r"><div class="k"><button class="c" data-copy="!starships">!starships</button></div><div class="t">House special: Starships Punch (rocket blast-off)</div></div><div class="r"><div class="k"><button class="c" data-copy="!cybertruck">!cybertruck</button></div><div class="t">House special: Cybertruck Smash (lightning smash)</div></div><div class="r"><div class="k"><button class="c" data-copy="!daq">!daq</button></div><div class="t">House special: Nicki's Strawberry Daq' (frosty)</div></div><div class="r"><div class="k"><button class="c" data-copy="!barbz">!barbz</button></div><div class="t">House special: Barbz on the Rocks (ice and hearts)</div></div><div class="r"><div class="k"><button class="c" data-copy="!menu">!menu</button></div><div class="t">Show the drink specials menu on screen</div></div><div class="r"><div class="k"><button class="c" data-copy="!cheers">!cheers</button></div><div class="t">Raise your glass</div></div><div class="r"><div class="k"><button class="c" data-copy="!floor">!floor</button></div><div class="t">Back to the dance floor</div></div><div class="r"><div class="k"><button class="c" data-copy="!earned">!earned</button></div><div class="t">Your unlock progress and a riddle</div></div><div class="r"><div class="k"><button class="c" data-copy="!earned @name">!earned @name</button></div><div class="t">See what someone has unlocked</div></div><div class="r"><div class="k"><button class="c" data-copy="!code word">!code word</button></div><div class="t">Enter a secret code if one is shared on stream</div></div><div class="r"><div class="k"><code>1 2 3 …</code></div><div class="t">Vote by number when a runway is open</div></div>
-<p class="tip">Commands must start with the exclamation mark and go in the live chat.</p></div>
-<div class="card"><h2>Unlock more outfits</h2><p>Some pieces show a lock 🔒. Each one has its own challenge you complete <b>during the live</b>. The riddle on the lock hints at what it takes. Some are quick, some take real effort, and a few are secret, so listen for hints from Nicki and the hosts. Everyone starts fresh every live.</p>
-<p>Trying to wear a locked piece shows its riddle. The rest of your command still works.</p></div>
-<div class="card"><h2>What you will see</h2><ul>
-<li><b>Dance floor and bars:</b> that is you and everyone else. Quiet for about 5 minutes and you drift to the back. Chat and you are back up front.</li>
-<li><b>Top 5:</b> the five biggest chatters step onto the center stage with gold, silver and bronze medals.</li>
-<li><b>Runway:</b> a few guests model on stage. Vote for best dressed by typing their number.</li>
-<li><b>VIP lounge:</b> upper right, for the host's VIP list.</li>
-<li><b>Last call:</b> at the end everyone heads out and a thank-you card shows the night's highlights.</li></ul></div>
-<div class="card"><h2>Good to know</h2><ul>
-<li>If you are not on the dance floor, your picture may be a letter. Some platforms (Kick) do not share profile pics.</li>
-<li>Links, phone numbers and filtered words never show as bubbles.</li>
-<li>Be kind. The hosts can remove anyone who is not.</li>
-<li>Lights can flash during drops. The strobe is limited, but take care if that bothers you.</li></ul>
-<a class="btn" href="./">Open the Style Studio</a></div>
-</div><script>document.addEventListener('click',function(e){var b=e.target.closest('button.c');if(!b)return;var t=b.dataset.copy||b.textContent;try{navigator.clipboard.writeText(t)}catch(x){}b.classList.add('ok');setTimeout(function(){b.classList.remove('ok')},900)})</script></body></html>
+<h1>VIRTUAL <b>NICKI NIGHT</b></h1>
+<p class="sub">Your own animated character in the club. Your chat messages are your controls. No app, no download.</p>
+<a class="btn" href="./">✨ Style your look now</a>
+<section class="g-sec"><h3>✨ Get ready before the show</h3>
+<ol class="g-steps">
+<li><b>Build your look</b> in the Style Studio: top, bottoms, shoes, hair, extras, skin tone and body. Add your @ to see your profile pic on your character.</li>
+<li>Tap <b>Copy my look</b>. Save the line somewhere handy, like your notes.</li>
+<li>Come to the live on <b>X</b> or <b>Kick</b>. Nothing to sign up for, nothing to download.</li>
+</ol></section>
+
+<section class="g-sec"><h3>🪩 Getting in</h3>
+<ol class="g-steps">
+<li>Type <code>!enter</code> in the live chat. Your character walks in through the door.</li>
+<li>Paste your <code>!look …</code> line to change into your outfit. Change it as often as you like.</li>
+<li>Just chat! Your messages pop up in a bubble over your character.</li>
+</ol></section>
+
+<section class="g-sec"><h3>💃 Commands</h3>
+<div class="g-cmds">
+<div><code>!enter</code><span>Walk into the club</span></div>
+<div><code>!look …</code><span>Change your outfit (build it in the Style Studio)</span></div>
+<div><code>!dance</code><span>Dance. Add a move: groove, bounce, rock, shuffle, pump, wave, bboy, twerk, snake</span></div>
+<div><code>!bar</code><span>Head to the bar</span></div>
+<div><code>!drink</code><span>Order a drink: martini, shot, beer, cocktail, champagne, wine</span></div>
+<div><code>!menu</code><span>Show tonight's house specials</span></div>
+<div><code>!starships</code><span>House special: Starships Punch 🚀</span></div>
+<div><code>!cybertruck</code><span>House special: Cybertruck Smash ⚡</span></div>
+<div><code>!daq</code><span>House special: Nicki's Strawberry Daq' 🍓</span></div>
+<div><code>!barbz</code><span>House special: Barbz on the Rocks 🍉</span></div>
+<div><code>!cheers</code><span>Raise your glass (grab a drink first)</span></div>
+<div><code>!floor</code><span>Back to the dance floor</span></div>
+<div><code>!earned</code><span>See how many outfits you've unlocked, plus a hint for the next one</span></div>
+<div><code>!earned @name</code><span>Peek at a friend's unlocks</span></div>
+<div><code>!code word</code><span>Heard a secret code? Type it here</span></div>
+<div><code>!leave</code><span>Head home</span></div>
+</div>
+<p class="g-note">Commands start with <b>!</b> and go in the live chat. They never show up as chat bubbles.</p></section>
+
+<section class="g-sec"><h3>🔓 Unlock more outfits</h3>
+<p>Some pieces wear a little lock 🔒. Each one unlocks by taking part during the live. The riddle on the lock is your hint. Some come quick, some take effort, and a few are secret, so listen for clues from the hosts.</p>
+<p>Type <code>!earned</code> any time to see your progress and get a hint. Pieces with a 👑 are for the VIP list.</p>
+<p class="g-note">Everyone starts fresh each live. Wearing a locked piece shows its riddle, and the rest of your look still works.</p></section>
+
+<section class="g-sec"><h3>🎉 Moments to watch for</h3>
+<div class="g-cmds">
+<div><b>Top 5</b><span>The five biggest chatters take the center stage with medals.</span></div>
+<div><b>Runway</b><span>A few guests model on stage. Vote for best dressed by typing their number.</span></div>
+<div><b>Soul Train</b><span>The crowd splits, the chat runs down the middle, and guests take turns dancing down the line.</span></div>
+<div><b>Chat on the floor</b><span>Your messages light up across the whole dance floor.</span></div>
+<div><b>House specials</b><span>Order a special and watch it go off.</span></div>
+<div><b>VIP lounge</b><span>Upper right, for the VIP list.</span></div>
+<div><b>Last call</b><span>At the end everyone heads out and a thank-you card shows the night's highlights.</span></div>
+</div></section>
+
+<section class="g-sec"><h3>💗 Good to know</h3>
+<ul class="g-list">
+<li>Quiet for a while and you drift to the back. Chat and you're back up front.</li>
+<li>When the club gets busy, characters get a little smaller so everyone fits.</li>
+<li>Links, phone numbers and filtered words never show on screen.</li>
+<li>Be kind. The hosts can remove anyone who isn't.</li>
+<li>Lights can flash during drops. Take care if that bothers you.</li>
+</ul></section>
+
+<a class="btn" href="./">Open the Style Studio</a>
+</div></body></html>
