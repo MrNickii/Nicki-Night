@@ -278,7 +278,8 @@ var RIG = (function () {
     arms.forEach(function (a) { if (!a.front) drawArm(a); });
     function drawPelvis(name, alpha, mir) { ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr); ctx.scale((mir ? -1 : 1) * rp * PK, 1); ctx.translate(-pelC[0], -pelC[1]); drawRot(ctx, name, pelC[0], pelC[1], 0, false, 1, px); ctx.restore(); }
     function pelvisBlock() {
-    bH = clamp((wH - 0.36) / 0.04, 0, 1); if (bH < 1) drawPelvis('pelvis', 1, false); if (bH > 0) drawPelvis('pelvis34', bH, mirH);
+    /* front and 3/4 views switch cleanly (with a little hysteresis) instead of fading, so two outlines never ghost through each other */
+    ST.vH = ST.vH ? wH > 0.32 : wH > 0.42; bH = ST.vH ? 1 : 0; if (bH < 1) drawPelvis('pelvis', 1, false); if (bH > 0) drawPelvis('pelvis34', bH, mirH);
     if (PART.skirt) {
       var dsp = legs[0].ik.d1 - legs[1].ik.d1, fl = 1 + 0.32 * Math.min(1.4, Math.abs(dsp)), swy = clamp((legs[0].ik.d1 + legs[1].ik.d1) * 0.4, -0.35, 0.35);
       var drawSk = function (name, alpha, mir) { var pt = PART[name]; ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr + swy); ctx.scale((mir ? -1 : 1) * rp * PK * fl, 1); blit(ctx, pt, tier(pt, px), 0, 0, pt.w, pt.h, -pt.piv[0], CFG.skTop); ctx.restore(); };
@@ -302,7 +303,7 @@ var RIG = (function () {
         }
       }
     }
-    var bT = clamp((wT - 0.36) / 0.04, 0, 1); if (bT < 1) drawStrips('torso', 1, false); if (bT > 0) drawStrips('torso34', bT, mirT);
+    ST.vT = ST.vT ? wT > 0.32 : wT > 0.42; var bT = ST.vT ? 1 : 0; if (bT < 1) drawStrips('torso', 1, false); if (bT > 0) drawStrips('torso34', bT, mirT);
     drawRot(ctx, 'neck', nb[0], nb[1], na, false, 1, px);
     if (PART.bacc) { var pt = PART.bacc; ctx.save(); ctx.translate(nodes[0].p[0], nodes[0].p[1] - 22); ctx.rotate(nodes[0].a); ctx.scale(0.8 * cy, 0.8); blit(ctx, pt, tier(pt, px * 0.8), 0, 0, pt.w, pt.h, -pt.piv[0], -pt.piv[1]); ctx.restore(); }
     if (PART.nacc) { var pn = PART.nacc; ctx.save(); ctx.translate(nb[0], nb[1] + CFG.nOff); ctx.rotate(na); ctx.scale(0.62 * cy, 0.62); blit(ctx, pn, tier(pn, px * 0.62), 0, 0, pn.w, pn.h, -pn.piv[0], -pn.piv[1]); ctx.restore(); }

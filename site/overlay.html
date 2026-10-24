@@ -586,7 +586,8 @@ var RIG = (function () {
     arms.forEach(function (a) { if (!a.front) drawArm(a); });
     function drawPelvis(name, alpha, mir) { ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr); ctx.scale((mir ? -1 : 1) * rp * PK, 1); ctx.translate(-pelC[0], -pelC[1]); drawRot(ctx, name, pelC[0], pelC[1], 0, false, 1, px); ctx.restore(); }
     function pelvisBlock() {
-    bH = clamp((wH - 0.36) / 0.04, 0, 1); if (bH < 1) drawPelvis('pelvis', 1, false); if (bH > 0) drawPelvis('pelvis34', bH, mirH);
+    /* front and 3/4 views switch cleanly (with a little hysteresis) instead of fading, so two outlines never ghost through each other */
+    ST.vH = ST.vH ? wH > 0.32 : wH > 0.42; bH = ST.vH ? 1 : 0; if (bH < 1) drawPelvis('pelvis', 1, false); if (bH > 0) drawPelvis('pelvis34', bH, mirH);
     if (PART.skirt) {
       var dsp = legs[0].ik.d1 - legs[1].ik.d1, fl = 1 + 0.32 * Math.min(1.4, Math.abs(dsp)), swy = clamp((legs[0].ik.d1 + legs[1].ik.d1) * 0.4, -0.35, 0.35);
       var drawSk = function (name, alpha, mir) { var pt = PART[name]; ctx.save(); ctx.globalAlpha = base0 * alpha; ctx.translate(pelC[0], pelC[1]); ctx.rotate(pr + swy); ctx.scale((mir ? -1 : 1) * rp * PK * fl, 1); blit(ctx, pt, tier(pt, px), 0, 0, pt.w, pt.h, -pt.piv[0], CFG.skTop); ctx.restore(); };
@@ -610,7 +611,7 @@ var RIG = (function () {
         }
       }
     }
-    var bT = clamp((wT - 0.36) / 0.04, 0, 1); if (bT < 1) drawStrips('torso', 1, false); if (bT > 0) drawStrips('torso34', bT, mirT);
+    ST.vT = ST.vT ? wT > 0.32 : wT > 0.42; var bT = ST.vT ? 1 : 0; if (bT < 1) drawStrips('torso', 1, false); if (bT > 0) drawStrips('torso34', bT, mirT);
     drawRot(ctx, 'neck', nb[0], nb[1], na, false, 1, px);
     if (PART.bacc) { var pt = PART.bacc; ctx.save(); ctx.translate(nodes[0].p[0], nodes[0].p[1] - 22); ctx.rotate(nodes[0].a); ctx.scale(0.8 * cy, 0.8); blit(ctx, pt, tier(pt, px * 0.8), 0, 0, pt.w, pt.h, -pt.piv[0], -pt.piv[1]); ctx.restore(); }
     if (PART.nacc) { var pn = PART.nacc; ctx.save(); ctx.translate(nb[0], nb[1] + CFG.nOff); ctx.rotate(na); ctx.scale(0.62 * cy, 0.62); blit(ctx, pn, tier(pn, px * 0.62), 0, 0, pn.w, pn.h, -pn.piv[0], -pn.piv[1]); ctx.restore(); }
@@ -863,25 +864,25 @@ var VNNA = (function () {
         { id: 'bandana', name: 'Bandana', slot: 'head', sheet: 'ACC-HEAD', key: 'HEADBAND_BANDANA', fit: 'any' },
         { id: 'bucket', name: 'Bucket hat', slot: 'head', sheet: 'ACC-HEAD', key: 'BUCKET_HAT', fit: 'any' },
         { id: 'bow', name: 'Hair bow', slot: 'head', sheet: 'ACC-HEAD', key: 'HAIR_BOW', fit: 'fem' },
-        { id: 'hoops', name: 'Hoops', slot: 'ears', sheet: 'ACC-HEAD', key: 'HOOP_EARRINGS', fit: 'any' },
-        { id: 'cowboyhat', name: 'Cowboy hat', slot: 'head', sheet: 'ACC-HEAD-2', key: 'COWBOY_HAT', unlock: 'earned', fit: 'any' },
-        { id: 'fedora', name: 'Fedora', slot: 'head', sheet: 'ACC-HEAD-2', key: 'FEDORA_HAT', unlock: 'earned', fit: 'any' },
-        { id: 'beret', name: 'Artist beret', slot: 'head', sheet: 'ACC-HEAD-2', key: 'ARTIST_BERET', fit: 'any' },
+        { id: 'hoops', name: 'Hoops', slot: 'ears', sheet: 'ACC-HEAD', key: 'HOOP_EARRINGS', fit: 'any', sc: 0.8, an: 't', pair: 1, sp: 8, dy: 34 },
+        { id: 'cowboyhat', name: 'Cowboy hat', slot: 'head', sheet: 'ACC-HEAD-2', key: 'COWBOY_HAT', unlock: 'earned', fit: 'any', sc: 0.84, an: 'b' },
+        { id: 'fedora', name: 'Fedora', slot: 'head', sheet: 'ACC-HEAD-2', key: 'FEDORA_HAT', unlock: 'earned', fit: 'any', sc: 0.92, an: 'b' },
+        { id: 'beret', name: 'Artist beret', slot: 'head', sheet: 'ACC-HEAD-2', key: 'ARTIST_BERET', fit: 'any', sc: 0.84, an: 'b' },
         { id: 'durag', name: 'Silk durag', slot: 'head', sheet: 'ACC-HEAD-2', key: 'SILK_DURAG', unlock: 'earned', fit: 'any' },
-        { id: 'sportvisor', name: 'Sport visor', slot: 'head', sheet: 'ACC-HEAD-2', key: 'SPORT_VISOR', fit: 'any' },
-        { id: 'orbitglasses', name: 'Orbit glasses', slot: 'face', sheet: 'ACC-HEAD-2', key: 'ORBIT_GLASSES', unlock: 'vip', fit: 'any' },
-        { id: 'cateye', name: 'Cat-eye glasses', slot: 'face', sheet: 'ACC-HEAD-2', key: 'CATEYE_GLASSES', unlock: 'earned', fit: 'any' },
+        { id: 'sportvisor', name: 'Sport visor', slot: 'head', sheet: 'ACC-HEAD-2', key: 'SPORT_VISOR', fit: 'any', sc: 0.86, an: 'b' },
+        { id: 'orbitglasses', name: 'Orbit glasses', slot: 'face', sheet: 'ACC-HEAD-2', key: 'ORBIT_GLASSES', unlock: 'vip', fit: 'any', sc: 0.8, an: 'c' },
+        { id: 'cateye', name: 'Cat-eye glasses', slot: 'face', sheet: 'ACC-HEAD-2', key: 'CATEYE_GLASSES', unlock: 'earned', fit: 'any', sc: 0.82, an: 'c' },
         { id: 'halo', name: 'Halo band', slot: 'head', sheet: 'ACC-HEAD-2', key: 'HALO_BAND', unlock: 'vip', fit: 'any' },
         { id: 'airtrucker', name: 'Airbrush Trucker', slot: 'head', sheet: 'ACC-HEAD-3', key: 'TRUCKER_HAT', unlock: 'earned', fit: 'any', full: 1 },
         { id: 'fuzzybucket', name: 'Fuzzy Bucket', slot: 'head', sheet: 'ACC-HEAD-3', key: 'FUZZY_BUCKET', unlock: 'earned', fit: 'any', full: 1 },
         { id: 'citysnap', name: 'City Snapback', slot: 'head', sheet: 'ACC-HEAD-3', key: 'CITY_SNAPBACK', unlock: 'earned', fit: 'any', full: 1 },
         { id: 'satinscarf', name: 'Satin Headscarf', slot: 'head', sheet: 'ACC-HEAD-3', key: 'SATIN_HEADSCARF', unlock: 'earned', fit: 'any', full: 1 },
         { id: 'pinkbeanie', name: 'Pinkprint Beanie', slot: 'head', sheet: 'ACC-HEAD-3', key: 'PINKPRINT_BEANIE', unlock: 'earned', fit: 'any', full: 1 },
-        { id: 'nightshades', name: 'Night Shades', slot: 'face', sheet: 'ACC-HEAD-3', key: 'NIGHT_SHADES', unlock: 'earned', fit: 'any', full: 1 },
-        { id: 'crystalcat', name: 'Crystal Cat-eye', slot: 'face', sheet: 'ACC-HEAD-3', key: 'CRYSTAL_CATEYE', unlock: 'earned', fit: 'any', full: 1 },
+        { id: 'nightshades', name: 'Night Shades', slot: 'face', sheet: 'ACC-HEAD-3', key: 'NIGHT_SHADES', unlock: 'earned', fit: 'any', full: 1, sc: 0.86, an: 'c' },
+        { id: 'crystalcat', name: 'Crystal Cat-eye', slot: 'face', sheet: 'ACC-HEAD-3', key: 'CRYSTAL_CATEYE', unlock: 'earned', fit: 'any', full: 1, sc: 0.86, an: 'c' },
         { id: 'heartcrown', name: 'Heart Crown', slot: 'head', sheet: 'ACC-HEAD-3', key: 'HEART_CROWN', unlock: 'earned', fit: 'any', full: 1 },
         { id: 'heartstud', name: 'Heart Stud', slot: 'ears', sheet: 'ACC-HEAD-3', key: 'HEART_STUD', unlock: 'earned', fit: 'any', full: 1 },
-        { id: 'gemstuds', name: 'Gem studs', slot: 'ears', sheet: 'ACC-HEAD-2', key: 'GEM_STUDS', fit: 'any' },
+        { id: 'gemstuds', name: 'Gem studs', slot: 'ears', sheet: 'ACC-HEAD-2', key: 'GEM_STUDS', fit: 'any', sc: 0.46, an: 'c', pair: 1, sp: 34, dy: -34 },
         { id: 'chain', name: 'Gold chain', slot: 'neck', key: 'NECKLACE', fit: 'any' },
         { id: 'pearls', name: 'Pearls', slot: 'neck', key: 'PEARLS', fit: 'fem' },
         { id: 'choker', name: 'Choker', slot: 'neck', key: 'CHOKER', fit: 'fem' },
@@ -896,12 +897,12 @@ var VNNA = (function () {
         { id: 'woolcap', name: 'Wool Flat Cap', slot: 'head', sheet: 'ACC-HEAD-4', key: 'WOOL_FLAT_CAP', fit: 'masc' },
         { id: 'revsnap', name: 'Reverse Snapback', slot: 'head', sheet: 'ACC-HEAD-4', key: 'REVERSE_SNAPBACK', fit: 'masc', unlock: 'earned' },
         { id: 'rimless', name: 'Rimless Frames', slot: 'face', sheet: 'ACC-HEAD-4', key: 'RIMLESS_FRAMES', fit: 'masc', unlock: 'earned' },
-        { id: 'clawclip', name: 'Sculpted Claw Clip', slot: 'head', sheet: 'ACC-HEAD-4', key: 'SCULPTED_CLAW_CLIP', fit: 'fem' },
-        { id: 'scrunchie', name: 'Organza Scrunchie', slot: 'head', sheet: 'ACC-HEAD-4', key: 'ORGANZA_SCRUNCHIE', fit: 'fem', unlock: 'earned' },
-        { id: 'barrettes', name: 'Crystal Barrettes', slot: 'head', sheet: 'ACC-HEAD-4', key: 'CRYSTAL_BARRETTES', fit: 'fem', unlock: 'vip' },
+        { id: 'clawclip', name: 'Sculpted Claw Clip', slot: 'head', sheet: 'ACC-HEAD-4', key: 'SCULPTED_CLAW_CLIP', fit: 'fem', sc: 0.68, an: 'c' },
+        { id: 'scrunchie', name: 'Organza Scrunchie', slot: 'head', sheet: 'ACC-HEAD-4', key: 'ORGANZA_SCRUNCHIE', fit: 'fem', unlock: 'earned', sc: 0.74, an: 'c' },
+        { id: 'barrettes', name: 'Crystal Barrettes', slot: 'head', sheet: 'ACC-HEAD-4', key: 'CRYSTAL_BARRETTES', fit: 'fem', unlock: 'vip', sc: 0.6, an: 'c' },
         { id: 'braidband', name: 'Braided Headband', slot: 'head', sheet: 'ACC-HEAD-4', key: 'BRAIDED_HEADBAND', fit: 'any' },
-        { id: 'earcuffs', name: 'Chain Ear Cuffs', slot: 'ears', sheet: 'ACC-HEAD-4', key: 'CHAIN_EAR_CUFFS', fit: 'any', unlock: 'vip' },
-        { id: 'templegems', name: 'Temple Crystals', slot: 'face', sheet: 'ACC-HEAD-4', key: 'TEMPLE_CRYSTALS', fit: 'any', unlock: 'vip' },
+        { id: 'earcuffs', name: 'Chain Ear Cuffs', slot: 'ears', sheet: 'ACC-HEAD-4', key: 'CHAIN_EAR_CUFFS', fit: 'any', unlock: 'vip', sc: 0.8, an: 't', pair: 1, sp: 4, dy: 6 },
+        { id: 'templegems', name: 'Temple Crystals', slot: 'face', sheet: 'ACC-HEAD-4', key: 'TEMPLE_CRYSTALS', fit: 'any', unlock: 'vip', sc: 0.86, an: 'c' },
         { id: 'crown', name: 'Crown', slot: 'head', sheet: 'ACC-SPECIAL', key: 'CROWN', full: 1, unlock: 'nicki', hidden: 1, fit: 'any' }
       ],
       colors: [{ id: 'gold', name: 'Gold', hex: '#f2c14e' }, { id: 'pink', name: 'Pink', hex: '#ff4fb0' }, { id: 'silver', name: 'Silver', hex: '#cfd6e6' }, { id: 'black', name: 'Black', hex: '#1b1426' }]
@@ -1013,6 +1014,55 @@ var VNNA = (function () {
   var TOPK = { torso: 'torso', torso34: 'torso34', uarm: 'sleeveU', farm: 'sleeveF' }, BOTK = { pelvis: 'pelvis', pelvis34: 'pelvis34', thigh: 'thigh', shin: 'shin' };
   var STRIP = { torso: 1, torso34: 1 }, NAILK = { hand_open: 'NAILS_OPEN', hand_relax: 'NAILS_RELAXED', fist: 'NAILS_FIST' };
   var SCX = { uarm: 0.94, farm: 0.96, thigh: 0.9, shin: 0.93 }, SCU = { hand_open: 1.1, hand_relax: 1.1, fist: 1.08 };
+  /* skin under tops: sleeves hide the arm skin above their hem; sleeved shirts hide the body's sides (armpits) but keep the neckline and a bare belly under a crop top */
+  function clipSkin(x, CW, CH, im, dx, dy, w, h, key) {
+    try {
+      var mk = document.createElement('canvas'); mk.width = CW; mk.height = CH; var mx = mk.getContext('2d', { willReadFrequently: true }); mx.drawImage(im, dx, dy, w, h);
+      var md = mx.getImageData(0, 0, CW, CH).data, X, Y, i, a = function (X, Y) { return md[(Y * CW + X) * 4 + 3] > 140; }, m = Math.round(4 * Q);
+      /* garment shade: its median colour, darkened, so hidden skin turns into the inside of the garment instead of a hole */
+      var rr = [], gg = [], bb = []; for (i = 0; i < md.length; i += 4 * 7) if (md[i + 3] > 240) { rr.push(md[i]); gg.push(md[i + 1]); bb.push(md[i + 2]); }
+      if (!rr.length) return; var mdn = function (q) { q.sort(function (p, q2) { return p - q2; }); return q[q.length >> 1]; }, SR = mdn(rr) * 0.62, SG = mdn(gg) * 0.62, SB = mdn(bb) * 0.62;
+      var sd = x.getImageData(0, 0, CW, CH), D = sd.data, hide = function (j) { D[j] = SR; D[j + 1] = SG; D[j + 2] = SB; };
+      if (key === 'uarm' || key === 'farm') {
+        var bot = [], bs = []; for (X = 0; X < CW; X++) { bot[X] = -1; for (Y = CH - 1; Y >= 0; Y--) if (a(X, Y)) { bot[X] = Y; bs.push(Y); break; } }
+        if (!bs.length) return; bs.sort(function (p, q) { return p - q; }); var med = bs[bs.length >> 1];
+        var aL = [], aR = []; for (Y = 0; Y < CH; Y++) { aL[Y] = -1; aR[Y] = -1; for (X = 0; X < CW; X++) if (a(X, Y)) { if (aL[Y] < 0) aL[Y] = X; aR[Y] = X; } }
+        for (X = 0; X < CW; X++) { var bm = (bot[X] >= 0 ? bot[X] : med) - m; for (Y = 0; Y < bm; Y++) { i = (Y * CW + X) * 4; if (!D[i + 3]) continue; if (aL[Y] >= 0 && X >= aL[Y] - 2 * m && X <= aR[Y] + 2 * m) hide(i); else D[i + 3] = 0; } }
+      } else {
+        var gt = [], gb = [], L = [], Rr = [], cx = CW / 2;
+        for (X = 0; X < CW; X++) { gt[X] = -1; gb[X] = -1; for (Y = 0; Y < CH; Y++) if (a(X, Y)) { if (gt[X] < 0) gt[X] = Y; gb[X] = Y; } }
+        for (Y = 0; Y < CH; Y++) { L[Y] = -1; Rr[Y] = -1; for (X = 0; X < CW; X++) if (a(X, Y)) { if (L[Y] < 0) L[Y] = X; Rr[Y] = X; } }
+        var hb = []; for (X = Math.round(CW * 0.35); X < CW * 0.65; X++) if (gb[X] >= 0) hb.push(gb[X]); hb.sort(function (p, q) { return p - q; }); var crop = hb.length && hb[hb.length >> 1] < CH * 0.72; /* only a real crop top shows a bare belly */
+        for (Y = 0; Y < CH; Y++) for (X = 0; X < CW; X++) {
+          i = (Y * CW + X) * 4; if (!D[i + 3]) continue;
+          var keep = (L[Y] >= 0 && X >= L[Y] - m && X <= Rr[Y] + m && Math.abs(X - cx) < CW * 0.24) || (gt[X] >= 0 && Y < gt[X] + m && Math.abs(X - cx) < CW * 0.3) || (crop && gb[X] >= 0 && Y > gb[X] - m && Math.abs(X - cx) < CW * 0.4);
+          if (!keep) { if (L[Y] >= 0 && X >= L[Y] - 2 * m && X <= Rr[Y] + 2 * m) hide(i); else D[i + 3] = 0; }
+        }
+      }
+      x.putImageData(sd, 0, 0);
+    } catch (e) { }
+  }
+  /* sleeveless shells show their own inside back through the armholes; on a body that space is the shoulder, so cut the shaded interior out and let the skin show */
+  function openArmholes(im) {
+    try {
+      var W = im.width, H = im.height, c = document.createElement('canvas'); c.width = W; c.height = H; var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
+      var d = x.getImageData(0, 0, W, H), D = d.data, i, X, Y, lum = function (j) { return D[j] * 0.3 + D[j + 1] * 0.59 + D[j + 2] * 0.11; }, ls = [];
+      for (Y = Math.round(H * 0.3); Y < H * 0.8; Y += 3) for (X = Math.round(W * 0.38); X < W * 0.62; X += 3) { i = (Y * W + X) * 4; if (D[i + 3] > 240) ls.push(lum(i)); }
+      if (!ls.length) return im; ls.sort(function (p, q) { return p - q; }); var med = ls[ls.length >> 1], cut = med * 0.72; if (med < 70) return im; /* dark garments: the inside already reads as shadow */
+      /* only a large shaded patch at the side that touches an armhole opening is cut, so fold shadows, zips and necklines stay */
+      var YM = Math.round(H * 0.62), lab = new Int32Array(W * YM), minA = W * H * 0.004, k, j, side = function (X) { return Math.abs(X - W / 2) >= W * 0.22; };
+      var dark = function (j) { return D[j * 4 + 3] > 30 && lum(j * 4) < med * 0.74; }, open = function (j) { return D[j * 4 + 3] <= 30; };
+      for (Y = 0; Y < YM; Y++) for (X = 0; X < W; X++) { k = Y * W + X; if (lab[k] || !side(X) || !dark(k)) continue;
+        var comp = [k], st = [k], touch = false; lab[k] = 1;
+        while (st.length) { j = st.pop(); var jx = j % W, jy = (j - jx) / W;
+          for (var o = 0; o < 4; o++) { var nx = jx + (o === 0 ? 1 : o === 1 ? -1 : 0), ny = jy + (o === 2 ? 1 : o === 3 ? -1 : 0); if (nx < 0 || ny < 0 || nx >= W || ny >= YM) continue; var t = ny * W + nx;
+            if (open(t)) touch = true; else if (!lab[t] && side(nx) && dark(t)) { lab[t] = 1; st.push(t); comp.push(t); } } }
+        var big = comp.length >= W * H * 0.012, sl = 0; if (!touch && big) { comp.forEach(function (t) { sl += lum(t * 4); }); sl /= comp.length; }
+        var cy = 0; comp.forEach(function (t) { cy += Math.floor(t / W); }); cy /= comp.length; /* armholes sit high on the body; low patches are folds */
+        if (cy < H * 0.42 && ((touch && comp.length >= minA) || (big && sl < med * 0.62))) comp.forEach(function (t) { D[t * 4 + 3] = 0; }); }
+      x.putImageData(d, 0, 0); return c;
+    } catch (e) { return im; }
+  }
   function longPants(S) { return !!(S.bottom && !S.bottom.skirt && lyr(S.bottom.sheet, 'shin', S.bottom.v)); }
   function composePart(key, S) {
     var layers = [{ sheet: 'BODY-' + S.skinSheet + '-' + BKEY[key], key: key, skin: S.skinRatio }];
@@ -1042,6 +1092,8 @@ var VNNA = (function () {
                 if (top < 0) x.clearRect(cx2, 0, 1, CH); else x.clearRect(cx2, top + Math.round(5 * Q), 1, CH); }
             } catch (e) { }
           }
+          if (ri === 1 && (key === 'torso' || key === 'torso34') && S.top && S.top.col && !S.top.dress && !lyr(S.top.sheet, 'sleeveU', S.top.v)) r = { e: r.e, im: openArmholes(r.im), garment: true, big: r.big };
+          if (ri === 1 && R[0] && !R[0].garment && TOPK[key] && S.top && (key !== 'torso' && key !== 'torso34' || lyr(S.top.sheet, 'sleeveU', S.top.v))) clipSkin(x, c.width, c.height, r.im, dx, dy, w, h, key);
           A.forEach(function (a) { x.drawImage(r.im, dx + a[0], dy + a[1], w, h); });
         }
         x.drawImage(r.im, dx, dy, w, h);
@@ -1114,14 +1166,17 @@ var VNNA = (function () {
     function add(name, e, col, def) { if (!e) return; jobs.push(img(e.f).then(function (im) { out[name] = { canvas: col ? tint(im, col, e.f) : im, def: def(e) }; })); }
     if (A.headItems && A.headItems.length) {
       var c = document.createElement('canvas'); c.width = Math.round(300 * Q); c.height = Math.round(300 * Q); var x = c.getContext('2d'); x.imageSmoothingQuality = 'high';
-      jobs.push(Promise.all(A.headItems.map(function (it) { var e = lyr(it.sheet, it.key); return e ? img(e.f).then(function (im) { return { e: e, im: it.full ? im : tint(im, it.col, e.f) }; }) : null; })).then(function (R) {
-        R.forEach(function (r) { if (r) x.drawImage(r.im, r.e.ox * Q, r.e.oy * Q, r.e.w * Q, r.e.h * Q); });
+      jobs.push(Promise.all(A.headItems.map(function (it) { var e = lyr(it.sheet, it.key); return e ? img(e.f).then(function (im) { return { e: e, im: it.full ? im : tint(im, it.col, e.f), sc: it.sc, an: it.an, pair: it.pair, sp: it.sp, dy: it.dy }; }) : null; })).then(function (R) {
+        /* each piece can be sized down around its anchor: hats keep their brim on the head, earrings hang from the ear, glasses stay centred */
+        R.forEach(function (r) { if (!r) return; var k = r.sc || 1, ay = r.an === 'b' ? 1 : r.an === 't' ? 0 : 0.5, w2 = r.e.w * k, h2 = r.e.h * k, yy = r.e.oy + (r.e.h - h2) * ay + (r.dy || 0);
+          if (r.pair) { /* earrings: each side sized on its own and kept at the ear */ var hw = r.e.w / 2, sw = r.im.width / 2; [0, 1].forEach(function (sd) { var cx = r.e.ox + hw * (sd + 0.5) + (sd ? 1 : -1) * (r.sp || 0); x.drawImage(r.im, sd * sw, 0, sw, r.im.height, (cx - hw * k / 2) * Q, yy * Q, hw * k * Q, h2 * Q); }); }
+          else x.drawImage(r.im, (r.e.ox + (r.e.w - w2) / 2) * Q, yy * Q, w2 * Q, h2 * Q); });
         out.hacc = { canvas: c, def: { disc: [150, 150] } };
       }));
     }
     if (A.neck) add('nacc', lyr('ACC-BODY', A.neck.key), A.neck.col, function (e) { return { piv: [e.w / 2, 0] }; });
     if (A.belt) add('bacc', lyr('ACC-BODY', 'BELT'), A.belt.col, function (e) { return { piv: [e.w / 2, e.h / 2] }; });
-    if (A.bag) add('gacc', lyr('ACC-BODY', 'HIPBAG'), A.bag.col, function (e) { return { piv: [e.w * 0.5, 0] }; });
+    if (A.bag) add('gacc', lyr('ACC-BODY', 'HIPBAG') || lyr('ACC-BODY', 'HIP BAG'), A.bag.col, function (e) { return { piv: [e.w * 0.5, 0] }; });
     if (A.wrist) add('wacc', lyr('ACC-HANDS', A.wrist.key), A.wrist.col, function (e) { return { piv: [e.w / 2, e.h / 2] }; });
     if (A.arm) add('aacc', lyr('ACC-HANDS', 'ARM_BAND'), A.arm.col, function (e) { return { piv: [e.w / 2, e.h / 2] }; });
     return Promise.all(jobs).then(function () { return out; });
@@ -1148,7 +1203,7 @@ var VNNA = (function () {
     var A = { headItems: [] }, slotWin = {};
     accIds.forEach(function (id) { var it = byId(CATALOG.accessories.items, id); if (it) slotWin[it.slot] = it; });
     var order = ['ears', 'head', 'face'];
-    order.forEach(function (sl) { var it = slotWin[sl]; if (it) A.headItems.push({ sheet: it.sheet, key: it.key, full: it.full, col: acol }); });
+    order.forEach(function (sl) { var it = slotWin[sl]; if (it) A.headItems.push({ sheet: it.sheet, key: it.key, full: it.full, col: acol, sc: it.sc || 1, an: it.an || 'c', pair: it.pair, sp: it.sp || 0, dy: it.dy || 0 }); });
     if (slotWin.neck) A.neck = { key: slotWin.neck.key, col: acol }; if (slotWin.waist) A.belt = { col: acol }; if (slotWin.carry) A.bag = { col: hex2('#1b1426') };
     if (slotWin.wrist) A.wrist = { key: slotWin.wrist.key, col: acol }; if (slotWin.arm) A.arm = { col: acol }; if (slotWin.hands) S.nails = acol;
     S.acc = A; return S;
