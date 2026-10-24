@@ -345,13 +345,13 @@ var VNNA = (function () {
   var STRIP = { torso: 1, torso34: 1 }, NAILK = { hand_open: 'NAILS_OPEN', hand_relax: 'NAILS_RELAXED', fist: 'NAILS_FIST' };
   var SCX = { uarm: 0.94, farm: 0.96, thigh: 0.9, shin: 0.93 }, SCU = { hand_open: 1.1, hand_relax: 1.1, fist: 1.08 };
   /* skin under tops: sleeves hide the arm skin above their hem; sleeved shirts hide the body's sides (armpits) but keep the neckline and a bare belly under a crop top */
-  function clipSkin(x, CW, CH, im, dx, dy, w, h, key) {
+  function clipSkin(x, CW, CH, im, dx, dy, w, h, key, sleeved, dress) {
     try {
       var mk = document.createElement('canvas'); mk.width = CW; mk.height = CH; var mx = mk.getContext('2d', { willReadFrequently: true }); mx.drawImage(im, dx, dy, w, h);
       var md = mx.getImageData(0, 0, CW, CH).data, X, Y, i, a = function (X, Y) { return md[(Y * CW + X) * 4 + 3] > 140; }, m = Math.round(4 * Q);
       /* garment shade: its median colour, darkened, so hidden skin turns into the inside of the garment instead of a hole */
       var rr = [], gg = [], bb = []; for (i = 0; i < md.length; i += 4 * 7) if (md[i + 3] > 240) { rr.push(md[i]); gg.push(md[i + 1]); bb.push(md[i + 2]); }
-      if (!rr.length) return; var mdn = function (q) { q.sort(function (p, q2) { return p - q2; }); return q[q.length >> 1]; }, SR = mdn(rr) * 0.62, SG = mdn(gg) * 0.62, SB = mdn(bb) * 0.62;
+      if (!rr.length) return; var mdn = function (q) { q.sort(function (p, q2) { return p - q2; }); return q[q.length >> 1]; }, SR = mdn(rr) * 0.8, SG = mdn(gg) * 0.8, SB = mdn(bb) * 0.8;
       var sd = x.getImageData(0, 0, CW, CH), D = sd.data, hide = function (j) { D[j] = SR; D[j + 1] = SG; D[j + 2] = SB; };
       if (key === 'uarm' || key === 'farm') {
         var bot = [], bs = []; for (X = 0; X < CW; X++) { bot[X] = -1; for (Y = CH - 1; Y >= 0; Y--) if (a(X, Y)) { bot[X] = Y; bs.push(Y); break; } }
@@ -365,9 +365,18 @@ var VNNA = (function () {
         var hb = []; for (X = Math.round(CW * 0.35); X < CW * 0.65; X++) if (gb[X] >= 0) hb.push(gb[X]); hb.sort(function (p, q) { return p - q; }); var crop = hb.length && hb[hb.length >> 1] < CH * 0.72; /* only a real crop top shows a bare belly */
         for (Y = 0; Y < CH; Y++) for (X = 0; X < CW; X++) {
           i = (Y * CW + X) * 4; if (!D[i + 3]) continue;
-          var keep = (L[Y] >= 0 && X >= L[Y] - m && X <= Rr[Y] + m && Math.abs(X - cx) < CW * 0.24) || (gt[X] >= 0 && Y < gt[X] + m && Math.abs(X - cx) < CW * 0.3) || (crop && gb[X] >= 0 && Y > gb[X] - m && Math.abs(X - cx) < CW * 0.4);
+          var under = !crop && !dress && gb[X] >= 0 && Y > gb[X] - m && Math.abs(X - cx) < CW * 0.4; /* skin below the hem of a normal top reads as a layer underneath, in the garment's shade */
+          if (under) { hide(i); continue; }
+          if (!sleeved) continue; /* sleeveless: shoulders, arms and neckline stay bare */
+          var keep = (L[Y] >= 0 && X >= L[Y] - m && X <= Rr[Y] + m && Math.abs(X - cx) < CW * 0.2) || (gt[X] >= 0 && Y < gt[X] + m && Math.abs(X - cx) < CW * 0.3) || (crop && gb[X] >= 0 && Y > gb[X] - m && Math.abs(X - cx) < CW * 0.4);
           if (!keep) { if (L[Y] >= 0 && X >= L[Y] - 2 * m && X <= Rr[Y] + 2 * m) hide(i); else D[i + 3] = 0; }
         }
+        /* a notch only counts as a hole when the shirt is wider both above and below it */
+        var KN = Math.round(CH * 0.14), L2 = [], R2 = [], yy, lu, ld, ru, rd;
+        for (Y = 0; Y < CH; Y++) { lu = ld = 1e9; ru = rd = -1; for (yy = Math.max(0, Y - KN); yy <= Y; yy++) if (L[yy] >= 0) { lu = Math.min(lu, L[yy]); ru = Math.max(ru, Rr[yy]); } for (yy = Y; yy <= Math.min(CH - 1, Y + KN); yy++) if (L[yy] >= 0) { ld = Math.min(ld, L[yy]); rd = Math.max(rd, Rr[yy]); }
+          L2[Y] = L[Y] < 0 ? -1 : Math.min(L[Y], Math.max(lu, ld)); R2[Y] = L[Y] < 0 ? -1 : Math.max(Rr[Y], Math.min(ru, rd)); }
+        if (sleeved) for (Y = 0; Y < CH * 0.62; Y++) { if (L2[Y] < 0) continue; /* see-through armholes inside a sleeved shirt's outline become shirt fabric */
+          for (X = L2[Y]; X <= R2[Y]; X++) { if (Math.abs(X - cx) < CW * 0.2) continue; i = (Y * CW + X) * 4; if (D[i + 3] < 250 && !a(X, Y)) { hide(i); D[i + 3] = 255; } } }
       }
       x.putImageData(sd, 0, 0);
     } catch (e) { }
@@ -390,6 +399,18 @@ var VNNA = (function () {
         var big = comp.length >= W * H * 0.012, sl = 0; if (!touch && big) { comp.forEach(function (t) { sl += lum(t * 4); }); sl /= comp.length; }
         var cy = 0; comp.forEach(function (t) { cy += Math.floor(t / W); }); cy /= comp.length; /* armholes sit high on the body; low patches are folds */
         if (cy < H * 0.42 && ((touch && comp.length >= minA) || (big && sl < med * 0.62))) comp.forEach(function (t) { D[t * 4 + 3] = 0; }); }
+      x.putImageData(d, 0, 0); return c;
+    } catch (e) { return im; }
+  }
+  /* hairline gaps in the fabric (zip lines, seams) are closed so skin never shows through them */
+  function closeGaps(im) {
+    try {
+      var W = im.width, H = im.height, c = document.createElement('canvas'); c.width = W; c.height = H; var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
+      var d = x.getImageData(0, 0, W, H), D = d.data, G = Math.max(3, Math.round(10 * Q)), X, Y, i, a, b, k;
+      for (Y = 0; Y < H; Y++) { var last = -1;
+        for (X = 0; X < W; X++) { i = (Y * W + X) * 4; if (D[i + 3] < 200) continue;
+          if (last >= 0 && X - last > 1 && X - last <= G + 1) { a = (Y * W + last) * 4; for (k = last + 1; k < X; k++) { b = (Y * W + k) * 4; var t = (k - last) / (X - last); D[b] = D[a] + (D[i] - D[a]) * t; D[b + 1] = D[a + 1] + (D[i + 1] - D[a + 1]) * t; D[b + 2] = D[a + 2] + (D[i + 2] - D[a + 2]) * t; D[b + 3] = 255; } }
+          last = X; } }
       x.putImageData(d, 0, 0); return c;
     } catch (e) { return im; }
   }
@@ -423,7 +444,8 @@ var VNNA = (function () {
             } catch (e) { }
           }
           if (ri === 1 && (key === 'torso' || key === 'torso34') && S.top && S.top.col && !S.top.dress && !lyr(S.top.sheet, 'sleeveU', S.top.v)) r = { e: r.e, im: openArmholes(r.im), garment: true, big: r.big };
-          if (ri === 1 && R[0] && !R[0].garment && TOPK[key] && S.top && (key !== 'torso' && key !== 'torso34' || lyr(S.top.sheet, 'sleeveU', S.top.v))) clipSkin(x, c.width, c.height, r.im, dx, dy, w, h, key);
+          if (ri === 1 && (key === 'torso' || key === 'torso34') && S.top) r = { e: r.e, im: closeGaps(r.im), garment: true, big: r.big };
+          if (ri === 1 && R[0] && !R[0].garment && TOPK[key] && S.top) clipSkin(x, c.width, c.height, r.im, dx, dy, w, h, key, !!lyr(S.top.sheet, 'sleeveU', S.top.v), !!S.top.dress);
           A.forEach(function (a) { x.drawImage(r.im, dx + a[0], dy + a[1], w, h); });
         }
         x.drawImage(r.im, dx, dy, w, h);
@@ -438,7 +460,7 @@ var VNNA = (function () {
           var md = function (q) { q.sort(function (a, b) { return a - b; }); return q[q.length >> 1] || 0; }, mr = md(rr), mg = md(gg), mb = md(bb);
           for (var yy = Math.floor(H2 * 0.04); yy < H2 * 0.6; yy++) for (var xx = 0; xx < W2; xx++) {
             if (xx > W2 * 0.3 && xx < W2 * 0.7) continue; i = (yy * W2 + xx) * 4;
-            if (D[i + 3] > 200 && D[i] + D[i + 1] + D[i + 2] < 150) { D[i] = mr * 0.55; D[i + 1] = mg * 0.55; D[i + 2] = mb * 0.55; }
+            if (D[i + 3] > 200 && D[i] + D[i + 1] + D[i + 2] < 150) { D[i] = mr * 0.8; D[i + 1] = mg * 0.8; D[i + 2] = mb * 0.8; }
           }
           gx.putImageData(id, 0, 0);
         } catch (e) { }
