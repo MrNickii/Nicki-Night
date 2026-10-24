@@ -739,6 +739,25 @@ var VNNA = (function () {
       { id: 'plumebolero', name: 'Plume Bolero', fit: 'fem', unlock: 'vip', sig: 1, sheet: 'SIG-TOP-13', v: 'B' },
       { id: 'sunsetrugby', name: 'Sunset Rugby', fit: 'any', unlock: 'earned', sig: 1, sheet: 'SIG-TOP-14', v: 'A' },
       { id: 'checkercoach', name: 'Checker Coach Jacket', fit: 'any', unlock: 'vip', sig: 1, sheet: 'SIG-TOP-14', v: 'B' },
+      { id: 'bandtunic', name: 'Band Collar Tunic', fit: 'masc', unlock: 'free', sheet: 'TOP-SLEEVED-9', v: 'A', col: '#f4f0fa' },
+      { id: 'terrypolo', name: 'Terry Polo', fit: 'masc', unlock: 'free', sheet: 'TOP-SLEEVED-9', v: 'B', col: '#3b82f6' },
+      { id: 'mandarinjacket', name: 'Mandarin Dinner Jacket', fit: 'masc', unlock: 'free', sheet: 'TOP-SLEEVED-10', v: 'A', col: '#16101f' },
+      { id: 'funnelsweat', name: 'Funnel Sweatshirt', fit: 'masc', unlock: 'free', sheet: 'TOP-SLEEVED-10', v: 'B', col: '#8a8f9c' },
+      { id: 'suedefringe', name: 'Fringed Suede Shirt', fit: 'masc', unlock: 'free', sheet: 'TOP-SLEEVED-11', v: 'A', col: '#a8764a' },
+      { id: 'diagzip', name: 'Diagonal Zip Shirt', fit: 'masc', unlock: 'free', sheet: 'TOP-SLEEVED-11', v: 'B', col: '#16101f' },
+      { id: 'bellwrap', name: 'Bell Sleeve Wrap', fit: 'fem', unlock: 'free', sheet: 'TOP-SLEEVED-12', v: 'A', col: '#ff9ed2' },
+      { id: 'meshmock', name: 'Lined Mesh Mockneck', fit: 'fem', unlock: 'free', sheet: 'TOP-SLEEVED-12', v: 'B', col: '#16101f' },
+      { id: 'smockedtop', name: 'Smocked Peasant Top', fit: 'fem', unlock: 'free', sheet: 'TOP-SLEEVED-13', v: 'A', col: '#f4f0fa' },
+      { id: 'basquejacket', name: 'Basque Tailored Jacket', fit: 'fem', unlock: 'free', sheet: 'TOP-SLEEVED-13', v: 'B', col: '#d62839' },
+      { id: 'capeletblouse', name: 'Capelet Blouse', fit: 'fem', unlock: 'free', sheet: 'TOP-SLEEVED-14', v: 'A', col: '#f4f0fa' },
+      { id: 'tieneck', name: 'Tie Neck Blouse', fit: 'fem', unlock: 'free', sheet: 'TOP-SLEEVED-14', v: 'B', col: '#7c5cff' },
+      { id: 'babydoll', name: 'Babydoll Dress', fit: 'fem', unlock: 'free', dress: true, sheet: 'DRESS-8', col: '#ff9ed2' },
+      { id: 'pinafore', name: 'Pinafore Dress', fit: 'fem', unlock: 'free', dress: true, sheet: 'DRESS-9', col: '#3f6fb0' },
+      { id: 'pearlqipao', name: 'Pearl Qipao', fit: 'fem', unlock: 'free', dress: true, sheet: 'DRESS-10', col: '#f4f0fa' },
+      { id: 'tuxmini', name: 'Tuxedo Mini Dress', fit: 'fem', unlock: 'free', dress: true, sheet: 'DRESS-11', col: '#16101f' },
+      { id: 'handkerchief', name: 'Handkerchief Dress', fit: 'fem', unlock: 'free', dress: true, sheet: 'DRESS-12', col: '#7c5cff' },
+      { id: 'scallopballet', name: 'Scallop Ballet Dress', fit: 'fem', unlock: 'free', dress: true, sheet: 'DRESS-13', col: '#ffc4de' },
+      { id: 'knotdrape', name: 'Knot Drape Dress', fit: 'fem', unlock: 'free', dress: true, sheet: 'DRESS-14', col: '#d62839' },
       { id: 'nicki', name: 'Silver and fur', unlock: 'nicki', body: 'curvy', sheet: 'NICKI-1', nk: 1, hair: 'long', hairColor: 'black', shoes: 'boots', shoesColor: 'black', acc: ['crown', 'visor', 'choker'], accColor: 'gold' },
       { id: 'nicki2', name: 'Neon trench', unlock: 'nicki', body: 'curvy', sheet: 'NICKI-2', nk: 1, hair: 'wavy', hairColor: 'sunset', shoes: 'chunky', shoesColor: 'green', acc: ['crown', 'chain'], accColor: 'gold' },
       { id: 'nicki3', name: 'Burgundy suit', unlock: 'nicki', body: 'curvy', sheet: 'NICKI-3', nk: 1, hair: 'bob', hairColor: 'platinum', shoes: 'boots', shoesColor: 'burgundy', acc: ['crown'], accColor: 'gold' },
@@ -772,7 +791,14 @@ var VNNA = (function () {
       { id: 'boardshorts', name: 'Board Shorts', unlock: 'free', sheet: 'BOTTOM-SHORTS-5', col: '#1fc8b8' },
       { id: 'paperbag', name: 'Paperbag Shorts', unlock: 'earned', sheet: 'BOTTOM-SHORTS-6', col: '#f4f0fa' },
       { id: 'bubblemini', name: 'Bubble Mini', unlock: 'earned', skirt: true, sheet: 'BOTTOM-SKIRTS-4', v: 'A', col: '#ff3fa4' },
-      { id: 'godetmidi', name: 'Godet Midi', unlock: 'vip', skirt: true, sheet: 'BOTTOM-SKIRTS-4', v: 'B', col: '#7c5cff' }
+      { id: 'godetmidi', name: 'Godet Midi', unlock: 'vip', skirt: true, sheet: 'BOTTOM-SKIRTS-4', v: 'B', col: '#7c5cff' },
+      { id: 'pleatslacks', name: 'Double Pleat Slacks', unlock: 'free', sheet: 'BOTTOM-PANTS-13', col: '#6b6f80' },
+      { id: 'sailortrousers', name: 'Sailor Trousers', unlock: 'free', sheet: 'BOTTOM-PANTS-14', col: '#1f3a6b' },
+      { id: 'jodhpurs', name: 'Jodhpur Trousers', unlock: 'free', sheet: 'BOTTOM-PANTS-15', col: '#c8b48a' },
+      { id: 'culottes', name: 'Cropped Culottes', unlock: 'free', sheet: 'BOTTOM-PANTS-16', col: '#16101f' },
+      { id: 'stirrup', name: 'Stirrup Trousers', unlock: 'free', sheet: 'BOTTOM-PANTS-17', col: '#16101f' },
+      { id: 'ribknit', name: 'Rib Knit Pants', unlock: 'free', sheet: 'BOTTOM-PANTS-18', col: '#e9dfcf' },
+      { id: 'panelmoto', name: 'Panel Moto Pants', unlock: 'free', sheet: 'BOTTOM-PANTS-19', col: '#16101f' }
     ],
     shoes: [
       { id: 'sneakers', name: 'High-tops', sheet: 'SHOES-1', v: 'A', col: '#f4f0fa' },
@@ -798,7 +824,14 @@ var VNNA = (function () {
       { id: 'strapheels', name: 'Strap Sandal Heels', unlock: 'earned', sheet: 'SHOES-8', v: 'C', col: '#f2c14e' },
       { id: 'cloudclogs', name: 'Cloud Clogs', unlock: 'free', sheet: 'SHOES-9', v: 'A', col: '#f4f0fa' },
       { id: 'meshrunners', name: 'Mesh Runners', unlock: 'earned', sheet: 'SHOES-9', v: 'B', col: '#3b82f6' },
-      { id: 'canvashightops', name: 'Canvas High-tops', unlock: 'vip', sheet: 'SHOES-9', v: 'C', col: '#d62839' }
+      { id: 'canvashightops', name: 'Canvas High-tops', unlock: 'vip', sheet: 'SHOES-9', v: 'C', col: '#d62839' },
+      { id: 'doublemonks', name: 'Double Monk Shoes', unlock: 'free', sheet: 'SHOES-11', v: 'A', col: '#5a3a28' },
+      { id: 'deckshoes', name: 'Deck Shoes', unlock: 'free', sheet: 'SHOES-11', v: 'B', col: '#c8a46a' },
+      { id: 'espadrilles', name: 'Rope Espadrilles', unlock: 'free', sheet: 'SHOES-11', v: 'C', col: '#d9c9a0' },
+      { id: 'wedgesandals', name: 'Wedge Sandals', unlock: 'free', sheet: 'SHOES-12', v: 'A', col: '#c8a46a' },
+      { id: 'kittenmules', name: 'Kitten Heel Mules', unlock: 'free', sheet: 'SHOES-12', v: 'B', col: '#16101f' },
+      { id: 'splittoe', name: 'Split Toe Boots', unlock: 'free', sheet: 'SHOES-12', v: 'C', col: '#16101f' },
+      { id: 'skatelows', name: 'Skate Low-tops', unlock: 'free', sheet: 'SHOES-13', v: 'A', col: '#f4f0fa' }
     ],
     /* dances: clip = mocap clip id; viewers can still use the six original names */
     dances: [
@@ -980,9 +1013,10 @@ var VNNA = (function () {
   var TOPK = { torso: 'torso', torso34: 'torso34', uarm: 'sleeveU', farm: 'sleeveF' }, BOTK = { pelvis: 'pelvis', pelvis34: 'pelvis34', thigh: 'thigh', shin: 'shin' };
   var STRIP = { torso: 1, torso34: 1 }, NAILK = { hand_open: 'NAILS_OPEN', hand_relax: 'NAILS_RELAXED', fist: 'NAILS_FIST' };
   var SCX = { uarm: 0.94, farm: 0.96, thigh: 0.9, shin: 0.93 }, SCU = { hand_open: 1.1, hand_relax: 1.1, fist: 1.08 };
+  function longPants(S) { return !!(S.bottom && !S.bottom.skirt && lyr(S.bottom.sheet, 'shin', S.bottom.v)); }
   function composePart(key, S) {
     var layers = [{ sheet: 'BODY-' + S.skinSheet + '-' + BKEY[key], key: key, skin: S.skinRatio }];
-    if ((key === 'thigh' || key === 'shin') && S.bottom && !S.bottom.skirt && /PANTS-/.test(S.bottom.sheet || '')) layers.shift();
+    if ((key === 'thigh' || key === 'shin') && longPants(S)) layers.shift();
     if (S.top && TOPK[key]) layers.push({ sheet: S.top.sheet, key: TOPK[key], v: S.top.v, col: S.top.col, garment: true });
     if (S.nails && NAILK[key]) layers.push({ sheet: 'ACC-HANDS', key: NAILK[key], col: S.nails });
     if (S.bottom && BOTK[key] && !S.bottom.skirt) layers.push({ sheet: S.bottom.sheet, key: BOTK[key], v: S.bottom.v, col: S.bottom.col, garment: true, big: key !== 'pelvis34' });
@@ -993,9 +1027,23 @@ var VNNA = (function () {
       if (STRIP[key]) { miny = 0; maxy = def.h; }
       minx = Math.floor(minx); miny = Math.floor(miny); var W = Math.ceil(maxx) - minx, H = Math.ceil(maxy) - miny;
       var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(W * Q)); c.height = Math.max(1, Math.round(H * Q)); var x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingQuality = 'high'; /* built in main memory: the sleeve fix below reads pixels back, which stalls the graphics card in OBS */
-      R.forEach(function (r) {
+      var hipKey = (key === 'pelvis' || key === 'pelvis34') && S.bottom && !S.bottom.skirt;
+      R.forEach(function (r, ri) {
         if (!r) return; var dx = (r.e.ox - minx) * Q, dy = (r.e.oy - miny) * Q, w = r.e.w * Q, h = r.e.h * Q;
-        if (r.garment) { var o = (r.big ? 8 : 3) * Q, A = [[o, 0], [-o, 0], [0, o], [0, -o]]; A.forEach(function (a) { x.drawImage(r.im, dx + a[0], dy + a[1], w, h); }); }
+        if (r.garment) {
+          var o = (r.big ? 8 : 3) * Q, A = [[o, 0], [-o, 0], [0, o], [0, -o]];
+          if (hipKey && ri === R.length - 1 && R[0] && !R[0].garment) {
+            /* bottoms: skin from the body's hip piece only shows above the waistband (a bare belly), never beside or under the pants */
+            try {
+              var mk = document.createElement('canvas'); mk.width = c.width; mk.height = c.height; var mx = mk.getContext('2d', { willReadFrequently: true });
+              A.forEach(function (a) { mx.drawImage(r.im, dx + a[0], dy + a[1], w, h); }); mx.drawImage(r.im, dx, dy, w, h);
+              var md = mx.getImageData(0, 0, mk.width, mk.height).data, CW = mk.width, CH = mk.height, cx2, cy2, top;
+              for (cx2 = 0; cx2 < CW; cx2++) { top = -1; for (cy2 = 0; cy2 < CH; cy2++) if (md[(cy2 * CW + cx2) * 4 + 3] > 140) { top = cy2; break; }
+                if (top < 0) x.clearRect(cx2, 0, 1, CH); else x.clearRect(cx2, top + Math.round(5 * Q), 1, CH); }
+            } catch (e) { }
+          }
+          A.forEach(function (a) { x.drawImage(r.im, dx + a[0], dy + a[1], w, h); });
+        }
         x.drawImage(r.im, dx, dy, w, h);
       });
       var d = { piv: [def.piv[0] - minx, def.piv[1] - miny], bone: def.bone }, sx = SCX[key] || SCU[key] || 1, sy = SCU[key] || 1;
@@ -1016,8 +1064,8 @@ var VNNA = (function () {
       if ((key === 'pelvis' || key === 'pelvis34') && S.bottom && /PANTS-ZZ$/.test(S.bottom.sheet || '')) {
         var px2 = c.getContext('2d'); px2.globalCompositeOperation = 'destination-in'; var pg = px2.createLinearGradient(0, 0, 0, c.height); pg.addColorStop(0, 'rgba(0,0,0,1)'); pg.addColorStop(0.7, 'rgba(0,0,0,1)'); pg.addColorStop(1, 'rgba(0,0,0,0)'); px2.fillStyle = pg; px2.fillRect(0, 0, c.width, c.height);
       }
-      if (key === 'thigh' && (!S.bottom || S.bottom.skirt || /SHORTS|PANTS-[1-5]$/.test(S.bottom.sheet || ''))) {
-        var pantsT = !!(S.bottom && !S.bottom.skirt && /PANTS-[1-5]$/.test(S.bottom.sheet || ''));
+      if (key === 'thigh') {
+        var pantsT = longPants(S);
         var tx = c.getContext('2d'); tx.globalCompositeOperation = 'destination-in'; var tg = tx.createLinearGradient(0, 0, 0, c.height); tg.addColorStop(0, pantsT ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,1)'); tg.addColorStop(pantsT ? 0.09 : 0.2, 'rgba(0,0,0,1)'); tg.addColorStop(0.94, 'rgba(0,0,0,1)'); tg.addColorStop(1, 'rgba(0,0,0,0)'); tx.fillStyle = tg; tx.fillRect(0, 0, c.width, c.height);
       }
       var res = { canvas: c, def: d };
@@ -1126,7 +1174,7 @@ var VNNA = (function () {
     var s = o.h / 1700 * (o.useHs === false ? 1 : 1), P2 = RIG.pose(o.clip, o.t, { beat: o.beat || 0.5, ph: o.ph || 0, amp: o.amp || 1 });
     if (o.walk) { var WP = RIG.walkPose(o.walk.ph, o.walk.yaw, o.walk.k); P2 = o.walk.w < 1 ? RIG.mixPose(P2, WP, o.walk.w) : WP; }
     ctx.save(); ctx.translate(o.x, o.y); ctx.translate(0, -805 * s); ctx.scale(s, s); RIG.use(set);
-    RIG.figure(ctx, { pose: P2, px: s, fronthair: true, body: S.body, legk: S.legk, sway: o.sway || 0, dbg: o.dbg, st: o.st, hold: o.hold, under: !!(S.bottom && !S.bottom.skirt && /PANTS-[1-5]$/.test(S.bottom.sheet || '')), now: o.now != null ? o.now : o.t }, o.head); ctx.restore();
+    RIG.figure(ctx, { pose: P2, px: s, fronthair: true, body: S.body, legk: S.legk, sway: o.sway || 0, dbg: o.dbg, st: o.st, hold: o.hold, under: longPants(S), now: o.now != null ? o.now : o.t }, o.head); ctx.restore();
   }
   function clipOf(id) { var d = byId(CATALOG.dances, id) || byId(CATALOG.dances, CATALOG.danceAlias[id]); return d ? d.clip : 'hh1'; }
   var EARN = { tasks: {"dn3": "Never get stuck on one groove.", "dn7": "Know every move this room has to offer.", "lk2": "A fresh fit, then another fresh fit.", "lk8": "A new mood, a new you. Again and again.", "dr1": "Someone behind the bar is waiting on you.", "dr3": "The third round is where the magic happens.", "sp1": "Order one of tonight's house specials.", "sp4": "Taste every house special on the menu.", "ch5": "The quiet ones never get noticed.", "ch25": "Keep the conversation loud.", "che3": "Lift your glass. More than once.", "st30": "Good things come to those who stay.", "early": "Doors open, early birds get in first.", "rwp": "Be seen under the lights.", "rww": "The crowd crowns one winner.", "t5": "Be one of the loudest five.", "lc": "Stay until the lights come up.", "reg": "Keep dancing and keep talking.", "x_barb": "Nicki will whisper a secret. Listen close.", "x_pf2": "Nicki will whisper a secret. Listen close.", "x_pink": "Nicki will whisper a secret. Listen close.", "x_gag": "Nicki will whisper a secret. Listen close."},
