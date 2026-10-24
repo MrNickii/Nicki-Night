@@ -60,20 +60,21 @@ button{font-family:inherit}
 /* picker */
 #panel{background:#1a0b27e6;border:1px solid var(--line);border-radius:26px;overflow:hidden;display:flex;flex-direction:column;min-height:520px}
 #cats{display:flex;gap:6px;padding:10px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none;position:sticky;top:0;background:#1a0b27;z-index:2}#cats::-webkit-scrollbar{display:none}
-#cats button{flex:0 0 auto;border:0;background:var(--card);color:var(--dim);padding:10px 15px;border-radius:99px;font-size:15px;font-weight:800;min-height:44px;cursor:pointer}
+#cats{justify-content:space-between;gap:4px!important;padding:8px!important}#cats button{flex:1 1 0;min-width:0;max-width:76px;border:0;background:var(--card);color:var(--dim);padding:6px 0;border-radius:16px;font-size:26px;line-height:1;min-height:54px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #cats button.on{background:linear-gradient(135deg,#7a2bd6,#ff2f9e);color:#fff;box-shadow:0 0 16px #ff2f9e77}
 #opts{padding:12px}
 .hint{font-size:14px;color:var(--dim);margin:2px 2px 10px}.hint b{color:var(--gold)}
 .sub{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--pink2);margin:16px 2px 8px;font-weight:800}
 .sub small{text-transform:none;letter-spacing:0;color:#bba6d4;font-weight:600;margin-left:6px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
+.hint .cn{display:block;font-size:20px;font-weight:900;color:#fff;letter-spacing:.02em;margin-bottom:2px}
 .opt{position:relative;border:2px solid transparent;background:var(--card);border-radius:16px;padding:6px 6px 8px;text-align:center;cursor:pointer;color:var(--txt);display:flex;flex-direction:column;align-items:center;gap:4px}
 .opt:active{transform:scale(.97)}.opt.on{border-color:var(--pink2);background:#3a1650;box-shadow:0 0 18px #ff2f9e77}
-.opt .th{height:100px;width:100%;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,#341a4a,#1f0d2e)}
+.opt .th{height:100px;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;background:radial-gradient(circle at 50% 50%,#5a3378 0,#3a1d52 45%,#1f0d2e 100%)}
 .opt .th img{max-height:100%;max-width:100%;display:block}
 .opt .th.ld{background:linear-gradient(110deg,#2a1440 30%,#3a1d56 50%,#2a1440 70%);background-size:200% 100%;animation:ld 1.2s linear infinite}@keyframes ld{to{background-position:-200% 0}}
 .opt .nm{font-size:13px;font-weight:800;line-height:1.15}
-.badge{position:absolute;top:6px;right:6px;font-size:10.5px;font-weight:900;padding:3px 7px;border-radius:99px;background:#000c;border:1px solid var(--gold);color:var(--gold);z-index:2}
+.badge{position:absolute;top:8px;right:8px;font-size:12px;line-height:1;font-weight:900;padding:4px 5px;border-radius:99px;background:#000c;border:1px solid var(--gold);color:var(--gold);z-index:2}
 .badge.vip{border-color:#c49bff;color:#e2c9ff}
 .sw{display:flex;gap:9px;flex-wrap:wrap}
 .sw button{width:46px;height:46px;border-radius:50%;border:3px solid #ffffff26;padding:0;cursor:pointer}
@@ -116,7 +117,7 @@ button{font-family:inherit}
  <p>Build your look before the doors open. When the live starts, you'll walk into the club wearing it.</p>
 </header>
 <div id="steps">
- <div class="st"><i>1</i><span><b>Pick your look.</b> Tap through tops, bottoms, shoes, hair and extras.</span></div>
+ <div class="st"><i>1</i><span><b>Pick your look.</b> Tap the icons: 👚 tops, 👖 bottoms, 👟 shoes, 💇 hair, 💎 extras, 🎨 skin, 📏 body.</span></div>
  <div class="st"><i>2</i><span><b>Copy my look.</b> One tap copies a single line made for you.</span></div>
  <div class="st"><i>3</i><span><b>Paste it in the live chat</b> when we go live, and you walk in wearing it.</span></div>
 </div>
@@ -135,8 +136,8 @@ button{font-family:inherit}
 <div id="done" role="dialog" aria-modal="true"><div class="box"><h2>Copied! <b>You're on the list.</b></h2>
  <ol><li>Keep this line handy (it's on your clipboard).</li><li>When <b>Virtual Nicki Night</b> goes live on X or Kick, <b>paste it in the live chat</b>.</li><li>You'll walk into the club wearing your look, with your profile picture as your face.</li></ol>
  <button id="ok">Got it</button></div></div>
-<script src="vnn/rig8.js?v=2610231922"></script>
-<script src="vnn/vnn-avatar.js?v=2610231922"></script>
+<script src="vnn/rig8.js?v=1792803695"></script>
+<script src="vnn/vnn-avatar.js?v=1792803695"></script>
 <script>
 (function () {
   var CAT = VNNA.CATALOG, byId = VNNA.byId, $ = function (i) { return document.getElementById(i); };
@@ -171,19 +172,85 @@ button{font-family:inherit}
     requestAnimationFrame(frame);
   }
 
-  /* thumbnails */
-  var TH = {}, OFF = document.createElement('canvas'); OFF.width = 300; OFF.height = 600; var ox = OFF.getContext('2d');
-  var REG = { head: [50, 60, 200, 185], torso: [50, 165, 200, 185], mid: [40, 215, 220, 204], legs: [20, 350, 260, 240], feet: [65, 432, 170, 158], full: [0, 0, 300, 600] };
-  function thumbKey(S, region) { return region + '|' + [S.top, S.topColor, S.bottom, S.bottomColor, S.shoes, S.shoesColor, S.skin, S.hair, S.hairColor, S.body, S.height, S.acc.join(','), S.accColor].join(','); }
-  function thumb(S, region) {
-    var key = thumbKey(S, region); if (TH[key]) return Promise.resolve(TH[key]);
-    return VNNA.build(S).then(function (r) {
-      ox.clearRect(0, 0, 300, 600); VNNA.draw(ox, r.set, r.spec, { x: 150, y: 590, h: 540 * r.spec.hs, clip: 'hh1', t: 0.9, beat: 0.5, amp: 0.01, head: headFn });
-      var g = REG[region], c = document.createElement('canvas'); c.width = 200; c.height = region === 'full' ? 186 : Math.round(200 * g[3] / g[2]); var x = c.getContext('2d'); x.imageSmoothingQuality = 'high';
-      if (region === 'full') x.drawImage(OFF, 0, 40, 300, 560, 64, 0, 72, 186); else x.drawImage(OFF, g[0], g[1], g[2], g[3], 0, 0, c.width, c.height);
-      return TH[key] = c.toDataURL('image/png');
+  /* thumbnails: each piece drawn from the original reference art (front view), laid out flat and fitted inside its tile */
+  var TH = {}, BIG = document.createElement('canvas'); BIG.width = 900; BIG.height = 1300; var bx = BIG.getContext('2d', { willReadFrequently: true });
+  var DS = function (k) { var d = (VNNA.lib() || {}).scale || {}; return +d[k] || 1; };
+  function hexOf(list, id, dflt) { var c = id && byId(list, id); return c ? (c.ombre ? { ombre: c.ombre } : c.hex) : dflt; }
+  /* layers: [sheet, key, v, colour, x, y, scale, rotation, anchorX, anchorY, flip] — x,y is where the anchor point lands */
+  function plan(kind, S) {
+    var L = [], cc = CAT.colors.clothing;
+    if (kind === 'top') {
+      var t = byId(CAT.looks, S.top) || CAT.looks[0], col = t.sig ? null : hexOf(cc, S.topColor, t.col), sh = t.sig ? t.sheet : t.sheet, v = t.v;
+      var ts = DS('torso'), us = DS('uarm'), fs = DS('farm');
+      [-1, 1].forEach(function (sd) {
+        var ax = 450 + sd * 120 * ts, ay = 300 + 40 * ts, a = -sd * 0.32;
+        L.push([sh, 'sleeveU', v, col, ax, ay, us, a, 0.5, 0.06, sd > 0]);
+        var ex = ax - Math.sin(a) * 300 * us * 0.94, ey = ay + Math.cos(a) * 300 * us * 0.94;
+        L.push([sh, 'sleeveF', v, col, ex, ey, fs, a * 0.55, 0.5, 0.04, sd > 0]);
+      });
+      L.push([sh, t.dress ? 'torso' : 'torso', t.dress ? null : v, col, 450, 300, ts, 0, 0.5, 0]);
+      if (t.dress) L.push([sh, 'dskF', null, col, 450, 300 + 470 * ts, ts, 0, 0.5, 0.0, false, 'dsk']);
+      if (t.dress) L.push([sh, 'mdskF', null, col, 450, 300 + 470 * ts, ts, 0, 0.5, 0.0, false, 'dsk']);
+    } else if (kind === 'bottom') {
+      var b = byId(CAT.bottoms, S.bottom) || CAT.bottoms[0], bc = b.fixed ? null : hexOf(cc, S.bottomColor, b.col), ps = DS('pelvis');
+      if (b.skirt) { L.push([b.sheet, 'skF', b.v, bc, 450, 200, ps, 0, 0.5, 0, false, 'sk']); L.push([b.sheet, 'mskF', b.v, bc, 450, 200, ps, 0, 0.5, 0, false, 'sk']); }
+      else {
+        var th = DS('thigh'), sn = DS('shin');
+        [-1, 1].forEach(function (sd) {
+          var hx = 450 + sd * 92 * ps, hy = 200 + 140 * ps;
+          L.push([b.sheet, 'shin', b.v, bc, hx + sd * 6, hy + 372 * th, sn, 0, 0.5, 0.03, sd > 0]);
+          L.push([b.sheet, 'thigh', b.v, bc, hx, hy, th, 0, 0.5, 0.0, sd > 0]);
+        });
+        L.push([b.sheet, 'pelvis', b.v, bc, 450, 200, ps, 0, 0.5, 0]);
+      }
+    } else if (kind === 'shoes') {
+      var s = byId(CAT.shoes, S.shoes) || CAT.shoes[0], scol = s.fixed ? null : hexOf(cc, S.shoesColor, s.col);
+      if (s.shaft) {
+        var shc = s.shaft.col || scol;
+        L.push([s.sheet, 'shoe34', s.v, scol, 450, 900, 1, 0, 0, 0, false, 'ank']);
+        L.push([s.shaft.sheet, 'shaft', s.shaft.v, shc, 450, 900 + 8, DS('shin') * 0.9, 0, 0.5, 1]);
+      } else {
+        L.push([s.sheet, 'shoe34', s.v, scol, 380, 600, 0.92, 0, 0.5, 0.5, true]);
+        L.push([s.sheet, 'shoe34', s.v, scol, 520, 660, 1, 0, 0.5, 0.5]);
+      }
+    } else if (kind === 'hair') {
+      var h = S.hair && byId(CAT.hair.styles, S.hair), hcol = hexOf(CAT.hair.colors, S.hairColor || 'brown', '#5a3825');
+      L.push(['@head']);
+      if (h) { L.unshift([h.sheet, 'hairB', h.v, hcol, 0, 0, 1, 0, 0, 0, false, 'slot']); L.push([h.sheet, 'hairF', h.v, hcol, 0, 0, 1, 0, 0, 0, false, 'slot']); }
+    } else if (kind === 'acc') {
+      var a = byId(CAT.accessories.items, (S.acc || [])[0]) || {}, acol = a.full ? null : hexOf(CAT.accessories.colors, S.accColor || 'gold', '#e8b84a');
+      var sheet = a.sheet || (/^(wrist|arm|hands)$/.test(a.slot) ? 'ACC-HANDS' : 'ACC-BODY'), key = a.key === 'HIPBAG' ? 'HIP BAG' : (a.key || (a.slot === 'hands' ? 'NAILS_OPEN' : ''));
+      L.push([sheet, key, null, acol, 450, 650, 1.6, 0, 0.5, 0.5]);
+    }
+    return L;
+  }
+  function flat(kind, S) {
+    var L = plan(kind, S);
+    return Promise.all(L.map(function (l) { return l[0] === '@head' ? Promise.resolve('@head') : VNNA.piece(l[0], l[1], l[2], l[3] ? (typeof l[3] === 'string' ? VNNA.hex2(l[3]) : l[3]) : null); })).then(function (P) {
+      bx.setTransform(1, 0, 0, 1, 0, 0); bx.clearRect(0, 0, 900, 1300); var drawn = 0, skirt = false;
+      P.forEach(function (p, i) {
+        var l = L[i];
+        if (p === '@head') { bx.fillStyle = '#5b3a73'; bx.beginPath(); bx.ellipse(146, 205, 86, 104, 0, 0, 7); bx.fill(); return; }
+        if (!p) return; if (l[11] === 'sk' || l[11] === 'dsk') { if (skirt) return; skirt = true; }
+        var e = p.e, im = p.im, w = e.w, h = e.h, sc = l[6];
+        bx.save();
+        if (l[11] === 'slot') { bx.translate(e.ox || 0, e.oy || 0); bx.drawImage(im, 0, 0, w, h); bx.restore(); drawn++; return; }
+        bx.translate(l[4], l[5]); bx.rotate(l[7]); bx.scale(l[10] ? -sc : sc, sc);
+        if (l[11] === 'ank' && e.ank) bx.translate(-e.ank[0], -e.ank[1]);
+        else if ((l[11] === 'sk' || l[11] === 'dsk') && e.tx0 != null) bx.translate(-(e.tx0 + e.tx1) / 2, -4);
+        else bx.translate(-w * l[8], -h * l[9]);
+        bx.drawImage(im, 0, 0, w, h); bx.restore(); drawn++;
+      });
+      /* find the art's real edges, then fit it inside the tile with breathing room */
+      var d = bx.getImageData(0, 0, 900, 1300).data, x0 = 900, y0 = 1300, x1 = -1, y1 = -1, x, y;
+      for (y = 0; y < 1300; y += 2) for (x = 0; x < 900; x += 2) if (d[(y * 900 + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      var c = document.createElement('canvas'); c.width = 240; c.height = 200; var cx2 = c.getContext('2d'); cx2.imageSmoothingQuality = 'high';
+      if (x1 > x0) { var bw = x1 - x0 + 2, bh = y1 - y0 + 2, k = Math.min(240 * 0.84 / bw, 200 * 0.84 / bh), dw = bw * k, dh = bh * k; cx2.drawImage(BIG, x0, y0, bw, bh, (240 - dw) / 2, (200 - dh) / 2, dw, dh); }
+      return c.toDataURL('image/png');
     });
   }
+  function thumbKey(kind, S) { return kind + '|' + [S.top, S.topColor, S.bottom, S.bottomColor, S.shoes, S.shoesColor, S.hair, S.hairColor, (S.acc || []).join(','), S.accColor].join(','); }
+  function thumb(S, kind) { var key = thumbKey(kind, S); if (TH[key]) return Promise.resolve(TH[key]); return flat(kind, S).then(function (u) { return TH[key] = u; }); }
   var thQ = Promise.resolve(), thTok = 0;
   function fillThumbs() {
     var my = ++thTok;
@@ -193,9 +260,9 @@ button{font-family:inherit}
     });
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  var UNL = { earned: ['🔒 Unlock at the party', ''], vip: ['👑 VIP', 'vip'] };
+  var UNL = { earned: ['🔒', '', 'Unlock at the party'], vip: ['👑', 'vip', 'VIP list'] };
   function opt(id, name, patch, region, locked, on) {
-    return '<button class="opt' + (on ? ' on' : '') + '" data-id="' + esc(id) + '">' + (locked ? '<span class="badge ' + UNL[locked][1] + '">' + UNL[locked][0] + '</span>' : '') +
+    return '<button class="opt' + (on ? ' on' : '') + '" data-id="' + esc(id) + '">' + (locked ? '<span class="badge ' + UNL[locked][1] + '" title="' + UNL[locked][2] + '" aria-label="' + UNL[locked][2] + '">' + UNL[locked][0] + '</span>' : '') +
       '<div class="th ld" data-th="' + esc(JSON.stringify({ patch: patch, region: region })) + '"></div><div class="nm">' + esc(name) + '</div></button>';
   }
   function isFree(x) { return !x.unlock || x.unlock === 'free'; }
@@ -209,19 +276,19 @@ button{font-family:inherit}
     return '<div class="sw">' + (none ? '<button class="none' + (!curv ? ' on' : '') + '" data-sw="' + key + '" data-id="" title="Original color" aria-label="Original color"></button>' : '') +
       list.map(function (c) { var bg = c.ombre ? 'linear-gradient(135deg,' + c.ombre.join(',') + ')' : c.hex; return '<button class="' + (curv === c.id ? 'on' : '') + '" data-sw="' + key + '" data-id="' + esc(c.id) + '" title="' + esc(c.name || c.id) + '" aria-label="' + esc(c.name || c.id) + '" style="background:' + bg + '"></button>'; }).join('') + '</div>';
   }
-  var CATS = [['tops', '👚 Tops'], ['bottoms', '👖 Bottoms'], ['shoes', '👟 Shoes'], ['hair', '💇 Hair'], ['acc', '✨ Extras'], ['skin', '🎨 Skin tone'], ['body', '📏 Body']];
+  var CATS = [['tops', '👚', 'Tops'], ['bottoms', '👖', 'Bottoms'], ['shoes', '👟', 'Shoes'], ['hair', '💇', 'Hair'], ['acc', '💎', 'Extras'], ['skin', '🎨', 'Skin tone'], ['body', '📏', 'Body']];
   var HINT = { tops: 'Tap a top to try it on. Plain pieces get a color pick underneath.', bottoms: 'Pants, skirts and shorts. Pick a color underneath, or keep the original.', shoes: 'Sneakers, boots and heels.', hair: 'Pick a style, then a color. Any style works for anyone.', acc: 'Shades, jewelry, hats and more. Tap again to take one off.', skin: 'Pick the tone that feels like you.', body: 'Choose your height and shape.' };
-  function renderCats() { $('cats').innerHTML = CATS.map(function (c) { return '<button data-c="' + c[0] + '" class="' + (cat === c[0] ? 'on' : '') + '">' + c[1] + '</button>'; }).join(''); }
-  function regionFor(a) { return a.slot === 'neck' ? 'torso' : (a.slot === 'face' || a.slot === 'head' || a.slot === 'ears' ? 'head' : 'mid'); }
+  function renderCats() { $('cats').innerHTML = CATS.map(function (c) { return '<button data-c="' + c[0] + '" class="' + (cat === c[0] ? 'on' : '') + '" title="' + c[2] + '" aria-label="' + c[2] + '">' + c[1] + '</button>'; }).join(''); }
+
   function accPatch(a) { var p = { acc: [a.id], accColor: sel.accColor || 'gold' }; if (/^(hands|wrist|arm|carry|waist)$/.test(a.slot)) p.top = 'tank'; return p; }
   var FIXED = '<p class="note">This piece has its own full-color design, so there is no color to pick.</p>';
   function renderOpts() {
-    var h = '<p class="hint">' + HINT[cat] + '</p>', o = $('opts');
-    if (cat === 'tops') { var st = byId(LOOKS, sel.top) || {}; h += tiered(LOOKS, function (l) { return opt(l.id, l.name, { top: l.id }, l.dress ? 'full' : 'torso', isFree(l) ? null : l.unlock, sel.top === l.id); }); h += (!st.sig && !st.nk) ? '<div class="sub">Top color</div>' + swatches(CLR, sel.topColor, 'topColor', true) : FIXED; }
-    else if (cat === 'bottoms') { var sb = byId(CAT.bottoms, sel.bottom) || {}; h += tiered(CAT.bottoms, function (b) { return opt(b.id, b.name, { bottom: b.id, top: 'tank', topColor: 'white' }, 'legs', isFree(b) ? null : b.unlock, sel.bottom === b.id); }); h += sb.fixed ? FIXED : '<div class="sub">Bottom color</div>' + swatches(CLR, sel.bottomColor, 'bottomColor', true); }
-    else if (cat === 'shoes') { var ss = byId(CAT.shoes, sel.shoes) || {}; h += tiered(CAT.shoes, function (s) { return opt(s.id, s.name, { shoes: s.id }, s.shaft ? 'legs' : 'feet', isFree(s) ? null : s.unlock, sel.shoes === s.id); }); h += ss.fixed ? FIXED : '<div class="sub">Shoe color</div>' + swatches(CLR, sel.shoesColor, 'shoesColor', true); }
-    else if (cat === 'hair') { h += tiered(CAT.hair.styles, function (s) { return opt(s.id, s.name, { hair: s.id }, 'head', isFree(s) ? null : s.unlock, sel.hair === s.id); }, '<button class="opt' + (!sel.hair ? ' on' : '') + '" data-id=""><div class="th ld" data-th="' + esc(JSON.stringify({ patch: { hair: null, hairColor: null }, region: 'head' })) + '"></div><div class="nm">No hair</div></button>') + '<div class="sub">Hair color</div>' + swatches(HC, sel.hairColor, 'hairColor', false); }
-    else if (cat === 'acc') { var anyT = sel.acc.some(function (id) { var x = byId(ITEMS, id); return x && !x.full; }); h += tiered(ITEMS, function (a) { return opt(a.id, a.name, accPatch(a), regionFor(a), isFree(a) ? null : a.unlock, sel.acc.indexOf(a.id) >= 0); }); if (anyT || !sel.acc.length) h += '<div class="sub">Extras color <small>full-color pieces keep their own</small></div>' + swatches(AC, sel.accColor, 'accColor', false); }
+    var cn = CATS.filter(function (c) { return c[0] === cat; })[0], h = '<p class="hint"><b class="cn">' + cn[2] + '</b>' + HINT[cat] + '</p>', o = $('opts');
+    if (cat === 'tops') { var st = byId(LOOKS, sel.top) || {}; h += tiered(LOOKS, function (l) { return opt(l.id, l.name, { top: l.id }, 'top', isFree(l) ? null : l.unlock, sel.top === l.id); }); h += (!st.sig && !st.nk) ? '<div class="sub">Top color</div>' + swatches(CLR, sel.topColor, 'topColor', true) : FIXED; }
+    else if (cat === 'bottoms') { var sb = byId(CAT.bottoms, sel.bottom) || {}; h += tiered(CAT.bottoms, function (b) { return opt(b.id, b.name, { bottom: b.id }, 'bottom', isFree(b) ? null : b.unlock, sel.bottom === b.id); }); h += sb.fixed ? FIXED : '<div class="sub">Bottom color</div>' + swatches(CLR, sel.bottomColor, 'bottomColor', true); }
+    else if (cat === 'shoes') { var ss = byId(CAT.shoes, sel.shoes) || {}; h += tiered(CAT.shoes, function (s) { return opt(s.id, s.name, { shoes: s.id }, 'shoes', isFree(s) ? null : s.unlock, sel.shoes === s.id); }); h += ss.fixed ? FIXED : '<div class="sub">Shoe color</div>' + swatches(CLR, sel.shoesColor, 'shoesColor', true); }
+    else if (cat === 'hair') { h += tiered(CAT.hair.styles, function (s) { return opt(s.id, s.name, { hair: s.id }, 'hair', isFree(s) ? null : s.unlock, sel.hair === s.id); }, '<button class="opt' + (!sel.hair ? ' on' : '') + '" data-id=""><div class="th ld" data-th="' + esc(JSON.stringify({ patch: { hair: null, hairColor: null }, region: 'hair' })) + '"></div><div class="nm">No hair</div></button>') + '<div class="sub">Hair color</div>' + swatches(HC, sel.hairColor, 'hairColor', false); }
+    else if (cat === 'acc') { var anyT = sel.acc.some(function (id) { var x = byId(ITEMS, id); return x && !x.full; }); h += tiered(ITEMS, function (a) { return opt(a.id, a.name, accPatch(a), 'acc', isFree(a) ? null : a.unlock, sel.acc.indexOf(a.id) >= 0); }); if (anyT || !sel.acc.length) h += '<div class="sub">Extras color <small>full-color pieces keep their own</small></div>' + swatches(AC, sel.accColor, 'accColor', false); }
     else if (cat === 'skin') { h += swatches(CAT.skin, sel.skin, 'skin', false) + '<p class="note">' + esc((byId(CAT.skin, sel.skin) || {}).name || '') + '</p>'; }
     else if (cat === 'body') { h += '<div class="sub">Height</div><div class="seg">' + CAT.heights.map(function (x) { return '<button class="' + (sel.height === x.id ? 'on' : '') + '" data-h="' + esc(x.id) + '">' + esc(x.label) + '</button>'; }).join('') + '</div><div class="sub">Shape</div><div class="seg">' + CAT.bodies.map(function (b) { return '<button class="' + (sel.body === b ? 'on' : '') + '" data-b="' + esc(b) + '">' + esc(b.charAt(0).toUpperCase() + b.slice(1)) + '</button>'; }).join('') + '</div>'; }
     o.innerHTML = h; fillThumbs();
