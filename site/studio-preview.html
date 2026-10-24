@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://unavatar.io https://pbs.twimg.com; connect-src 'self' https://api.fxtwitter.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Nicki Night · Style Studio</title>
+<meta name="description" content="Build your look for Virtual Nicki Night. Pick your fit, hair and extras, copy one line, and paste it in the live chat to walk into the club wearing it.">
+<meta name="theme-color" content="#14061f">
+<link rel="icon" type="image/png" href="vnn/ui/icon.png">
+<link rel="apple-touch-icon" href="vnn/ui/icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Virtual Nicki Night">
+<meta property="og:title" content="Virtual Nicki Night · Style Studio">
+<meta property="og:description" content="The doors open soon. Build your look now, copy one line, and walk into the club wearing it.">
+<meta property="og:url" content="https://mrnickii.github.io/Nicki-Night/">
+<meta property="og:image" content="https://mrnickii.github.io/Nicki-Night/vnn/ui/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Virtual Nicki Night Style Studio: dancers in the club">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Virtual Nicki Night · Style Studio">
+<meta name="twitter:description" content="The doors open soon. Build your look now, copy one line, and walk into the club wearing it.">
+<meta name="twitter:image" content="https://mrnickii.github.io/Nicki-Night/vnn/ui/og.jpg">
+<style>
+:root{--bg:#12051c;--card:#22102f;--card2:#2c1640;--line:#4a2766;--pink:#ff2f9e;--pink2:#ff6cc0;--gold:#ffd86b;--txt:#fff4fb;--dim:#c7aed8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Rounded","Segoe UI",Roboto,sans-serif}
+body{min-height:100vh;background:radial-gradient(1100px 600px at 15% -10%,#5a1470 0,transparent 60%),radial-gradient(900px 600px at 110% 110%,#7a0f50 0,transparent 55%),var(--bg);padding-bottom:calc(140px + env(safe-area-inset-bottom))}
+button{font-family:inherit}
+/* hero */
+#hero{text-align:center;padding:calc(18px + env(safe-area-inset-top)) 16px 6px}
+#hero .tag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.22em;color:var(--gold);border:1px solid #ffd86b66;border-radius:99px;padding:5px 12px;background:#ffd86b12}
+#hero h1{margin:10px 0 4px;font-size:clamp(30px,7vw,54px);line-height:1;font-weight:900;letter-spacing:.02em;color:#fff;text-shadow:0 0 18px #ff2f9e,0 0 42px #ff2f9eaa}
+#hero h1 b{color:var(--pink2)}
+#hero p{margin:6px auto 0;max-width:560px;color:var(--dim);font-size:16px}
+#steps{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:980px;margin:14px auto 4px;padding:0 12px}
+.st{flex:1 1 200px;max-width:310px;display:flex;gap:10px;align-items:center;background:#1c0b2acc;border:1px solid var(--line);border-radius:16px;padding:10px 12px;text-align:left}
+.st i{font-style:normal;flex:0 0 34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;background:linear-gradient(135deg,#ff2f9e,#7a2bd6);box-shadow:0 0 14px #ff2f9e88}
+.st span{font-size:14px;line-height:1.3}.st b{color:var(--gold)}
+/* layout */
+#app{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:14px;max-width:1100px;margin:12px auto 0;padding:0 12px}
+@media (min-width:821px){#app{align-items:start}#stage{position:sticky;top:12px;height:min(640px,calc(100vh - 150px));min-height:480px}}
+#stage{position:relative;border-radius:26px;overflow:hidden;border:1px solid var(--line);background:radial-gradient(420px 320px at 50% 28%,#6a1a8a 0,#2a0f3f 58%,#170823 100%);min-height:600px;display:flex;align-items:flex-end;justify-content:center}
+#stage:before{content:"";position:absolute;inset:0;background:conic-gradient(from 200deg at 50% -10%,transparent 0 40deg,#ff2f9e22 48deg,transparent 56deg 150deg,#7ad7ff1c 158deg,transparent 166deg);pointer-events:none}
+#beam{position:absolute;left:50%;top:-10%;width:70%;height:95%;transform:translateX(-50%);background:linear-gradient(180deg,#ffffff1a,transparent 80%);clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);pointer-events:none}
+#ped{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);width:66%;height:44px;border-radius:50%;background:radial-gradient(closest-side,#ff2f9edd,#ff2f9e33 70%,transparent)}
+#ring{position:absolute;bottom:58px;left:50%;transform:translateX(-50%);width:60%;height:30px;border-radius:50%;border:2px solid #ff9ad6;box-shadow:0 0 20px #ff2f9e,inset 0 0 16px #ff2f9e88}
+#fig{position:absolute;inset:0;z-index:2;display:flex;align-items:flex-end;justify-content:center;padding:54px 0 64px}
+#fig canvas{height:100%;max-height:640px;width:auto;max-width:100%}
+#sparks{position:absolute;inset:0;pointer-events:none;z-index:1}
+#sparks i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff;opacity:0;animation:tw 3s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.9;transform:scale(1)}}
+#sbar{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:8px;z-index:3;justify-content:space-between}
+.pill{border:1px solid #ffffff2a;background:#0008;color:#fff;border-radius:99px;padding:9px 14px;font-size:14px;font-weight:700;cursor:pointer;backdrop-filter:blur(6px)}
+.pill.hot{background:linear-gradient(135deg,#ff2f9e,#7a2bd6);border-color:#ff9ad6}
+#pst{display:none;position:absolute;left:10px;right:10px;bottom:60px;z-index:3;font-size:12px;line-height:1.3;padding:6px 10px;border-radius:10px;background:#0b0412ee;border:1px solid var(--line);color:#e9dcff}#pst.ok{color:#7dffb0}#pst.no{color:#ffb3c7}
+#lock .lx{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;border:0;background:#ffffff22;color:var(--gold);font-size:15px;line-height:1;cursor:pointer}
+#me{position:absolute;left:10px;right:10px;bottom:10px;z-index:3;display:flex;gap:6px}
+#me input,#me select{background:#0b0412dd;border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px 12px;font-size:15px;min-height:42px;font-family:inherit}
+#me input{flex:1;min-width:0}#me select{flex:0 0 86px}
+#lock{position:absolute;left:12px;right:12px;top:58px;z-index:4;background:#000c;border:1px solid var(--gold);color:var(--gold);padding:9px 40px 9px 12px;border-radius:14px;font-size:13.5px;font-weight:600;text-align:center;display:none}
+/* picker */
+#panel{background:#1a0b27e6;border:1px solid var(--line);border-radius:26px;overflow:hidden;display:flex;flex-direction:column;min-height:520px}
+#cats{display:flex;gap:6px;padding:10px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none;position:sticky;top:0;background:#1a0b27;z-index:2}#cats::-webkit-scrollbar{display:none}
+#cats{justify-content:space-between;gap:4px!important;padding:8px!important}#cats button{flex:1 1 0;min-width:0;max-width:76px;border:0;background:var(--card);color:var(--dim);padding:6px 0;border-radius:16px;font-size:26px;line-height:1;min-height:54px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#cats button.on{background:linear-gradient(135deg,#7a2bd6,#ff2f9e);color:#fff;box-shadow:0 0 16px #ff2f9e77}
+#opts{padding:12px}
+.hint{font-size:14px;color:var(--dim);margin:2px 2px 10px}.hint b{color:var(--gold)}
+.sub{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--pink2);margin:16px 2px 8px;font-weight:800}
+.sub small{text-transform:none;letter-spacing:0;color:#bba6d4;font-weight:600;margin-left:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
+.hint .cn{display:block;font-size:20px;font-weight:900;color:#fff;letter-spacing:.02em;margin-bottom:2px}
+.opt{position:relative;border:2px solid transparent;background:var(--card);border-radius:16px;padding:6px 6px 8px;text-align:center;cursor:pointer;color:var(--txt);display:flex;flex-direction:column;align-items:center;gap:4px}
+.opt:active{transform:scale(.97)}.opt.on{border-color:var(--pink2);background:#3a1650;box-shadow:0 0 18px #ff2f9e77}
+.opt .th{height:100px;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;background:radial-gradient(circle at 50% 50%,#5a3378 0,#3a1d52 45%,#1f0d2e 100%)}
+.opt .th img{max-height:100%;max-width:100%;display:block}
+.opt .th.ld{background:linear-gradient(110deg,#2a1440 30%,#3a1d56 50%,#2a1440 70%);background-size:200% 100%;animation:ld 1.2s linear infinite}@keyframes ld{to{background-position:-200% 0}}
+.opt .nm{font-size:13px;font-weight:800;line-height:1.15}
+.badge{position:absolute;top:8px;right:8px;font-size:12px;line-height:1;font-weight:900;padding:4px 5px;border-radius:99px;background:#000c;border:1px solid var(--gold);color:var(--gold);z-index:2}
+.badge.vip{border-color:#c49bff;color:#e2c9ff}
+.sw{display:flex;gap:9px;flex-wrap:wrap}
+.sw button{width:46px;height:46px;border-radius:50%;border:3px solid #ffffff26;padding:0;cursor:pointer}
+.sw button.on{border-color:#fff;box-shadow:0 0 14px #fffa}
+.sw button.none{background:repeating-linear-gradient(45deg,#3a2350 0 6px,#2a1640 6px 12px)}
+.seg{display:flex;gap:8px;flex-wrap:wrap}.seg button{flex:1;min-width:96px;border:1px solid var(--line);background:var(--card2);color:#fff;border-radius:14px;padding:12px;font-weight:800;font-size:15px;cursor:pointer}.seg button.on{background:linear-gradient(135deg,#7a2bd6,#ff2f9e);border-color:#ff9ad6}
+.note{font-size:13px;color:#bba6d4;font-style:italic;margin:10px 2px}
+/* bottom bar */
+#bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 12px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#12051c00,#12051cf2 22%);}
+#barin{max-width:1100px;margin:0 auto;background:#1c0b2a;border:1px solid #ff6cc066;border-radius:20px;padding:10px;display:flex;gap:10px;align-items:center;box-shadow:0 -6px 30px #ff2f9e33}
+#cmd{flex:1;min-width:0;font:700 14px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffd1ea;background:#0b0412;border-radius:12px;padding:10px 12px;max-height:64px;overflow:auto;word-break:break-word}
+#copy{flex:0 0 auto;border:0;border-radius:16px;padding:14px 18px;font-size:17px;font-weight:900;color:#fff;cursor:pointer;background:linear-gradient(135deg,#ff2f9e,#c2188a);box-shadow:0 0 22px #ff2f9e99;animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 14px #ff2f9e88}50%{box-shadow:0 0 28px #ff2f9edd}}
+/* copied sheet */
+#done{position:fixed;inset:0;z-index:40;background:#000b;display:none;align-items:center;justify-content:center;padding:18px}
+#done.on{display:flex}
+#done .box{max-width:440px;width:100%;background:#22102f;border:1px solid #ff6cc0;border-radius:24px;padding:22px;text-align:center;box-shadow:0 0 40px #ff2f9e66}
+#done h2{margin:0 0 6px;font-size:26px}#done h2 b{color:var(--pink2)}
+#done ol{text-align:left;margin:12px 0 16px;padding-left:22px;line-height:1.5}#done li{margin:6px 0}#done li b{color:var(--gold)}
+#done button{border:0;border-radius:14px;padding:13px 22px;font-weight:900;font-size:16px;color:#fff;background:linear-gradient(135deg,#7a2bd6,#ff2f9e);cursor:pointer}
+#boot{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;font-weight:800;color:var(--pink2);transition:opacity .5s}
+#boot.off{opacity:0;pointer-events:none}
+#boot b{font-size:30px;color:#fff;text-shadow:0 0 18px #ff2f9e}
+#howbtn{margin-top:12px;border:1px solid #ff6cc0;background:#2a1238cc;color:#fff;border-radius:999px;padding:9px 18px;font-weight:800;font-size:15px;cursor:pointer}
+#howto{position:fixed;inset:0;z-index:45;background:#000c;display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:auto}
+#howto.on{display:flex}
+#howto .gbox{max-width:640px;width:100%;background:#1d0d29;border:1px solid #ff6cc0;border-radius:24px;padding:20px 20px 16px;box-shadow:0 0 40px #ff2f9e55;margin:auto 0}
+#howto .gtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+#howto h2{margin:0;font-size:24px}#howto h2 b{color:var(--pink2)}
+#howto .gx{border:0;background:#ffffff1f;color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;flex:none}
+.g-sec{margin:14px 0 4px}.g-sec h3{margin:0 0 8px;font-size:18px;color:var(--gold)}
+.g-sec p{margin:6px 0;line-height:1.5;color:#eadcf7}
+.g-steps{margin:0;padding-left:22px;line-height:1.55;color:#eadcf7}.g-steps li{margin:5px 0}.g-steps b{color:#fff}
+.g-cmds{display:grid;gap:6px}.g-cmds>div{display:flex;gap:10px;align-items:baseline;background:#2a1238;border-radius:12px;padding:8px 10px}
+.g-cmds code,.g-cmds>div>b{flex:0 0 132px;color:var(--pink2);font-weight:900;font-family:inherit;font-size:15px}
+.g-cmds span{color:#eadcf7;font-size:14.5px;line-height:1.35}
+.g-sec code{color:var(--pink2);font-weight:900;font-family:inherit}
+.g-note{font-size:13px;color:#b9a3cf!important}
+.g-list{margin:0;padding-left:20px;line-height:1.55;color:#eadcf7}
+@media (max-width:520px){.g-cmds>div{flex-direction:column;gap:2px}.g-cmds code,.g-cmds>div>b{flex:none}}
+#foot{text-align:center;color:#9d86b3;font-size:12px;margin:18px 12px 0}
+@media (max-width:820px){
+ #app{grid-template-columns:1fr}
+ #stage{min-height:0;height:56vh;max-height:520px}
+ #panel{min-height:0}
+ .grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}.opt .th{height:88px}
+ #hero p{font-size:15px}
+ .st{flex-basis:100%;max-width:none}
+ #copy{padding:13px 14px;font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){#copy,#sparks i,.opt .th.ld{animation:none}}
+</style></head><body>
+<div id="boot"><b>NICKI NIGHT</b>Opening the wardrobe…</div>
+<header id="hero">
+ <span class="tag">VIRTUAL NICKI NIGHT</span>
+ <h1>STYLE <b>STUDIO</b></h1>
+ <p>Build your look before the doors open. When the live starts, you'll walk into the club wearing it.</p>
+ <button id="howbtn" type="button">📖 How to play</button>
+</header>
+<div id="steps">
+ <div class="st"><i>1</i><span><b>Pick your look.</b> Tap the icons: 👚 tops, 👖 bottoms, 👟 shoes, 💇 hair, 💎 extras, 🎨 skin, 📏 body.</span></div>
+ <div class="st"><i>2</i><span><b>Copy my look.</b> One tap copies a single line made for you.</span></div>
+ <div class="st"><i>3</i><span><b>Paste it in the live chat</b> when we go live, and you walk in wearing it.</span></div>
+</div>
+<main id="app">
+ <section id="stage" aria-label="Your character">
+  <div id="beam"></div><div id="sparks"></div><div id="ped"></div><div id="ring"></div>
+  <div id="sbar"><button class="pill hot" id="rnd">🎲 Surprise me</button><button class="pill" id="rst">Start over</button></div>
+  <div id="lock"></div>
+  <div id="fig"></div>
+  <div id="pst" role="status" aria-live="polite"></div><div id="me"><input type="text" id="h" placeholder="Your @ (optional): see your pic" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="30"><select id="pl" aria-label="Platform"><option value="x">X</option><option value="kick">Kick</option></select></div>
+ </section>
+ <section id="panel" aria-label="Wardrobe"><nav id="cats"></nav><div id="opts"></div></section>
+</main>
+<p id="foot">Nothing to sign up for and nothing to download. Your @ is only used to show your public profile picture on this page (pictures via <a href="https://unavatar.io" target="_blank" rel="noopener" style="color:inherit">unavatar.io</a> and FxTwitter).</p>
+<div id="bar"><div id="barin"><div id="cmd" aria-label="Your look command"></div><button id="copy">Copy my look</button></div></div>
+<div id="howto" role="dialog" aria-modal="true" aria-label="How to play"><div class="gbox"><div class="gtop"><h2>How to <b>play</b></h2><button class="gx" id="hx" aria-label="Close">✕</button></div>
+<section class="g-sec"><h3>✨ Get ready before the show</h3>
+<ol class="g-steps">
+<li><b>Build your look</b> in the Style Studio: top, bottoms, shoes, hair, extras, skin tone and body. Add your @ to see your profile pic on your character.</li>
+<li>Tap <b>Copy my look</b>. Save the line somewhere handy, like your notes.</li>
+<li>Come to the live on <b>X</b> or <b>Kick</b>. Nothing to sign up for, nothing to download.</li>
+</ol></section>
+
+<section class="g-sec"><h3>🪩 Getting in</h3>
+<ol class="g-steps">
+<li>Type <code>!enter</code> in the live chat. Your character walks in through the door.</li>
+<li>Paste your <code>!look …</code> line to change into your outfit. Change it as often as you like.</li>
+<li>Just chat! Your messages pop up in a bubble over your character.</li>
+</ol></section>
+
+<section class="g-sec"><h3>💃 Commands</h3>
+<div class="g-cmds">
+<div><code>!enter</code><span>Walk into the club</span></div>
+<div><code>!look …</code><span>Change your outfit (build it in the Style Studio)</span></div>
+<div><code>!dance</code><span>Dance. Add a move: groove, bounce, rock, shuffle, pump, wave, bboy, twerk, snake</span></div>
+<div><code>!bar</code><span>Head to the bar</span></div>
+<div><code>!drink</code><span>Order a drink: martini, shot, beer, cocktail, champagne, wine</span></div>
+<div><code>!menu</code><span>Show tonight's house specials</span></div>
+<div><code>!starships</code><span>House special: Starships Punch 🚀</span></div>
+<div><code>!cybertruck</code><span>House special: Cybertruck Smash ⚡</span></div>
+<div><code>!daq</code><span>House special: Nicki's Strawberry Daq' 🍓</span></div>
+<div><code>!barbz</code><span>House special: Barbz on the Rocks 🍉</span></div>
+<div><code>!cheers</code><span>Raise your glass (grab a drink first)</span></div>
+<div><code>!floor</code><span>Back to the dance floor</span></div>
+<div><code>!earned</code><span>See how many outfits you've unlocked, plus a hint for the next one</span></div>
+<div><code>!earned @name</code><span>Peek at a friend's unlocks</span></div>
+<div><code>!code word</code><span>Heard a secret code? Type it here</span></div>
+<div><code>!leave</code><span>Head home</span></div>
+</div>
+<p class="g-note">Commands start with <b>!</b> and go in the live chat. They never show up as chat bubbles.</p></section>
+
+<section class="g-sec"><h3>🔓 Unlock more outfits</h3>
+<p>Some pieces wear a little lock 🔒. Each one unlocks by taking part during the live. The riddle on the lock is your hint. Some come quick, some take effort, and a few are secret, so listen for clues from the hosts.</p>
+<p>Type <code>!earned</code> any time to see your progress and get a hint. Pieces with a 👑 are for the VIP list.</p>
+<p class="g-note">Everyone starts fresh each live. Wearing a locked piece shows its riddle, and the rest of your look still works.</p></section>
+
+<section class="g-sec"><h3>🎉 Moments to watch for</h3>
+<div class="g-cmds">
+<div><b>Top 5</b><span>The five biggest chatters take the center stage with medals.</span></div>
+<div><b>Runway</b><span>A few guests model on stage. Vote for best dressed by typing their number.</span></div>
+<div><b>Soul Train</b><span>The crowd splits, the chat runs down the middle, and guests take turns dancing down the line.</span></div>
+<div><b>Chat on the floor</b><span>Your messages light up across the whole dance floor.</span></div>
+<div><b>House specials</b><span>Order a special and watch it go off.</span></div>
+<div><b>VIP lounge</b><span>Upper right, for the VIP list.</span></div>
+<div><b>Last call</b><span>At the end everyone heads out and a thank-you card shows the night's highlights.</span></div>
+</div></section>
+
+<section class="g-sec"><h3>💗 Good to know</h3>
+<ul class="g-list">
+<li>Quiet for a while and you drift to the back. Chat and you're back up front.</li>
+<li>When the club gets busy, characters get a little smaller so everyone fits.</li>
+<li>Links, phone numbers and filtered words never show on screen.</li>
+<li>Be kind. The hosts can remove anyone who isn't.</li>
+<li>Lights can flash during drops. Take care if that bothers you.</li>
+</ul></section>
+
+</div></div>
+<div id="done" role="dialog" aria-modal="true"><div class="box"><h2>Copied! <b>You're on the list.</b></h2>
+ <ol><li>Keep this line handy (it's on your clipboard).</li><li>When <b>Virtual Nicki Night</b> goes live on X or Kick, <b>paste it in the live chat</b>.</li><li>You'll walk into the club wearing your look, with your profile picture as your face.</li></ol>
+ <button id="ok">Got it</button></div></div>
+<script src="vnn/rig8.js?v=1792877818"></script>
+<script src="vnn/vnn-avatar.js?v=1792877818"></script>
+<script>
+(function () {
+  var CAT = VNNA.CATALOG, byId = VNNA.byId, $ = function (i) { return document.getElementById(i); };
+  var LOOKS = CAT.looks.filter(function (l) { return l.unlock !== 'nicki'; });
+  var CLR = CAT.colors.clothing.filter(function (c) { return !c.hidden; }), HC = CAT.hair.colors.filter(function (c) { return !c.hidden; }), AC = CAT.accessories.colors;
+  var ITEMS = CAT.accessories.items.filter(function (a) { return !a.hidden; });
+  function fresh() { return { top: 'pinkfriday', topColor: null, bottom: 'cargo', bottomColor: 'black', shoes: 'boots', shoesColor: null, height: 'regular', body: 'straight', skin: 'caramel', hair: 'wavy', hairColor: 'pink', acc: ['heartshades'], accColor: 'gold' }; }
+  var sel = fresh(), photoImg = null, handle = '', plat = 'x', cat = 'tops', calm = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var RING = { x: '#1d9bf0', tiktok: '#fe2c55', kick: '#53fc18' };
+  for (var i = 0; i < 18; i++) { var sp = document.createElement('i'); sp.style.cssText = 'left:' + (5 + Math.random() * 90) + '%;top:' + (5 + Math.random() * 70) + '%;animation-delay:' + (Math.random() * 3).toFixed(2) + 's'; $('sparks').appendChild(sp); }
+
+  /* head: your profile picture if you added your @, otherwise a soft placeholder */
+  function headFn(ctx, x, y, a, r) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.save(); ctx.clip();
+    if (photoImg && photoImg.complete && photoImg.naturalWidth) { var s = Math.max(2 * r / photoImg.naturalWidth, 2 * r / photoImg.naturalHeight); ctx.drawImage(photoImg, -photoImg.naturalWidth * s / 2, -photoImg.naturalHeight * s / 2, photoImg.naturalWidth * s, photoImg.naturalHeight * s); }
+    else { var g = ctx.createRadialGradient(-r * .3, -r * .35, r * .1, 0, 0, r); g.addColorStop(0, '#ffc2e1'); g.addColorStop(1, '#b0307a'); ctx.fillStyle = g; ctx.fillRect(-r, -r, 2 * r, 2 * r); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(0, -r * .18, r * .3, 0, 7); ctx.fill(); ctx.beginPath(); ctx.ellipse(0, r * .78, r * .55, r * .4, 0, 0, 7); ctx.fill(); }
+    ctx.restore(); ctx.lineWidth = r * .08; ctx.strokeStyle = RING[plat] || '#fff'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.stroke(); ctx.restore();
+  }
+
+  /* stage: drawn at the screen's real pixel density so it stays sharp on phones */
+  var DPR = Math.min(2, window.devicePixelRatio || 1), CW = 460, CH = 840, cvs = document.createElement('canvas');
+  cvs.width = Math.round(CW * DPR); cvs.height = Math.round(CH * DPR); $('fig').appendChild(cvs);
+  var cx = cvs.getContext('2d'), cur = null, tok = 0, t0 = performance.now(), STG = {};
+  cx.imageSmoothingQuality = 'high';
+  function rebuild() { var my = ++tok; VNNA.build(sel).then(function (r) { if (my === tok) cur = r; }); }
+  function frame(now) {
+    if (cur) {
+      cx.setTransform(DPR, 0, 0, DPR, 0, 0); cx.clearRect(0, 0, CW, CH);
+      var s = CH / 2010;
+      VNNA.draw(cx, cur.set, cur.spec, { st: STG, now: now / 1000, x: CW / 2, y: 2005 * s, h: 1700 * s * cur.spec.hs, clip: 'hh1', t: calm ? 1.1 : (now - t0) / 1000, beat: 0.5, ph: 0, amp: calm ? 0.01 : 0.5, head: headFn });
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* thumbnails: each piece drawn from the original reference art (front view), laid out flat and fitted inside its tile */
+  var TH = {}, BIG = document.createElement('canvas'); BIG.width = 900; BIG.height = 1300; var bx = BIG.getContext('2d', { willReadFrequently: true });
+  var DS = function (k) { var d = (VNNA.lib() || {}).scale || {}; return +d[k] || 1; };
+  function hexOf(list, id, dflt) { var c = id && byId(list, id); return c ? (c.ombre ? { ombre: c.ombre } : c.hex) : dflt; }
+  /* layers: [sheet, key, v, colour, x, y, scale, rotation, anchorX, anchorY, flip] — x,y is where the anchor point lands */
+  function plan(kind, S) {
+    var L = [], cc = CAT.colors.clothing;
+    if (kind === 'top') {
+      var t = byId(CAT.looks, S.top) || CAT.looks[0], col = t.sig ? null : hexOf(cc, S.topColor, t.col), sh = t.sig ? t.sheet : t.sheet, v = t.v;
+      var ts = DS('torso'), us = DS('uarm'), fs = DS('farm');
+      [-1, 1].forEach(function (sd) {
+        var ax = 450 + sd * 120 * ts, ay = 300 + 40 * ts, a = -sd * 0.32;
+        L.push([sh, 'sleeveU', v, col, ax, ay, us, a, 0.5, 0.06, sd > 0]);
+        var ex = ax - Math.sin(a) * 300 * us * 0.94, ey = ay + Math.cos(a) * 300 * us * 0.94;
+        L.push([sh, 'sleeveF', v, col, ex, ey, fs, a * 0.55, 0.5, 0.04, sd > 0]);
+      });
+      L.push([sh, t.dress ? 'torso' : 'torso', t.dress ? null : v, col, 450, 300, ts, 0, 0.5, 0]);
+      if (t.dress) L.push([sh, 'dskF', null, col, 450, 300 + 470 * ts, ts, 0, 0.5, 0.0, false, 'dsk']);
+      if (t.dress) L.push([sh, 'mdskF', null, col, 450, 300 + 470 * ts, ts, 0, 0.5, 0.0, false, 'dsk']);
+    } else if (kind === 'bottom') {
+      var b = byId(CAT.bottoms, S.bottom) || CAT.bottoms[0], bc = b.fixed ? null : hexOf(cc, S.bottomColor, b.col), ps = DS('pelvis');
+      if (b.skirt) { L.push([b.sheet, 'skF', b.v, bc, 450, 200, ps, 0, 0.5, 0, false, 'sk']); L.push([b.sheet, 'mskF', b.v, bc, 450, 200, ps, 0, 0.5, 0, false, 'sk']); }
+      else {
+        var th = DS('thigh'), sn = DS('shin');
+        [-1, 1].forEach(function (sd) {
+          var hx = 450 + sd * 92 * ps, hy = 200 + 140 * ps;
+          L.push([b.sheet, 'shin', b.v, bc, hx + sd * 6, hy + 372 * th, sn, 0, 0.5, 0.03, sd > 0]);
+          L.push([b.sheet, 'thigh', b.v, bc, hx, hy, th, 0, 0.5, 0.0, sd > 0]);
+        });
+        L.push([b.sheet, 'pelvis', b.v, bc, 450, 200, ps, 0, 0.5, 0]);
+      }
+    } else if (kind === 'shoes') {
+      var s = byId(CAT.shoes, S.shoes) || CAT.shoes[0], scol = s.fixed ? null : hexOf(cc, S.shoesColor, s.col);
+      if (s.shaft) {
+        var shc = s.shaft.col || scol;
+        L.push([s.sheet, 'shoe34', s.v, scol, 450, 900, 1, 0, 0, 0, false, 'ank']);
+        L.push([s.shaft.sheet, 'shaft', s.shaft.v, shc, 450, 900 + 8, DS('shin') * 0.9, 0, 0.5, 1]);
+      } else {
+        L.push([s.sheet, 'shoe34', s.v, scol, 380, 600, 0.92, 0, 0.5, 0.5, true]);
+        L.push([s.sheet, 'shoe34', s.v, scol, 520, 660, 1, 0, 0.5, 0.5]);
+      }
+    } else if (kind === 'hair') {
+      var h = S.hair && byId(CAT.hair.styles, S.hair), hcol = hexOf(CAT.hair.colors, S.hairColor || 'brown', '#5a3825');
+      L.push(['@head']);
+      if (h) { L.unshift([h.sheet, 'hairB', h.v, hcol, 0, 0, 1, 0, 0, 0, false, 'slot']); L.push([h.sheet, 'hairF', h.v, hcol, 0, 0, 1, 0, 0, 0, false, 'slot']); }
+    } else if (kind === 'acc') {
+      var a = byId(CAT.accessories.items, (S.acc || [])[0]) || {}, acol = a.full ? null : hexOf(CAT.accessories.colors, S.accColor || 'gold', '#e8b84a');
+      var sheet = a.sheet || (/^(wrist|arm|hands)$/.test(a.slot) ? 'ACC-HANDS' : 'ACC-BODY'), key = a.key === 'HIPBAG' ? 'HIP BAG' : (a.key || (a.slot === 'hands' ? 'NAILS_OPEN' : ''));
+      L.push([sheet, key, null, acol, 450, 650, 1.6, 0, 0.5, 0.5]);
+    }
+    return L;
+  }
+  function flat(kind, S) {
+    var L = plan(kind, S);
+    return Promise.all(L.map(function (l) { return l[0] === '@head' ? Promise.resolve('@head') : VNNA.piece(l[0], l[1], l[2], l[3] ? (typeof l[3] === 'string' ? VNNA.hex2(l[3]) : l[3]) : null); })).then(function (P) {
+      bx.setTransform(1, 0, 0, 1, 0, 0); bx.clearRect(0, 0, 900, 1300); var drawn = 0, skirt = false;
+      P.forEach(function (p, i) {
+        var l = L[i];
+        if (p === '@head') { bx.fillStyle = '#5b3a73'; bx.beginPath(); bx.ellipse(146, 205, 86, 104, 0, 0, 7); bx.fill(); return; }
+        if (!p) return; if (l[11] === 'sk' || l[11] === 'dsk') { if (skirt) return; skirt = true; }
+        var e = p.e, im = p.im, w = e.w, h = e.h, sc = l[6];
+        bx.save();
+        if (l[11] === 'slot') { bx.translate(e.ox || 0, e.oy || 0); bx.drawImage(im, 0, 0, w, h); bx.restore(); drawn++; return; }
+        bx.translate(l[4], l[5]); bx.rotate(l[7]); bx.scale(l[10] ? -sc : sc, sc);
+        if (l[11] === 'ank' && e.ank) bx.translate(-e.ank[0], -e.ank[1]);
+        else if ((l[11] === 'sk' || l[11] === 'dsk') && e.tx0 != null) bx.translate(-(e.tx0 + e.tx1) / 2, -4);
+        else bx.translate(-w * l[8], -h * l[9]);
+        bx.drawImage(im, 0, 0, w, h); bx.restore(); drawn++;
+      });
+      /* find the art's real edges, then fit it inside the tile with breathing room */
+      var d = bx.getImageData(0, 0, 900, 1300).data, x0 = 900, y0 = 1300, x1 = -1, y1 = -1, x, y;
+      for (y = 0; y < 1300; y += 2) for (x = 0; x < 900; x += 2) if (d[(y * 900 + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      var c = document.createElement('canvas'); c.width = 240; c.height = 200; var cx2 = c.getContext('2d'); cx2.imageSmoothingQuality = 'high';
+      if (x1 > x0) { var bw = x1 - x0 + 2, bh = y1 - y0 + 2, k = Math.min(240 * 0.84 / bw, 200 * 0.84 / bh), dw = bw * k, dh = bh * k; cx2.drawImage(BIG, x0, y0, bw, bh, (240 - dw) / 2, (200 - dh) / 2, dw, dh); }
+      return c.toDataURL('image/png');
+    });
+  }
+  function thumbKey(kind, S) { return kind + '|' + [S.top, S.topColor, S.bottom, S.bottomColor, S.shoes, S.shoesColor, S.hair, S.hairColor, (S.acc || []).join(','), S.accColor].join(','); }
+  function thumb(S, kind) { var key = thumbKey(kind, S); if (TH[key]) return Promise.resolve(TH[key]); return flat(kind, S).then(function (u) { return TH[key] = u; }); }
+  var thQ = Promise.resolve(), thTok = 0;
+  function fillThumbs() {
+    var my = ++thTok;
+    Array.prototype.forEach.call($('opts').querySelectorAll('[data-th]'), function (el) {
+      var d = JSON.parse(el.getAttribute('data-th')), S = Object.assign({}, sel, d.patch, { acc: d.patch.acc || sel.acc });
+      thQ = thQ.then(function () { if (my !== thTok) return; return thumb(S, d.region).then(function (u) { if (my === thTok && el.isConnected) { el.classList.remove('ld'); el.innerHTML = '<img src="' + u + '" alt="">'; } }); }).catch(function () { });
+    });
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  var UNL = { earned: ['🔒', '', 'Unlock at the party'], vip: ['👑', 'vip', 'VIP list'] };
+  function opt(id, name, patch, region, locked, on) {
+    return '<button class="opt' + (on ? ' on' : '') + '" data-id="' + esc(id) + '">' + (locked ? '<span class="badge ' + UNL[locked][1] + '" title="' + UNL[locked][2] + '" aria-label="' + UNL[locked][2] + '">' + UNL[locked][0] + '</span>' : '') +
+      '<div class="th ld" data-th="' + esc(JSON.stringify({ patch: patch, region: region })) + '"></div><div class="nm">' + esc(name) + '</div></button>';
+  }
+  function isFree(x) { return !x.unlock || x.unlock === 'free'; }
+  function tiered(items, make, first) {
+    var f = items.filter(isFree), e = items.filter(function (x) { return x.unlock === 'earned'; }), v = items.filter(function (x) { return x.unlock === 'vip'; });
+    return '<div class="grid">' + (first || '') + f.map(make).join('') + '</div>' +
+      (e.length ? '<div class="sub">🔒 Unlock at the party <small>try them on now, earn them on the night</small></div><div class="grid">' + e.map(make).join('') + '</div>' : '') +
+      (v.length ? '<div class="sub">👑 VIP list <small>for the VIP guest list</small></div><div class="grid">' + v.map(make).join('') + '</div>' : '');
+  }
+  function swatches(list, curv, key, none) {
+    return '<div class="sw">' + (none ? '<button class="none' + (!curv ? ' on' : '') + '" data-sw="' + key + '" data-id="" title="Original color" aria-label="Original color"></button>' : '') +
+      list.map(function (c) { var bg = c.ombre ? 'linear-gradient(135deg,' + c.ombre.join(',') + ')' : c.hex; return '<button class="' + (curv === c.id ? 'on' : '') + '" data-sw="' + key + '" data-id="' + esc(c.id) + '" title="' + esc(c.name || c.id) + '" aria-label="' + esc(c.name || c.id) + '" style="background:' + bg + '"></button>'; }).join('') + '</div>';
+  }
+  var CATS = [['tops', '👚', 'Tops'], ['bottoms', '👖', 'Bottoms'], ['shoes', '👟', 'Shoes'], ['hair', '💇', 'Hair'], ['acc', '💎', 'Extras'], ['skin', '🎨', 'Skin tone'], ['body', '📏', 'Body']];
+  var HINT = { tops: 'Tap a top to try it on. Plain pieces get a color pick underneath.', bottoms: 'Pants, skirts and shorts. Pick a color underneath, or keep the original.', shoes: 'Sneakers, boots and heels.', hair: 'Pick a style, then a color. Any style works for anyone.', acc: 'Shades, jewelry, hats and more. Tap again to take one off.', skin: 'Pick the tone that feels like you.', body: 'Choose your height and shape.' };
+  function renderCats() { $('cats').innerHTML = CATS.map(function (c) { return '<button data-c="' + c[0] + '" class="' + (cat === c[0] ? 'on' : '') + '" title="' + c[2] + '" aria-label="' + c[2] + '">' + c[1] + '</button>'; }).join(''); }
+
+  function accPatch(a) { var p = { acc: [a.id], accColor: sel.accColor || 'gold' }; if (/^(hands|wrist|arm|carry|waist)$/.test(a.slot)) p.top = 'tank'; return p; }
+  var FIXED = '<p class="note">This piece has its own full-color design, so there is no color to pick.</p>';
+  function renderOpts() {
+    var cn = CATS.filter(function (c) { return c[0] === cat; })[0], h = '<p class="hint"><b class="cn">' + cn[2] + '</b>' + HINT[cat] + '</p>', o = $('opts');
+    if (cat === 'tops') { var st = byId(LOOKS, sel.top) || {}; h += tiered(LOOKS, function (l) { return opt(l.id, l.name, { top: l.id }, 'top', isFree(l) ? null : l.unlock, sel.top === l.id); }); h += (!st.sig && !st.nk) ? '<div class="sub">Top color</div>' + swatches(CLR, sel.topColor, 'topColor', true) : FIXED; }
+    else if (cat === 'bottoms') { var sb = byId(CAT.bottoms, sel.bottom) || {}; h += tiered(CAT.bottoms, function (b) { return opt(b.id, b.name, { bottom: b.id }, 'bottom', isFree(b) ? null : b.unlock, sel.bottom === b.id); }); h += sb.fixed ? FIXED : '<div class="sub">Bottom color</div>' + swatches(CLR, sel.bottomColor, 'bottomColor', true); }
+    else if (cat === 'shoes') { var ss = byId(CAT.shoes, sel.shoes) || {}; h += tiered(CAT.shoes, function (s) { return opt(s.id, s.name, { shoes: s.id }, 'shoes', isFree(s) ? null : s.unlock, sel.shoes === s.id); }); h += ss.fixed ? FIXED : '<div class="sub">Shoe color</div>' + swatches(CLR, sel.shoesColor, 'shoesColor', true); }
+    else if (cat === 'hair') { h += tiered(CAT.hair.styles, function (s) { return opt(s.id, s.name, { hair: s.id }, 'hair', isFree(s) ? null : s.unlock, sel.hair === s.id); }, '<button class="opt' + (!sel.hair ? ' on' : '') + '" data-id=""><div class="th ld" data-th="' + esc(JSON.stringify({ patch: { hair: null, hairColor: null }, region: 'hair' })) + '"></div><div class="nm">No hair</div></button>') + '<div class="sub">Hair color</div>' + swatches(HC, sel.hairColor, 'hairColor', false); }
+    else if (cat === 'acc') { var anyT = sel.acc.some(function (id) { var x = byId(ITEMS, id); return x && !x.full; }); h += tiered(ITEMS, function (a) { return opt(a.id, a.name, accPatch(a), 'acc', isFree(a) ? null : a.unlock, sel.acc.indexOf(a.id) >= 0); }); if (anyT || !sel.acc.length) h += '<div class="sub">Extras color <small>full-color pieces keep their own</small></div>' + swatches(AC, sel.accColor, 'accColor', false); }
+    else if (cat === 'skin') { h += swatches(CAT.skin, sel.skin, 'skin', false) + '<p class="note">' + esc((byId(CAT.skin, sel.skin) || {}).name || '') + '</p>'; }
+    else if (cat === 'body') { h += '<div class="sub">Height</div><div class="seg">' + CAT.heights.map(function (x) { return '<button class="' + (sel.height === x.id ? 'on' : '') + '" data-h="' + esc(x.id) + '">' + esc(x.label) + '</button>'; }).join('') + '</div><div class="sub">Shape</div><div class="seg">' + CAT.bodies.map(function (b) { return '<button class="' + (sel.body === b ? 'on' : '') + '" data-b="' + esc(b) + '">' + esc(b.charAt(0).toUpperCase() + b.slice(1)) + '</button>'; }).join('') + '</div>'; }
+    o.innerHTML = h; fillThumbs();
+  }
+  function cmdText() {
+    var p = [], S = sel, top = byId(LOOKS, S.top) || {};
+    if (S.top) p.push(S.top); if (S.topColor && !top.sig) p.push(S.topColor);
+    if (S.bottom && !top.dress) { p.push(S.bottom); if (S.bottomColor) p.push(S.bottomColor); }
+    if (S.shoes) { p.push(S.shoes); if (S.shoesColor) p.push(S.shoesColor); }
+    if (S.height !== 'regular') p.push(S.height); if (S.body === 'curvy') p.push('curvy'); p.push(S.skin);
+    if (S.hair) { p.push(S.hair); if (S.hairColor) p.push(S.hairColor); }
+    S.acc.forEach(function (a) { p.push(a); }); if (S.acc.length && S.accColor) p.push(S.accColor);
+    return '!look ' + p.join(' ');
+  }
+  function lockInfo() {
+    var t = byId(LOOKS, sel.top), b = byId(CAT.bottoms, sel.bottom), w = [];
+    if (t && t.unlock === 'vip') return '👑 ' + t.name + ' is for the VIP guest list. Everyone else wears their next pick.';
+    [t, b && !(t && t.dress) ? b : null, byId(CAT.shoes, sel.shoes), byId(CAT.hair.styles, sel.hair)].concat(sel.acc.map(function (id) { return byId(ITEMS, id); })).forEach(function (x) { if (x && x.unlock === 'earned') w.push(x.name); });
+    return w.length ? '🔒 ' + w.join(' + ') + (w.length > 1 ? ' unlock' : ' unlocks') + ' at the party. Hang out, dance and chat on the night and ' + (w.length > 1 ? 'they switch' : 'it switches') + ' on by itself.' : '';
+  }
+  var lockOff = '';
+  function paint() { rebuild(); $('cmd').textContent = cmdText(); var l = lockInfo(), m = $('lock'); if (!l) lockOff = ''; var show = l && l !== lockOff; m.style.display = show ? 'block' : 'none'; if (show) { m.innerHTML = '<span class="lt"></span><button type="button" class="lx" aria-label="Close this message" title="Close">✕</button>'; m.firstChild.textContent = l; m.lastChild.onclick = function (e) { e.stopPropagation(); lockOff = l; m.style.display = 'none'; }; } }
+  function all() { renderCats(); renderOpts(); paint(); }
+  $('cats').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; cat = b.dataset.c; renderCats(); renderOpts(); };
+  $('opts').onclick = function (e) {
+    var sw = e.target.closest('[data-sw]'), b = e.target.closest('.opt'), hh = e.target.closest('[data-h]'), bb = e.target.closest('[data-b]');
+    if (sw) { var k = sw.dataset.sw, v = sw.dataset.id || null; sel[k] = (sel[k] === v && /^(topColor|bottomColor|shoesColor)$/.test(k)) ? null : v; if (k === 'hairColor' && v && !sel.hair) sel.hair = 'long'; }
+    else if (hh) sel.height = hh.dataset.h; else if (bb) sel.body = bb.dataset.b;
+    else if (b) {
+      var id = b.dataset.id;
+      if (cat === 'tops') sel.top = id; else if (cat === 'bottoms') sel.bottom = id; else if (cat === 'shoes') sel.shoes = id;
+      else if (cat === 'hair') { sel.hair = id || null; if (!id) sel.hairColor = null; else if (!sel.hairColor) sel.hairColor = 'brown'; }
+      else if (cat === 'acc') { var ix = sel.acc.indexOf(id), it = byId(ITEMS, id); if (ix >= 0) sel.acc.splice(ix, 1); else { sel.acc = sel.acc.filter(function (x) { var q = byId(ITEMS, x); return !(q && it && q.slot === it.slot); }); sel.acc.push(id); } }
+    } else return;
+    all();
+  };
+  function pk(a) { return a[Math.floor(Math.random() * a.length)]; }
+  $('rnd').onclick = function () {
+    var free = LOOKS.filter(function (l) { return isFree(l) && !l.sig; });
+    sel.top = pk(free).id; sel.topColor = pk(CLR).id; sel.bottom = pk(CAT.bottoms.filter(isFree)).id; sel.bottomColor = Math.random() < .5 ? pk(CLR).id : null;
+    sel.shoes = pk(CAT.shoes.filter(isFree)).id; sel.shoesColor = Math.random() < .5 ? pk(CLR).id : null; sel.skin = pk(CAT.skin).id; sel.hair = pk(CAT.hair.styles.filter(isFree)).id; sel.hairColor = pk(HC).id;
+    sel.acc = Math.random() < .7 ? [pk(ITEMS.filter(isFree)).id] : []; sel.accColor = pk(AC).id; sel.height = pk(CAT.heights).id; sel.body = pk(CAT.bodies); all();
+  };
+  $('howbtn').onclick = function () { $('howto').classList.add('on'); }; $('hx').onclick = function () { $('howto').classList.remove('on'); }; $('howto').onclick = function (e) { if (e.target === this) this.classList.remove('on'); };
+  $('rst').onclick = function () { sel = fresh(); all(); };
+  function copied() { $('done').classList.add('on'); }
+  $('copy').onclick = function () {
+    var text = cmdText();
+    function fb() { var t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (e) { } t.remove(); copied(); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(copied, fb); else fb();
+  };
+  $('ok').onclick = function () { $('done').classList.remove('on'); };
+  $('done').onclick = function (e) { if (e.target === this) this.classList.remove('on'); };
+  /* optional profile picture preview: your public picture is fetched from unavatar.io and only shown on this page */
+  var lkT = null, lkN = 0;
+  function pstat(t, c) { var e = $('pst'); e.textContent = t; e.className = c || ''; e.style.display = t ? 'block' : 'none'; }
+  function lookup() {
+    clearTimeout(lkT); var my = ++lkN;
+    handle = $('h').value.trim().replace(/^@/, '').replace(/[^A-Za-z0-9_.]/g, '').slice(0, 30); plat = $('pl').value;
+    if (!handle) { photoImg = null; pstat(''); return; }
+    pstat('Looking for @' + handle + '…', 'wait');
+    function show(im) { if (my !== lkN) return; photoImg = im; pstat('Found @' + handle + ' ✓', 'ok'); }
+    function fail() { if (my !== lkN) return; photoImg = null; pstat('No picture found for @' + handle + '. Check the spelling and the platform. You can still copy your look.', 'no'); }
+    function load(url, next) { /* try with CORS first, then plain (we only draw it, never read it back) */
+      var im = new Image(); im.referrerPolicy = 'no-referrer'; im.crossOrigin = 'anonymous';
+      im.onload = function () { show(im); };
+      im.onerror = function () { var i2 = new Image(); i2.referrerPolicy = 'no-referrer'; i2.onload = function () { show(i2); }; i2.onerror = next; i2.src = url; };
+      im.src = url;
+    }
+    function unav(provs) { var p = provs.shift(); if (!p) return fail(); load('https://unavatar.io/' + p + '/' + encodeURIComponent(handle) + '?fallback=false', function () { if (my === lkN) unav(provs); }); }
+    if (plat === 'x') {
+      /* X: ask the free FxTwitter profile service for the real picture address, then fall back to unavatar */
+      var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 6000);
+      fetch('https://api.fxtwitter.com/2/profile/' + encodeURIComponent(handle), ctl ? { signal: ctl.signal } : {}).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        clearTimeout(tm); if (my !== lkN) return;
+        var u = j && j.user && j.user.avatar_url; if (!u) return unav(['x', 'twitter']);
+        u = String(u).replace(/_(normal|bigger|mini)(\.[a-z]+)$/i, '_400x400$2');
+        if (!/^https:\/\/pbs\.twimg\.com\//.test(u)) return unav(['x', 'twitter']);
+        load(u, function () { if (my === lkN) unav(['x', 'twitter']); });
+      }).catch(function () { clearTimeout(tm); if (my === lkN) unav(['x', 'twitter']); });
+    } else unav([plat === 'tiktok' ? 'tiktok' : 'kick']);
+  }
+  function lookupSoon() { clearTimeout(lkT); if (!$('h').value.trim()) { lookup(); return; } pstat('Typing…', 'wait'); lkT = setTimeout(lookup, 700); }
+  $('h').oninput = lookupSoon; $('h').onchange = lookup; $('pl').onchange = function () { plat = $('pl').value; lookup(); };
+  $('h').onkeydown = function (e) { if (e.key === 'Enter') this.blur(); };
+  VNNA.setCache(30);
+  VNNA.init('vnn/lib_mid/', 'vnn/moc.json').then(function () { all(); requestAnimationFrame(frame); $('boot').className = 'off'; window.READY = 1; })
+    .catch(function () { $('boot').innerHTML = '<b>NICKI NIGHT</b>The wardrobe did not load. Please refresh the page.'; });
+})();
+</script>
+</body></html>
