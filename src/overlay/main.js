@@ -1788,44 +1788,63 @@
       g.drawImage(src, 0, src.height * t0, src.width, Math.max(1, src.height * (t1 - t0)), CF_CX - hw, y0, hw * 2, y1 - y0 + 1);
     }
   }
+  /* each message is drawn once into its own little picture (glow included), then reused while it scrolls, so the glow costs nothing per frame */
+  function rr(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
+  function cfCard(m, W2) { /* Soul Train: a white bubble card with the name in a coloured pill */
+    if (m.cT && m.cT.width === W2) return m.cT;
+    var c = document.createElement('canvas'), x = c.getContext('2d'); x.font = '800 40px system-ui, Arial, sans-serif';
+    var ln = wrap2(x, m.t, W2 - 70), h = 60 + ln.length * 48 + 22; c.width = W2; c.height = h + 8; x = c.getContext('2d');
+    x.fillStyle = 'rgba(80,0,60,.35)'; rr(x, 6, 8, W2 - 12, h - 6, 30); x.fill();
+    var gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#ffeef8'); x.fillStyle = gr; rr(x, 4, 2, W2 - 8, h - 6, 30); x.fill();
+    x.lineWidth = 5; x.strokeStyle = m.c; rr(x, 4, 2, W2 - 8, h - 6, 30); x.stroke();
+    x.font = '900 28px system-ui, Arial, sans-serif'; var nm = fitLine(x, m.n, W2 - 120), nw = x.measureText(nm).width + 34;
+    x.fillStyle = m.c; rr(x, (W2 - nw) / 2, 12, nw, 40, 20); x.fill(); x.fillStyle = '#2a0b35'; x.textAlign = 'center'; x.fillText(nm, W2 / 2, 42);
+    x.font = '24px system-ui, sans-serif'; x.fillText('♡', 32, 44); x.fillText('♡', W2 - 32, 44);
+    x.font = '800 40px system-ui, Arial, sans-serif'; x.fillStyle = '#2a0b35'; ln.forEach(function (l, j) { x.fillText(l, W2 / 2, 96 + j * 48); });
+    m.cT = c; return c;
+  }
+  function cfGlow(m) { /* full floor: glowing see-through words, the name glows in its own colour */
+    if (m.cF) return m.cF;
+    var c = document.createElement('canvas'), x = c.getContext('2d'), F1 = '900 40px system-ui, Arial, sans-serif', F2 = '800 46px system-ui, Arial, sans-serif';
+    x.font = F1; var nm = '♡ ' + m.n + '  ', nw = x.measureText(nm).width; x.font = F2; var tt = fitLine(x, m.t, 1700 * 0.62 - nw), tw = x.measureText(tt).width;
+    c.width = Math.ceil(nw + tw + 60); c.height = 84; x = c.getContext('2d'); x.textBaseline = 'middle';
+    [[22, .55], [9, .8]].forEach(function (gs) { x.shadowBlur = gs[0]; x.shadowColor = m.c; x.globalAlpha = gs[1]; x.font = F1; x.fillStyle = m.c; x.fillText(nm, 30, 44); x.font = F2; x.shadowColor = '#ff7fd0'; x.fillStyle = '#ffffff'; x.fillText(tt, 30 + nw, 44); });
+    x.shadowBlur = 0; x.globalAlpha = 1; x.font = F1; x.fillStyle = m.c; x.fillText(nm, 30, 44); x.font = F2; x.fillStyle = '#fff6fd'; x.fillText(tt, 30 + nw, 44);
+    m.cF = c; return c;
+  }
   function cfDraw(p) {
     var c = $('cfloor'); if (!c) return; var g = c.getContext('2d'); g.clearRect(0, 0, W, H);
+    c.classList.toggle('glow', S.cf === 'floor');
     if (!S.cf) return;
     var train = S.cf === 'train', SW = train ? 560 : 1700, SH = train ? 1000 : 900, f = CF.flat || (CF.flat = document.createElement('canvas'));
     if (f.width !== SW || f.height !== SH) { f.width = SW; f.height = SH; }
-    var x = f.getContext('2d'); x.clearRect(0, 0, SW, SH); x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.lineJoin = 'round';
+    var x = f.getContext('2d'); x.clearRect(0, 0, SW, SH); x.textAlign = 'center';
     var list = CF.list, i, y;
     if (train) {
-      var lg = x.createLinearGradient(0, 0, 0, SH); lg.addColorStop(0, 'rgba(14,6,28,.55)'); lg.addColorStop(0.25, 'rgba(14,6,28,.86)'); lg.addColorStop(1, 'rgba(14,6,28,.92)');
-      x.fillStyle = lg; x.fillRect(0, 0, SW, SH);
-      x.font = '900 46px system-ui, Arial, sans-serif'; x.fillStyle = '#ff4fb0'; x.fillText('SOUL TRAIN', SW / 2, 70); x.font = '800 24px system-ui, Arial, sans-serif'; x.fillStyle = 'rgba(255,255,255,.75)'; x.fillText('LIVE CHAT', SW / 2, 104);
-      var EH = 128; y = SH - 28 + (1 - p) * EH;
-      for (i = list.length - 1; i >= 0 && y > 150; i--) {
-        var m = list[i]; x.font = '700 40px system-ui, Arial, sans-serif'; var ln = wrap2(x, m.t, SW - 44);
-        var top = y - ln.length * 46 - 34; if (top < 120) break;
-        x.globalAlpha = i === list.length - 1 ? Math.max(0.15, p) : 1;
-        x.font = '800 30px system-ui, Arial, sans-serif'; x.fillStyle = m.c; x.fillText(fitLine(x, m.n, SW - 40), SW / 2, top + 28);
-        x.font = '700 40px system-ui, Arial, sans-serif'; x.fillStyle = '#fff'; ln.forEach(function (l, j) { x.fillText(l, SW / 2, top + 34 + 40 + j * 46); });
-        x.globalAlpha = 1; y = top - 16;
+      /* vivid lane: hot pink to purple, a soft sparkle pattern, cute header */
+      var lg = x.createLinearGradient(0, 0, 0, SH); lg.addColorStop(0, '#5b1aa8'); lg.addColorStop(0.45, '#c2187f'); lg.addColorStop(1, '#ff3fa4');
+      x.globalAlpha = 0.93; x.fillStyle = lg; x.fillRect(0, 0, SW, SH); x.globalAlpha = 1;
+      x.fillStyle = 'rgba(255,255,255,.18)'; for (i = 0; i < 70; i++) { var sx = (i * 137) % SW, sy = (i * 263) % SH, r2 = 2 + (i % 3); x.beginPath(); x.arc(sx, sy, r2, 0, 7); x.fill(); }
+      x.font = '900 54px system-ui, Arial, sans-serif'; var hg = x.createLinearGradient(0, 30, 0, 90); hg.addColorStop(0, '#fff6c2'); hg.addColorStop(1, '#ffd86b');
+      x.lineWidth = 10; x.strokeStyle = '#7a0f5c'; x.lineJoin = 'round'; x.strokeText('SOUL TRAIN', SW / 2, 82); x.fillStyle = hg; x.fillText('SOUL TRAIN', SW / 2, 82);
+      x.font = '800 26px system-ui, Arial, sans-serif'; x.fillStyle = '#fff'; x.fillText('✨ LIVE CHAT ✨', SW / 2, 118);
+      var GAP = 18, C0 = list.length ? cfCard(list[list.length - 1], SW - 36) : null; y = SH - 22 + (1 - p) * ((C0 ? C0.height : 120) + GAP);
+      for (i = list.length - 1; i >= 0; i--) {
+        var cd = cfCard(list[i], SW - 36), top = y - cd.height; if (top < 136) break;
+        x.globalAlpha = i === list.length - 1 ? Math.max(0.15, p) : 1; x.drawImage(cd, 18, top); x.globalAlpha = 1; y = top - GAP;
       }
       g.save(); warp(g, f, 470, 1078, 95, 96);
-      /* glowing edges of the lane */
-      [[14, 'rgba(255,79,176,.28)'], [5, '#ff4fb0']].forEach(function (st) { g.strokeStyle = st[1]; g.lineWidth = st[0]; [-1, 1].forEach(function (sd) { g.beginPath(); g.moveTo(CF_CX + sd * laneHalf(470), 470); g.lineTo(CF_CX + sd * laneHalf(1078), 1078); g.stroke(); }); });
+      [[18, 'rgba(255,216,107,.25)'], [10, 'rgba(255,79,176,.55)'], [4, '#fff0a8']].forEach(function (st) { g.strokeStyle = st[1]; g.lineWidth = st[0]; [-1, 1].forEach(function (sd) { g.beginPath(); g.moveTo(CF_CX + sd * laneHalf(470), 470); g.lineTo(CF_CX + sd * laneHalf(1078), 1078); g.stroke(); }); });
       g.restore();
     } else {
-      x.fillStyle = 'rgba(12,4,24,.32)'; x.fillRect(0, 0, SW, SH);
       var LH = 84; y = SH - 30 + (1 - p) * LH;
       for (i = list.length - 1; i >= 0 && y > 40; i--) {
-        var mm = list[i]; x.globalAlpha = i === list.length - 1 ? Math.max(0.15, p) : Math.max(0.35, 1 - (SH - y) / SH * 0.5);
-        x.font = '800 40px system-ui, Arial, sans-serif'; var nm = mm.n + '  ', nw = x.measureText(nm).width; x.font = '700 46px system-ui, Arial, sans-serif'; var tt = fitLine(x, mm.t, SW * 0.62 - nw), tw2 = x.measureText(tt).width, x0 = SW / 2 - (nw + tw2) / 2;
-        x.textAlign = 'left'; x.lineWidth = 7; x.strokeStyle = 'rgba(8,2,16,.8)';
-        x.font = '800 40px system-ui, Arial, sans-serif'; x.strokeText(nm, x0, y); x.fillStyle = mm.c; x.fillText(nm, x0, y);
-        x.font = '700 46px system-ui, Arial, sans-serif'; x.strokeText(tt, x0 + nw, y); x.fillStyle = '#fff'; x.fillText(tt, x0 + nw, y);
-        y -= LH;
+        var gl = cfGlow(list[i]); x.globalAlpha = i === list.length - 1 ? Math.max(0.15, p) : Math.max(0.4, 1 - (SH - y) / SH * 0.55);
+        x.drawImage(gl, (SW - gl.width) / 2, y - 44); y -= LH;
       }
-      x.globalAlpha = 1; x.textAlign = 'center';
+      x.globalAlpha = 1;
       g.save(); g.beginPath(); DFLOOR.forEach(function (q, k) { if (k) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.closePath(); g.clip();
-      g.globalAlpha = 0.9; warp(g, f, 446, 1036, 330, 110); g.restore(); g.globalAlpha = 1;
+      g.globalAlpha = 0.82; warp(g, f, 446, 1036, 330, 110); g.restore(); g.globalAlpha = 1;
     }
   }
   function cfSet(m) {
