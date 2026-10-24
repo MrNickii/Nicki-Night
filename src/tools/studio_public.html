@@ -53,6 +53,7 @@ button{font-family:inherit}
 #sbar{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:8px;z-index:3;justify-content:space-between}
 .pill{border:1px solid #ffffff2a;background:#0008;color:#fff;border-radius:99px;padding:9px 14px;font-size:14px;font-weight:700;cursor:pointer;backdrop-filter:blur(6px)}
 .pill.hot{background:linear-gradient(135deg,#ff2f9e,#7a2bd6);border-color:#ff9ad6}
+#pst{display:none;position:absolute;left:10px;right:10px;bottom:60px;z-index:3;font-size:12px;line-height:1.3;padding:6px 10px;border-radius:10px;background:#0b0412ee;border:1px solid var(--line);color:#e9dcff}#pst.ok{color:#7dffb0}#pst.no{color:#ffb3c7}
 #me{position:absolute;left:10px;right:10px;bottom:10px;z-index:3;display:flex;gap:6px}
 #me input,#me select{background:#0b0412dd;border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px 12px;font-size:15px;min-height:42px;font-family:inherit}
 #me input{flex:1;min-width:0}#me select{flex:0 0 86px}
@@ -127,7 +128,7 @@ button{font-family:inherit}
   <div id="sbar"><button class="pill hot" id="rnd">🎲 Surprise me</button><button class="pill" id="rst">Start over</button></div>
   <div id="lock"></div>
   <div id="fig"></div>
-  <div id="me"><input type="text" id="h" placeholder="Your @ (optional): see your pic" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="30"><select id="pl" aria-label="Platform"><option value="x">X</option><option value="tiktok">TikTok</option><option value="kick">Kick</option></select></div>
+  <div id="pst" role="status" aria-live="polite"></div><div id="me"><input type="text" id="h" placeholder="Your @ (optional): see your pic" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="30"><select id="pl" aria-label="Platform"><option value="x">X</option><option value="tiktok">TikTok</option><option value="kick">Kick</option></select></div>
  </section>
  <section id="panel" aria-label="Wardrobe"><nav id="cats"></nav><div id="opts"></div></section>
 </main>
@@ -341,16 +342,21 @@ button{font-family:inherit}
   $('ok').onclick = function () { $('done').classList.remove('on'); };
   $('done').onclick = function (e) { if (e.target === this) this.classList.remove('on'); };
   /* optional profile picture preview: your public picture is fetched from unavatar.io and only shown on this page */
+  var lkT = null, lkN = 0;
+  function pstat(t, c) { var e = $('pst'); e.textContent = t; e.className = c || ''; e.style.display = t ? 'block' : 'none'; }
   function lookup() {
+    clearTimeout(lkT); var my = ++lkN;
     handle = $('h').value.trim().replace(/^@/, '').replace(/[^A-Za-z0-9_.]/g, '').slice(0, 30); plat = $('pl').value;
-    if (!handle) { photoImg = null; return; }
-    var prov = plat === 'x' ? 'twitter' : (plat === 'tiktok' ? 'tiktok' : null);
-    if (!prov) { photoImg = null; return; }
+    if (!handle) { photoImg = null; pstat(''); return; }
+    var prov = plat === 'x' ? 'twitter' : plat === 'tiktok' ? 'tiktok' : 'kick';
+    pstat('Looking for @' + handle + '…', 'wait');
     var im = new Image(); im.crossOrigin = 'anonymous'; im.referrerPolicy = 'no-referrer';
-    im.onload = function () { photoImg = im; }; im.onerror = function () { photoImg = null; };
+    im.onload = function () { if (my !== lkN) return; photoImg = im; pstat('Found @' + handle + ' ✓', 'ok'); };
+    im.onerror = function () { if (my !== lkN) return; photoImg = null; pstat('No picture found for @' + handle + '. Check the spelling and the platform. You can still copy your look.', 'no'); };
     im.src = 'https://unavatar.io/' + prov + '/' + encodeURIComponent(handle) + '?fallback=false';
   }
-  $('h').onchange = lookup; $('pl').onchange = function () { plat = $('pl').value; lookup(); };
+  function lookupSoon() { clearTimeout(lkT); if (!$('h').value.trim()) { lookup(); return; } pstat('Typing…', 'wait'); lkT = setTimeout(lookup, 700); }
+  $('h').oninput = lookupSoon; $('h').onchange = lookup; $('pl').onchange = function () { plat = $('pl').value; lookup(); };
   $('h').onkeydown = function (e) { if (e.key === 'Enter') this.blur(); };
   VNNA.setCache(30);
   VNNA.init('vnn/lib_mid/', 'vnn/moc.json').then(function () { all(); requestAnimationFrame(frame); $('boot').className = 'off'; window.READY = 1; })
