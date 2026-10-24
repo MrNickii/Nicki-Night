@@ -3211,15 +3211,15 @@ var VNNA = (function () {
   function rr(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
   function cfCard(m, W2) { /* Soul Train: a white bubble card with the name in a coloured pill */
     if (m.cT && m.cT.width === W2) return m.cT;
-    var c = document.createElement('canvas'), x = c.getContext('2d'); x.font = '800 40px system-ui, Arial, sans-serif';
-    var ln = wrap2(x, m.t, W2 - 70), h = 60 + ln.length * 48 + 22; c.width = W2; c.height = h + 8; x = c.getContext('2d');
-    x.fillStyle = 'rgba(80,0,60,.35)'; rr(x, 6, 8, W2 - 12, h - 6, 30); x.fill();
-    var gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#ffeef8'); x.fillStyle = gr; rr(x, 4, 2, W2 - 8, h - 6, 30); x.fill();
-    x.lineWidth = 5; x.strokeStyle = m.c; rr(x, 4, 2, W2 - 8, h - 6, 30); x.stroke();
-    x.font = '900 28px system-ui, Arial, sans-serif'; var nm = fitLine(x, m.n, W2 - 120), nw = x.measureText(nm).width + 34;
-    x.fillStyle = m.c; rr(x, (W2 - nw) / 2, 12, nw, 40, 20); x.fill(); x.fillStyle = '#2a0b35'; x.textAlign = 'center'; x.fillText(nm, W2 / 2, 42);
-    x.font = '24px system-ui, sans-serif'; x.fillText('♡', 32, 44); x.fillText('♡', W2 - 32, 44);
-    x.font = '800 40px system-ui, Arial, sans-serif'; x.fillStyle = '#2a0b35'; ln.forEach(function (l, j) { x.fillText(l, W2 / 2, 96 + j * 48); });
+    var c = document.createElement('canvas'), x = c.getContext('2d'); x.font = '800 34px system-ui, Arial, sans-serif';
+    var ln = wrap2(x, m.t, W2 - 60), h = 50 + ln.length * 40 + 16; c.width = W2; c.height = h + 8; x = c.getContext('2d');
+    x.fillStyle = 'rgba(80,0,60,.35)'; rr(x, 6, 8, W2 - 12, h - 6, 24); x.fill();
+    var gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#ffeef8'); x.fillStyle = gr; rr(x, 4, 2, W2 - 8, h - 6, 24); x.fill();
+    x.lineWidth = 4; x.strokeStyle = m.c; rr(x, 4, 2, W2 - 8, h - 6, 24); x.stroke();
+    x.font = '900 24px system-ui, Arial, sans-serif'; var nm = fitLine(x, m.n, W2 - 110), nw = x.measureText(nm).width + 30;
+    x.fillStyle = m.c; rr(x, (W2 - nw) / 2, 10, nw, 34, 17); x.fill(); x.fillStyle = '#2a0b35'; x.textAlign = 'center'; x.fillText(nm, W2 / 2, 36);
+    x.font = '20px system-ui, sans-serif'; x.fillText('♡', 28, 36); x.fillText('♡', W2 - 28, 36);
+    x.font = '800 34px system-ui, Arial, sans-serif'; x.fillStyle = '#2a0b35'; ln.forEach(function (l, j) { x.fillText(l, W2 / 2, 80 + j * 40); });
     m.cT = c; return c;
   }
   function cfGlow(m) { /* full floor: glowing see-through words, the name glows in its own colour */
@@ -3247,7 +3247,7 @@ var VNNA = (function () {
       x.font = '900 54px system-ui, Arial, sans-serif'; var hg = x.createLinearGradient(0, 30, 0, 90); hg.addColorStop(0, '#fff6c2'); hg.addColorStop(1, '#ffd86b');
       x.lineWidth = 10; x.strokeStyle = '#7a0f5c'; x.lineJoin = 'round'; x.strokeText('SOUL TRAIN', SW / 2, 82); x.fillStyle = hg; x.fillText('SOUL TRAIN', SW / 2, 82);
       x.font = '800 26px system-ui, Arial, sans-serif'; x.fillStyle = '#fff'; x.fillText('✨ LIVE CHAT ✨', SW / 2, 118);
-      var GAP = 18, C0 = list.length ? cfCard(list[list.length - 1], SW - 36) : null; y = SH - 22 + (1 - p) * ((C0 ? C0.height : 120) + GAP);
+      var GAP = 12, C0 = list.length ? cfCard(list[list.length - 1], SW - 36) : null; y = SH - 22 + (1 - p) * ((C0 ? C0.height : 120) + GAP);
       for (i = list.length - 1; i >= 0; i--) {
         var cd = cfCard(list[i], SW - 36), top = y - cd.height; if (top < 136) break;
         x.globalAlpha = i === list.length - 1 ? Math.max(0.15, p) : 1; x.drawImage(cd, 18, top); x.globalAlpha = 1; y = top - GAP;
