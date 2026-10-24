@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://unavatar.io; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://unavatar.io https://pbs.twimg.com; connect-src 'self' https://api.fxtwitter.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Nicki Night · Style Studio</title>
 <meta name="description" content="Build your look for Virtual Nicki Night. Pick your fit, hair and extras, copy one line, and paste it in the live chat to walk into the club wearing it.">
@@ -132,13 +132,13 @@ button{font-family:inherit}
  </section>
  <section id="panel" aria-label="Wardrobe"><nav id="cats"></nav><div id="opts"></div></section>
 </main>
-<p id="foot">Nothing to sign up for and nothing to download. Your @ is only used to show your public profile picture on this page.</p>
+<p id="foot">Nothing to sign up for and nothing to download. Your @ is only used to show your public profile picture on this page (pictures via <a href="https://unavatar.io" target="_blank" rel="noopener" style="color:inherit">unavatar.io</a> and FxTwitter).</p>
 <div id="bar"><div id="barin"><div id="cmd" aria-label="Your look command"></div><button id="copy">Copy my look</button></div></div>
 <div id="done" role="dialog" aria-modal="true"><div class="box"><h2>Copied! <b>You're on the list.</b></h2>
  <ol><li>Keep this line handy (it's on your clipboard).</li><li>When <b>Virtual Nicki Night</b> goes live on X or Kick, <b>paste it in the live chat</b>.</li><li>You'll walk into the club wearing your look, with your profile picture as your face.</li></ol>
  <button id="ok">Got it</button></div></div>
-<script src="vnn/rig8.js?v=1792809936"></script>
-<script src="vnn/vnn-avatar.js?v=1792809936"></script>
+<script src="vnn/rig8.js?v=1792810348"></script>
+<script src="vnn/vnn-avatar.js?v=1792810348"></script>
 <script>
 (function () {
   var CAT = VNNA.CATALOG, byId = VNNA.byId, $ = function (i) { return document.getElementById(i); };
@@ -348,12 +348,27 @@ button{font-family:inherit}
     clearTimeout(lkT); var my = ++lkN;
     handle = $('h').value.trim().replace(/^@/, '').replace(/[^A-Za-z0-9_.]/g, '').slice(0, 30); plat = $('pl').value;
     if (!handle) { photoImg = null; pstat(''); return; }
-    var prov = plat === 'x' ? 'twitter' : plat === 'tiktok' ? 'tiktok' : 'kick';
     pstat('Looking for @' + handle + '…', 'wait');
-    var im = new Image(); im.crossOrigin = 'anonymous'; im.referrerPolicy = 'no-referrer';
-    im.onload = function () { if (my !== lkN) return; photoImg = im; pstat('Found @' + handle + ' ✓', 'ok'); };
-    im.onerror = function () { if (my !== lkN) return; photoImg = null; pstat('No picture found for @' + handle + '. Check the spelling and the platform. You can still copy your look.', 'no'); };
-    im.src = 'https://unavatar.io/' + prov + '/' + encodeURIComponent(handle) + '?fallback=false';
+    function show(im) { if (my !== lkN) return; photoImg = im; pstat('Found @' + handle + ' ✓', 'ok'); }
+    function fail() { if (my !== lkN) return; photoImg = null; pstat('No picture found for @' + handle + '. Check the spelling and the platform. You can still copy your look.', 'no'); }
+    function load(url, next) { /* try with CORS first, then plain (we only draw it, never read it back) */
+      var im = new Image(); im.referrerPolicy = 'no-referrer'; im.crossOrigin = 'anonymous';
+      im.onload = function () { show(im); };
+      im.onerror = function () { var i2 = new Image(); i2.referrerPolicy = 'no-referrer'; i2.onload = function () { show(i2); }; i2.onerror = next; i2.src = url; };
+      im.src = url;
+    }
+    function unav(provs) { var p = provs.shift(); if (!p) return fail(); load('https://unavatar.io/' + p + '/' + encodeURIComponent(handle) + '?fallback=false', function () { if (my === lkN) unav(provs); }); }
+    if (plat === 'x') {
+      /* X: ask the free FxTwitter profile service for the real picture address, then fall back to unavatar */
+      var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 6000);
+      fetch('https://api.fxtwitter.com/2/profile/' + encodeURIComponent(handle), ctl ? { signal: ctl.signal } : {}).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        clearTimeout(tm); if (my !== lkN) return;
+        var u = j && j.user && j.user.avatar_url; if (!u) return unav(['x', 'twitter']);
+        u = String(u).replace(/_(normal|bigger|mini)(\.[a-z]+)$/i, '_400x400$2');
+        if (!/^https:\/\/pbs\.twimg\.com\//.test(u)) return unav(['x', 'twitter']);
+        load(u, function () { if (my === lkN) unav(['x', 'twitter']); });
+      }).catch(function () { clearTimeout(tm); if (my === lkN) unav(['x', 'twitter']); });
+    } else unav([plat === 'tiktok' ? 'tiktok' : 'kick']);
   }
   function lookupSoon() { clearTimeout(lkT); if (!$('h').value.trim()) { lookup(); return; } pstat('Typing…', 'wait'); lkT = setTimeout(lookup, 700); }
   $('h').oninput = lookupSoon; $('h').onchange = lookup; $('pl').onchange = function () { plat = $('pl').value; lookup(); };
