@@ -1143,7 +1143,7 @@
     /* bubble size follows the flow of chat: slow chat and a small room get big, easy-to-read bubbles; a busy room gets compact ones */
     var now = performance.now(); while (BUB.times.length && now - BUB.times[0] > 20000) BUB.times.shift(); var rate = BUB.times.length;
     var size = (rate <= 6 && n < BUBK.packed) ? 'big' : (rate <= 14 && n < BUBK.packed) || rate <= 9 ? 'mid' : '';
-    return { n: n, rate: rate, size: size, hold: Math.max(3200, Math.min(10000, 10600 - n * 260)), cap: size === 'big' ? 8 : n < BUBK.deep ? 14 : n < BUBK.packed ? 10 : 7, solid: n >= BUBK.deep, dense: n >= BUBK.deep && !size, packed: n >= BUBK.packed, cut: ys.length ? ys[Math.floor(ys.length / 2)] : 0 };
+    return { n: n, rate: rate, size: size, hold: Math.max(3200, Math.min(10000, 10600 - n * 260)), cap: size === 'big' ? 10 : n < BUBK.deep ? 16 : 14, solid: n >= BUBK.deep, dense: n >= BUBK.deep && !size, packed: n >= BUBK.packed, cut: ys.length ? ys[Math.floor(ys.length / 2)] : 0 };
   }
   function talk(u, col, on) {
     var el = u.el; if (!el) return;
@@ -1164,7 +1164,6 @@
     if (!(u.inside && u.el && u.x != null && (u.slot || nk))) return;
     BUB.times.push(performance.now()); var rl = bubRule(), t = bubText(text, rl.packed ? 32 : rl.dense ? 40 : 56);
     if (!t) return;
-    if (rl.packed && !nk && !u.vip && (u.y || 0) < rl.cut) return;
     var b = BUB.map[u.key], now = performance.now(), col = bubColor(u);
     if (!b) {
       b = BUB.map[u.key] = { u: u, el: document.createElement('div'), w: 0, h: 0 };
@@ -1263,7 +1262,7 @@
     if (S.bub.emoji === false) return true;
     if (!(u.inside && u.el && u.x != null && (u.slot || isNicki(u)))) return true;
     var now = performance.now(); if (u.emoAt && now - u.emoAt < 900) return true; u.emoAt = now;
-    var rl = bubRule(), cap = rl.packed ? 10 : rl.dense ? 18 : 28, hp = headPos(u); if (!hp) return true;
+    var rl = bubRule(), cap = rl.packed ? 22 : rl.dense ? 24 : 28, hp = headPos(u); if (!hp) return true;
     var list = em.length === 1 ? [em[0], em[0], em[0]] : em.slice(0, 5);
     list.forEach(function (ch, i) {
       if (EMO.n >= cap) return; EMO.n++;
