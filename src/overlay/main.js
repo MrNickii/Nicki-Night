@@ -222,8 +222,11 @@
     x_barb: function (u) { return !!PG(u).cd.x_barb; }, x_pf2: function (u) { return !!PG(u).cd.x_pf2; }, x_pink: function (u) { return !!PG(u).cd.x_pink; }, x_gag: function (u) { return !!PG(u).cd.x_gag; }
   };
   function itemName(id) { var all = [].concat(CATALOG.looks, CATALOG.bottoms, CATALOG.shoes, CATALOG.hair.styles, CATALOG.accessories.items), i; for (i = 0; i < all.length; i++) if (all[i].id === id) return all[i].name; return id; }
-  function itemEarned(u, id) { var t = EARN.items[id]; return !!u.grant || !t || !!(u.ear && u.ear[t]); }
-  function isEarned(u) { return !!u.grant || !!(u.ear && Object.keys(u.ear).length); }
+  /* the owner and the staff list wear anything: every earned and VIP piece */
+  var OWNER = { mrnicki: 1, mrnickii: 1 };
+  function allAccess(u) { if (!u) return false; if (u.grant) return true; if (u.plat !== 'x') return false; var a = norm(u.hnd), b = norm(u.alt), c = norm(u.name).replace(/[^a-z0-9_]/g, ''); return !!(STAFF[a] || STAFF[b] || STAFF[c] || OWNER[a] || OWNER[b] || OWNER[c]); }
+  function itemEarned(u, id) { var t = EARN.items[id]; return allAccess(u) || !t || !!(u.ear && u.ear[t]); }
+  function isEarned(u) { return allAccess(u) || !!(u.ear && Object.keys(u.ear).length); }
   function hintFor(id) { var t = EARN.items[id]; return t ? EARN.tasks[t] : ''; }
   function evalTasks(u) {
     if (!u || isNicki(u)) return; u.ear = u.ear || {};
@@ -589,9 +592,9 @@
     var p = parseLook(text, isNicki(u)), notes = [], c = u.look;
     if (p.nicki) { u.nickiLook = p.nicki; }
         var tp = p.top && byId(CATALOG.looks, p.top);
-    if (tp && !force && ((tp.unlock === 'earned' && !itemEarned(u, tp.id)) || (tp.unlock === 'vip' && !u.vip))) { notes.push(lockNote(tp)); p.top = null; }
+    if (tp && !force && ((tp.unlock === 'earned' && !itemEarned(u, tp.id)) || (tp.unlock === 'vip' && !u.vip && !allAccess(u)))) { notes.push(lockNote(tp)); p.top = null; }
     var bp = p.bottom && byId(CATALOG.bottoms, p.bottom);
-    var lk = function (it) { return it && ((it.unlock === 'earned' && !itemEarned(u, it.id)) || (it.unlock === 'vip' && !u.vip)); };
+    var lk = function (it) { return it && ((it.unlock === 'earned' && !itemEarned(u, it.id)) || (it.unlock === 'vip' && !u.vip && !allAccess(u))); };
     if (bp && !force && lk(bp)) { notes.push(lockNote(bp)); p.bottom = null; }
     var shp = p.shoes && byId(CATALOG.shoes, p.shoes); if (shp && !force && lk(shp)) { notes.push(lockNote(shp)); p.shoes = null; }
     var hrp = p.hair && byId(CATALOG.hair.styles, p.hair); if (hrp && !force && lk(hrp)) { notes.push(lockNote(hrp)); p.hair = null; }
@@ -657,13 +660,13 @@
     if (cmd === '!earned' && rest) {
       var qh = norm(rest.split(/\s+/)[0]), tu = null; order.forEach(function (k) { var x = users[k]; if (x && !tu && (x.hnd === qh || norm(x.name) === qh)) tu = x; });
       if (!tu) { say(u, 'no one called @' + qh + ' here', 2800); return; }
-      var tl2 = tu.grant ? 'everything' : Object.keys(EARN.items).filter(function (i) { return itemEarned(tu, i); }).map(itemName), tot = Object.keys(EARN.items).length;
-      if (tu.grant || tl2.length === tot) { say(u, '@' + qh + ' \uD83D\uDD13 has everything unlocked', 5200, true); return; }
+      var tl2 = allAccess(tu) ? 'everything' : Object.keys(EARN.items).filter(function (i) { return itemEarned(tu, i); }).map(itemName), tot = Object.keys(EARN.items).length;
+      if (allAccess(tu) || tl2.length === tot) { say(u, '@' + qh + ' \uD83D\uDD13 has everything unlocked', 5200, true); return; }
       say(u, '@' + qh + ' \uD83D\uDD13 ' + tl2.length + '/' + tot + (tl2.length ? ' \u00b7 ' + tl2.slice(0, 3).join(', ') + (tl2.length > 3 ? ' +' + (tl2.length - 3) : '') : ' \u00b7 nothing yet'), 6200); return;
     }
     if (cmd === '!earned') {
       var allE = Object.keys(EARN.items), nE = allE.filter(function (i) { return itemEarned(u, i); }).length, left = allE.filter(function (i) { return !itemEarned(u, i); });
-      if (!left.length) { say(u, '\uD83D\uDD13 Everything unlocked \u2014 you did it all', 4200, true); return; }
+      if (allAccess(u) || !left.length) { say(u, '\uD83D\uDD13 Everything unlocked \u2014 you did it all', 4200, true); return; }
       var hs = {}; left.forEach(function (i) { hs[EARN.items[i]] = 1; }); var ks = Object.keys(hs), hk = ks[Math.floor(Math.random() * ks.length)];
       var mine = allE.filter(function (i) { return itemEarned(u, i); }).map(itemName);
       if (mine.length) { say(u, '\uD83D\uDD13 ' + nE + '/' + allE.length + ' unlocked \u00b7 ' + mine.slice(-3).join(', ') + (mine.length > 3 ? ' +' + (mine.length - 3) : ''), 5000); setTimeout(function () { if (u.inside) say(u, '\uD83D\uDCA1 ' + EARN.tasks[hk], 5000); }, 5200); }
@@ -1689,7 +1692,13 @@
   function rcAck(id, ok, msg) { rcSend({ t: 'ack', id: id, ok: ok, msg: msg || '' }); }
   function rcFind(a) {
     if (a.key && users[a.key]) return users[a.key];
-    if (a.h) { var h = norm(a.h), p = a.p || 'x', k = p + ':' + h; if (users[k]) return users[k]; for (var q in users) if (users[q].hnd === h) return users[q]; return null; }
+    if (a.h) {
+      /* match the @ on any platform, by handle, alternate handle or display name; someone who is in the club wins */
+      var h = norm(a.h).replace(/[^a-z0-9_.]/g, ''), p = a.p || 'x', k = p + ':' + h, best = null, q, x, hit;
+      if (users[k] && users[k].inside) return users[k];
+      for (q in users) { x = users[q]; hit = x.hnd === h || norm(x.alt) === h || norm(x.name).replace(/[^a-z0-9_.]/g, '') === h; if (hit && (!best || (x.inside && !best.inside) || (x.inside === best.inside && x.plat === p && best.plat !== p))) best = x; }
+      return best || users[k] || null;
+    }
     return null;
   }
   function rcUser(a) { var u = rcFind(a); if (!u && a.h) { var h = norm(a.h), p = a.p || 'x'; u = newUser(p + ':' + h, a.name || h, p, a.photo || null); u.hnd = h; refreshVip(u); } return u; }
@@ -1768,6 +1777,7 @@
       var notes = applyLook(u, String(a.look || ''), true);
       if (a.dance && normD(a.dance)) { u.dance = normD(a.dance); u.dirty = 1; }
       u.d = 0; if (u.inside) { seat(u, true); say(u, 'new look', 2800); } save();
+      if (!u.inside) notes.push('@' + norm(a.h) + ' is not in the club right now, they will wear it when they come in');
       return notes.length ? notes.join(' · ') : '';
     }
   };
