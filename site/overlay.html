@@ -1502,7 +1502,7 @@ var VNNA = (function () {
   function itemName(id) { var all = [].concat(CATALOG.looks, CATALOG.bottoms, CATALOG.shoes, CATALOG.hair.styles, CATALOG.accessories.items), i; for (i = 0; i < all.length; i++) if (all[i].id === id) return all[i].name; return id; }
   /* the owner and the staff list wear anything: every earned and VIP piece */
   var OWNER = { mrnicki: 1, mrnickii: 1 };
-  function allAccess(u) { if (!u) return false; if (u.grant) return true; if (u.plat !== 'x') return false; var a = norm(u.hnd), b = norm(u.alt), c = norm(u.name).replace(/[^a-z0-9_]/g, ''); return !!(STAFF[a] || STAFF[b] || STAFF[c] || OWNER[a] || OWNER[b] || OWNER[c]); }
+  function allAccess(u) { if (!u) return false; if (u.grant) return true; var a = norm(u.hnd), b = norm(u.alt), c = norm(u.name).replace(/[^a-z0-9_]/g, ''); return !!(STAFF[a] || STAFF[b] || STAFF[c] || OWNER[a] || OWNER[b] || OWNER[c]); }
   function itemEarned(u, id) { var t = EARN.items[id]; return allAccess(u) || !t || !!(u.ear && u.ear[t]); }
   function isEarned(u) { return allAccess(u) || !!(u.ear && Object.keys(u.ear).length); }
   function hintFor(id) { var t = EARN.items[id]; return t ? EARN.tasks[t] : ''; }
