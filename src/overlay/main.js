@@ -631,7 +631,7 @@
     if (cmd === '!enter') { if (isNicki(u) && !u.inside) { nickiEntrance(u, false); return; } enter(u); return; }
     /* pasting a look from the Style Studio also walks you in wearing it */
     if (cmd === '!look' && !u.inside && !isNicki(u) && rest) { applyLook(u, rest); PG(u).lk++; enter(u); save(); return; }
-    if (!u.inside && !(mod && /^!(vip|unvip|light|top5|np|nicki)$/.test(cmd))) { return; }
+    if (!u.inside && cmd.indexOf('!code') !== 0 && !(mod && /^!(vip|unvip|light|top5|np|nicki)$/.test(cmd))) { return; }
     if (cmd === '!leave') { if (isNicki(u)) nickiWalkOut(u); else leave(u); return; }
     if (cmd === '!dance') {
       var w = rest.toLowerCase().split(/\s+/)[0];
@@ -670,10 +670,15 @@
       else say(u, '\uD83D\uDD13 0/' + allE.length + ' \u00b7 ' + EARN.tasks[hk], 5200);
       return;
     }
-    if (cmd === '!code') {
-      var cw = rest.toLowerCase().replace(/[^a-z0-9]/g, ''), ct = Object.keys(S.codes).filter(function (t) { return S.codes[t].on && S.codes[t].word === cw; })[0];
-      if (!cw) return; if (!ct) { say(u, 'hmm \u2014 not that one', 2200); return; }
-      PG(u).cd[ct] = 1; evalTasks(u); return;
+    if (cmd.indexOf('!code') === 0) {
+      /* secret codes work as soon as anyone says them (no reveal needed); "!code barbz", "!codebarbz" and "!code #Barbz!" all count */
+      var cw = (cmd.length > 5 ? cmd.slice(5) + ' ' + rest : rest).toLowerCase().replace(/[^a-z0-9]/g, ''), ct = Object.keys(S.codes).filter(function (t) { return S.codes[t].word === cw; })[0];
+      if (!cw) { if (u.inside) say(u, 'type !code and the secret word', 2600); return; }
+      if (!ct) { if (u.inside) say(u, 'hmm \u2014 not that one', 2400); return; }
+      if (!u.inside && !isNicki(u)) enter(u);
+      var had = !!(u.ear && u.ear[ct]); PG(u).cd[ct] = 1; evalTasks(u);
+      if (had) say(u, '\uD83D\uDD13 already unlocked: ' + Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === ct; }).map(itemName).join(', '), 4200, true);
+      log(u.name + ' used code ' + cw); return;
     }
     if (cmd === '!bar') { if (u.atBar) { say(u, 'already at the bar \u00b7 try !starships', 2400); return; } u.atBar = true; seat(u, false); say(u, (u.dr ? DRINKS[u.dr.kind] + ' ' : '') + 'cheers', 2400); save(); return; }
     if (cmd === '!menu' || cmd === '!specials') { specials(true, 12000, true); return; }
@@ -983,7 +988,7 @@
     }
     var pick = K_STEPS[K_STEPS.length - 1], tot = nF + nB + nV;
     /* a small room gets big characters; they step down as the club fills so nobody is crammed */
-    var maxK = tot <= 8 ? 1.75 : tot <= 13 ? 1.55 : tot <= 19 ? 1.38 : 1.18;
+    var maxK = tot <= 8 ? 1.38 : tot <= 19 ? 1.18 : 1.08; /* kept modest: very big dancers cost a lot to draw on stream */
     for (i = 0; i < K_STEPS.length; i++) { if (K_STEPS[i] > maxK) continue; if (fits(K_STEPS[i], K_STEPS[i] > CROWDK ? 1.15 : 1.0)) { pick = K_STEPS[i]; break; } }
     if (pick > CROWDK && !fits(pick, 1.15)) pick = Math.min(CROWDK, maxK);
     if (pick !== CROWDK) { CROWDK = pick; relayout(); }
