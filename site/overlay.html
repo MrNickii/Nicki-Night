@@ -1317,7 +1317,7 @@ var VNNA = (function () {
   S.ss = Object.assign({ peak: 0, ent: {}, sd: {}, win: [] }, S.ss || {}); S.closing = S.closing || 'Thanks for coming! See you next time.';
   S.codes = Object.assign({ x_barb: { word: 'barbz', on: false }, x_pf2: { word: 'flight', on: false }, x_pink: { word: 'pinkprint', on: false }, x_gag: { word: 'gagcity', on: false } }, S.codes || {});
   S.spk = Object.assign({ on: true, amt: 0.7 }, S.spk || {});
-  S.lag = (S.lag == null || isNaN(S.lag)) ? 12 : Math.max(0, Math.min(45, Number(S.lag))); /* stream delay: viewers on X and Kick watch a few seconds behind, so timed votes stay open this long after the on-screen timer ends */
+  S.lag = (S.lag == null || isNaN(S.lag)) ? 12 : Math.max(0, Math.min(60, Number(S.lag))); /* stream delay: viewers on X and Kick watch a few seconds behind, so timed votes stay open this long after the on-screen timer ends */
   S.cf = ''; /* chat floor / Soul Train always start off */
   S.lite = S.lite === true ? true : false; /* an automatic Performance mode never survives a reload; only the manual switch is remembered */
   S.blocked = S.blocked || {}; S.nophoto = S.nophoto || {}; var lastMsg = 0;
@@ -3156,7 +3156,7 @@ var VNNA = (function () {
     light: function (a) { lightCmd(String(a.n)); },
     'panels.set': function (a) { if (a.host !== undefined) S.panels.host = !!a.host; if (a.mod !== undefined) S.panels.mod = !!a.mod; save(); rcSnap(true); },
     'specials': function (a) { specials(a.on !== false, a.on === false ? 0 : (Number(a.sec) || 20) * 1000); },
-    'lag.set': function (a) { S.lag = Math.max(0, Math.min(45, Math.round(Number(a.sec) || 0))); save(); rcSnap(true); },
+    'lag.set': function (a) { S.lag = Math.max(0, Math.min(60, Math.round(Number(a.sec) || 0))); save(); rcSnap(true); },
     'lite.set': function (a) { S.lite = a.on ? true : false; slowT = 0; liteApply(); save(); rcSnap(true); },
     'spk.set': function (a) { if (a.on != null) S.spk.on = !!a.on; if (a.amt != null) S.spk.amt = Math.max(0, Math.min(1.5, Number(a.amt) || 0)); spkShow(); save(); rcSnap(true); },
     'city.set': function (a) { S.cityOn = a.on !== false; setBg(); save(); rcSnap(true); },
