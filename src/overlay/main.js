@@ -649,7 +649,7 @@
     var t = text.trim(), tl = t.toLowerCase(), cmd = tl.split(/\s+/)[0], rest = t.slice(cmd.length).trim();
     u.chats++; u.show = (u.show || 0) + 1; activate(u);
     if (isNicki(u) && !S.nickiDone && !nickiBusy) { nickiEntrance(u, false); }
-    if (RW.on && (RW.phase === 'vote' || RW.phase === 'count') && /^[1-9]$/.test(t)) { rwVote(u, Number(t)); return; }
+    if (RW.on && (RW.phase === 'vote' || RW.phase === 'count')) { var vn = voteNum(t); if (vn) { rwVote(u, vn); if (/^\D*\d\D*$/.test(t) && t.length <= 6) return; } }
     if (cmd.charAt(0) !== '!') { cfPush(u, t); if (u.inside) { bumpFront(u, t); evalTasks(u); } save(); return; }
     var mod = isMod(u);
     if (cmd === '!enter') { if (isNicki(u) && !u.inside) { nickiEntrance(u, false); return; } enter(u); return; }
@@ -907,6 +907,14 @@
     h.innerHTML = html + '</div>'; h.classList.add('show');
   }
   function esc2(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  /* votes come in many shapes: "2", "#2", "2️⃣", "vote 2", "number 2!", "two" */
+  var VWORD = { one: 1, two: 2, three: 3, four: 4, five: 5 };
+  function voteNum(t) {
+    var x = String(t || '').toLowerCase().replace(/\uFE0F|\u20E3/g, '').trim(); if (!x || x.length > 24 || x.charAt(0) === '!') return 0;
+    var d = x.match(/\d+/g); if (d && d.length === 1 && /^[1-9]$/.test(d[0])) return +d[0];
+    if (!d) { var w = x.replace(/[^a-z ]/g, ' ').split(/\s+/).filter(function (k) { return VWORD[k]; }); if (w.length === 1 && x.split(/\s+/).length <= 3) return VWORD[w[0]]; }
+    return 0;
+  }
   function rwVote(u, n) {
     if (n < 1 || n > RW.picks.length || !RW.picks[n - 1] || RW.picks[n - 1] === u) return;
     RW.votes[u.key] = n; rwHud();
