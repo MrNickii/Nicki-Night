@@ -1727,7 +1727,7 @@ var VNNA = (function () {
   }
   /* drink(): see the bar drinks section below */
 
-  function zoneFor(u) { return u.stage && stageOn() ? 'stage' : (u.atBar ? 'bar' : (u.vip && !isNicki(u) ? 'vip' : 'floor')); }
+  function zoneFor(u) { return u.stage && stageOn() ? 'stage' : (u.atBar ? 'bar' : (u.vip && !u.vipFloor && !isNicki(u) ? 'vip' : 'floor')); }
   function seatedCount() { var n = 0; order.forEach(function (k) { var u = users[k]; if (u.inside && u.slot) n++; }); return n; }
   function release(u) { if (u.slot) { u.slot.occ = null; u.slot = null; } }
   function evictStalest() {
@@ -1989,7 +1989,12 @@ var VNNA = (function () {
     }
     if (cmd === '!bar') { if (u.atBar) { say(u, 'already at the bar \u00b7 try !starships', 2400); return; } u.atBar = true; seat(u, false); say(u, (u.dr ? DRINKS[u.dr.kind] + ' ' : '') + 'cheers', 2400); save(); return; }
     if (cmd === '!menu' || cmd === '!specials') { specials(true, 12000, true); return; }
-    if (cmd === '!floor' || cmd === '!dancefloor') { if (!u.atBar && !u.vipFloor) { say(u, 'already on the floor', 2000); return; } u.atBar = false; seat(u, false); say(u, 'let\'s dance', 2400); save(); return; }
+    if (cmd === '!floor' || cmd === '!dancefloor') {
+      /* VIPs can come down to the dance floor too, and go back up with !vip */
+      if (!u.atBar && (!u.vip || u.vipFloor)) { say(u, 'already on the floor', 2000); return; }
+      u.atBar = false; if (u.vip) u.vipFloor = true; u.d = 0; seat(u, false); say(u, 'let\'s dance', 2400); save(); return;
+    }
+    if (cmd === '!vip' && u.vip && (u.vipFloor || u.atBar) && !rest) { u.vipFloor = false; u.atBar = false; u.d = 0; seat(u, false); say(u, 'back to VIP', 2400, true); save(); return; }
     if (mod && (cmd === '!vip' || cmd === '!unvip')) {
       var target = norm(rest.split(/\s+/)[0]).replace(/[^a-z0-9_.]/g, ''); if (!target) target = norm(u.hnd); /* "!vip" alone: you */
       var list = S.vip.map(norm), i = list.indexOf(target);
