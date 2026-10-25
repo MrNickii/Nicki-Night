@@ -379,9 +379,9 @@
   }
   function animate(now) {
     requestAnimationFrame(animate);
-    var dt = Math.min(100, now - (lastF || now)); lastF = now; if (!dt) return;
+    var rdt = now - (lastF || now), dt = Math.min(100, rdt); lastF = now; if (!dt) return;
     if (dtSamp && dtSamp.length < 140) { dtSamp.push(dt); if (dtSamp.length === 140) { var sm = dtSamp.slice(20).sort(function (a, b) { return a - b; }); dtRef = Math.max(15, Math.min(34, sm[Math.floor(sm.length * 0.25)])); dtSamp = null; } }
-    dtAvg += (dt - dtAvg) * 0.05; bclk += dt / 1000 * LT.bpm / 60; spkTick(); if (LT.disco) discoDraw(false);
+    dtAvg += (dt - dtAvg) * 0.05; bclk += Math.min(400, rdt) / 1000 * LT.bpm / 60; /* the dance clock follows real time, so a slow computer gives choppier frames but never slow-motion dancing */ spkTick(); if (LT.disco) discoDraw(false);
     if (now - lastDraw < 1000 / FPSCAP - 4) return; lastDraw = now; frameN++;
     /* how often each dancer is redrawn (1 = every frame). Fully adaptive with hysteresis: a sudden big crowd starts on the safe setting,
        half a second of slow frames steps it up, and 2.5 seconds of comfortably fast frames steps it back down toward full smoothness */
