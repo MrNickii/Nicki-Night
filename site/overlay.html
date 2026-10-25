@@ -1502,7 +1502,8 @@ var VNNA = (function () {
   function itemName(id) { var all = [].concat(CATALOG.looks, CATALOG.bottoms, CATALOG.shoes, CATALOG.hair.styles, CATALOG.accessories.items), i; for (i = 0; i < all.length; i++) if (all[i].id === id) return all[i].name; return id; }
   /* the owner and the staff list wear anything: every earned and VIP piece */
   var OWNER = { mrnicki: 1, mrnickii: 1 };
-  function allAccess(u) { if (!u) return false; if (u.grant) return true; var a = norm(u.hnd), b = norm(u.alt), c = norm(u.name).replace(/[^a-z0-9_]/g, ''); return !!(STAFF[a] || STAFF[b] || STAFF[c] || OWNER[a] || OWNER[b] || OWNER[c]); }
+  var OPEN_ALL = true; /* tonight: every piece is unlocked for everyone */
+  function allAccess(u) { if (!u) return false; if (OPEN_ALL || u.grant) return true; var a = norm(u.hnd), b = norm(u.alt), c = norm(u.name).replace(/[^a-z0-9_]/g, ''); return !!(STAFF[a] || STAFF[b] || STAFF[c] || OWNER[a] || OWNER[b] || OWNER[c]); }
   function itemEarned(u, id) { var t = EARN.items[id]; return allAccess(u) || !t || !!(u.ear && u.ear[t]); }
   function isEarned(u) { return allAccess(u) || !!(u.ear && Object.keys(u.ear).length); }
   function hintFor(id) { var t = EARN.items[id]; return t ? EARN.tasks[t] : ''; }
@@ -1887,7 +1888,10 @@ var VNNA = (function () {
 
   /* ---------- commands ---------- */
   var DANCES = CATALOG.dances.map(function (d) { return d.id; });
-  function isMod(u) { return u.plat === 'x' && S.mods.indexOf(u.hnd) >= 0; }
+  function ids(u) { return [norm(u.hnd), norm(u.alt), norm(u.name).replace(/[^a-z0-9_]/g, '')].filter(Boolean); }
+  function isOwner(u) { return ids(u).some(function (h) { return OWNER[h]; }); }
+  /* chat powers: the owner and the whole staff list on any platform, plus anyone on the mods list on X */
+  function isMod(u) { return isOwner(u) || ids(u).some(function (h) { return STAFF[h]; }) || (u.plat === 'x' && S.mods.indexOf(u.hnd) >= 0); }
   function activate(u) { u.lastActive = Date.now(); }
   function enter(u) {
     if (CL.on && CL.ph !== 'last') return;
@@ -1965,11 +1969,11 @@ var VNNA = (function () {
     if (cmd === '!menu' || cmd === '!specials') { specials(true, 12000, true); return; }
     if (cmd === '!floor' || cmd === '!dancefloor') { if (!u.atBar && !u.vipFloor) { say(u, 'already on the floor', 2000); return; } u.atBar = false; seat(u, false); say(u, 'let\'s dance', 2400); save(); return; }
     if (mod && (cmd === '!vip' || cmd === '!unvip')) {
-      var target = norm(rest.split(/\s+/)[0]); if (!target) return;
+      var target = norm(rest.split(/\s+/)[0]).replace(/[^a-z0-9_.]/g, ''); if (!target) target = norm(u.hnd); /* "!vip" alone: you */
       var list = S.vip.map(norm), i = list.indexOf(target);
       if (cmd === '!vip' && i < 0) S.vip.push('@' + target);
       if (cmd === '!unvip' && i >= 0) S.vip.splice(i, 1);
-      vipUI(); order.forEach(function (k) { var x = users[k]; if (x.hnd === target) { refreshVip(x); if (x.inside) { x.d = 0; seat(x, false); say(x, cmd === '!vip' ? 'VIP' : 'back to the floor', 2600, true); } } });
+      vipUI(); order.forEach(function (k) { var x = users[k]; if (ids(x).indexOf(target) >= 0) { x.simVip = cmd === '!vip'; refreshVip(x); if (x.inside) { x.d = 0; seat(x, false); say(x, cmd === '!vip' ? 'VIP' : 'back to the floor', 2600, true); } } });
       save(); return;
     }
     if (mod && cmd === '!runway') { try { rest.toLowerCase() === 'off' ? runwayStop() : runwayStart(Number(rest) || 4, 30); } catch (e) { say(u, e.message, 3000); } return; }
