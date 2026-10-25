@@ -1427,9 +1427,11 @@ var VNNA = (function () {
         if (clear) out.vip.push({ x: x, y: y, d: vd, r: r, z: 'vip', occ: null });
       }
     });
-    out.nicki = { x: R.nicki.x, y: R.nicki.y, d: R.nicki.d, z: 'vip', occ: null, reserved: true };
+    out.nicki = { x: R.nicki.x, y: R.nicki.y, d: nickiD(), z: 'vip', occ: null, reserved: true };
     return out;
   }
+  /* Nicki stands out: about 1.4x the VIP guests around her, never giant */
+  function nickiD() { return Math.round(Math.max(R.nicki.d, 68 * Math.max(CROWDK, 0.55)) * 1.4); }
   function buildSlots() { SL = makeSlots(CROWDK); }
   function nickiSpot() { return SL.nicki; }
   function pickSlot(zone, nicki) {
@@ -1764,10 +1766,24 @@ var VNNA = (function () {
     }
     u.el.classList.add('in');
     var cp = curPos(u, performance.now()), dist = Math.hypot(s.x - cp[0], s.y - cp[1]), dur = instant ? 0 : walkTime(u, s.x, s.y), short = !firstTime && dist < Math.max(18, s.d * 0.8);
-    if (short && !instant) put(u, s.x, s.y, 0.5, true); else put(u, s.x, s.y, dur);
+    u._rt = (u._rt || 0) + 1;
+    var upV = !instant && s.z === 'vip' && !inVip(cp[0], cp[1]), downV = !instant && s.z !== 'vip' && inVip(cp[0], cp[1]) && !firstTime;
+    if (!nick && (upV || downV)) walkRoute(u, (upV ? STAIRS : STAIRS.slice().reverse()).concat([[s.x, s.y]]));
+    else if (short && !instant) put(u, s.x, s.y, 0.5, true); else put(u, s.x, s.y, dur);
     drink(u, u.atBar && s.z === 'bar', short ? 0.5 : dur);
     rankTag(u, s.z === 'stage');
     return true;
+  }
+  /* the VIP lounge sits up the stairs: anyone going between the floor and VIP walks the staircase instead of floating over the railing */
+  var STAIRS = [[1215, 548], [1340, 408], [1395, 330]];
+  function inVip(x, y) { var e = R.vip.edge, ey = x <= 1722 ? e.y0 + e.slope * (x - e.x0) : e.y0 + e.slope * (1722 - e.x0) + 0.1 * (x - 1722); return x > 1180 && y < ey + 6; }
+  function walkRoute(u, pts) {
+    var tok = u._rt, i = 0, sp = Math.max(70, Math.min(420, (u.d || 60) * 2 * WALKSP));
+    (function leg() {
+      if (u._rt !== tok || !u.el || !u.inside || i >= pts.length) return;
+      var f = curPos(u, performance.now()), q = pts[i++], d = Math.hypot(q[0] - f[0], q[1] - f[1]), du = Math.max(0.35, Math.min(6, d / sp));
+      put(u, q[0], q[1], du); setTimeout(leg, du * 1000);
+    })();
   }
   /* free a departed avatar's built art (dozens of image canvases); it is rebuilt if they come back */
   function dropArt(u) { if (u.inside || u.el) return; u.set = null; u.spec = null; u.cv = null; u.cx = null; u._sg = null; u.rst = null; u.cw = 0; u.ch = 0; u.d = 0; u.h = 0; }
@@ -2029,9 +2045,9 @@ var VNNA = (function () {
   }
   /* Nicki's size while walking: a bit bigger than the people around her on the floor, so she stands out */
   function dAtY(y) {
-    if (y <= 440) return R.nicki.d;
+    if (y <= 440) return nickiD();
     var best = null; (SL.floor || []).forEach(function (q) { if (!best || Math.abs(q.y - y) < Math.abs(best.y - y)) best = q; });
-    return Math.max(R.nicki.d, (best && Math.abs(best.y - y) < 120 ? best.d : avW(y)) * 1.3);
+    return Math.max(nickiD(), (best && Math.abs(best.y - y) < 120 ? best.d : avW(y)) * 1.3);
   }
   async function nickiEntrance(u, test) {
     if (nickiBusy) return; nickiBusy = true;
