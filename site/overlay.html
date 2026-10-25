@@ -1503,7 +1503,7 @@ var VNNA = (function () {
   /* the owner and the staff list wear anything: every earned and VIP piece */
   var OWNER = { mrnicki: 1, mrnickii: 1 };
   var OPEN_ALL = true; /* tonight: every piece is unlocked for everyone */
-  function allAccess(u) { if (!u) return false; if (OPEN_ALL || u.grant) return true; var a = norm(u.hnd), b = norm(u.alt), c = norm(u.name).replace(/[^a-z0-9_]/g, ''); return !!(STAFF[a] || STAFF[b] || STAFF[c] || OWNER[a] || OWNER[b] || OWNER[c]); }
+  function allAccess(u) { if (!u) return false; if (OPEN_ALL || u.grant) return true; return ids(u).some(function (h) { return STAFF[h] || OWNER[h]; }); }
   function itemEarned(u, id) { var t = EARN.items[id]; return allAccess(u) || !t || !!(u.ear && u.ear[t]); }
   function isEarned(u) { return allAccess(u) || !!(u.ear && Object.keys(u.ear).length); }
   function hintFor(id) { var t = EARN.items[id]; return t ? EARN.tasks[t] : ''; }
@@ -1888,7 +1888,7 @@ var VNNA = (function () {
 
   /* ---------- commands ---------- */
   var DANCES = CATALOG.dances.map(function (d) { return d.id; });
-  function ids(u) { return [norm(u.hnd), norm(u.alt), norm(u.name).replace(/[^a-z0-9_]/g, '')].filter(Boolean); }
+  function ids(u) { /* @ handles only, never display names */ return [norm(u.hnd)].concat(Object.keys(u.aka || {})).filter(Boolean); }
   function isOwner(u) { return ids(u).some(function (h) { return OWNER[h]; }); }
   /* chat powers: the owner and the whole staff list on any platform, plus anyone on the mods list on X */
   function isMod(u) { return isOwner(u) || ids(u).some(function (h) { return STAFF[h]; }) || (u.plat === 'x' && S.mods.indexOf(u.hnd) >= 0); }
@@ -2830,6 +2830,7 @@ var VNNA = (function () {
     lastMsg = Date.now();
     log((plat + ' | ' + (m.userid || '-') + ' | ' + (m.chatname || '-') + ' | ' + text).slice(0, 160));
     var u = newUser(key, name || id, plat, photo); u.hnd = hnd; u.alt = alt;
+    u.aka = u.aka || {}; [m.userid, m.username, m.handle].forEach(function (v) { var z = norm(v).replace(/[^a-z0-9_.]/g, ''); if (z) u.aka[z] = 1; });
     /* X handles can arrive as userid or as chatname; match the special lists on either */
     if (plat === 'x' && alt && (alt === 'nickiminaj' || hnd === 'nickiminaj')) { u.hnd = 'nickiminaj'; }
     else if (plat === 'x') { var vs = vipSet(), ms = S.mods; if (!vs[hnd] && vs[alt]) u.hnd = alt; if (ms.indexOf(hnd) < 0 && ms.indexOf(alt) >= 0) u.hnd = alt; }
@@ -3115,14 +3116,12 @@ var VNNA = (function () {
   function rcAck(id, ok, msg) { rcSend({ t: 'ack', id: id, ok: ok, msg: msg || '' }); }
   function rcFind(a) {
     if (a.key && users[a.key]) return users[a.key];
-    if (a.h) {
-      /* match the @ on any platform, by handle, alternate handle or display name; someone who is in the club wins */
-      var h = norm(a.h).replace(/[^a-z0-9_.]/g, ''), p = a.p || 'x', k = p + ':' + h, best = null, q, x, hit;
-      if (users[k] && users[k].inside) return users[k];
-      for (q in users) { x = users[q]; hit = x.hnd === h || norm(x.alt) === h || norm(x.name).replace(/[^a-z0-9_.]/g, '') === h; if (hit && (!best || (x.inside && !best.inside) || (x.inside === best.inside && x.plat === p && best.plat !== p))) best = x; }
-      return best || users[k] || null;
-    }
-    return null;
+    if (!a.h) return null;
+    /* find the person by any name they appear under, on any platform; someone in the club wins; a close partial match is the last resort */
+    var h = norm(a.h).replace(/[^a-z0-9_.]/g, ''), p = a.p || 'x', all = Object.keys(users).map(function (q) { return users[q]; }), best = null, part = [];
+    if (!h) return null;
+    all.forEach(function (x) { if (ids(x).indexOf(h) >= 0 && (!best || (x.inside && !best.inside) || (x.inside === best.inside && x.plat === p && best.plat !== p))) best = x; });
+    return best;
   }
   function rcUser(a) { var u = rcFind(a); if (!u && a.h) { var h = norm(a.h), p = a.p || 'x'; u = newUser(p + ':' + h, a.name || h, p, a.photo || null); u.hnd = h; refreshVip(u); } return u; }
   var RCMD = {
@@ -3199,7 +3198,7 @@ var VNNA = (function () {
       var u = rcUser(a); if (!u) throw new Error('need a handle');
       var notes = applyLook(u, String(a.look || ''), true);
       if (a.dance && normD(a.dance)) { u.dance = normD(a.dance); u.dirty = 1; }
-      u.d = 0; if (u.inside) { seat(u, true); say(u, 'new look', 2800); } save();
+      u.d = 0; if (u.inside) { seat(u, true); say(u, 'new look', 2800); notes.unshift('on ' + u.name); } save();
       if (!u.inside) notes.push('@' + norm(a.h) + ' is not in the club right now, they will wear it when they come in');
       return notes.length ? notes.join(' · ') : '';
     }
