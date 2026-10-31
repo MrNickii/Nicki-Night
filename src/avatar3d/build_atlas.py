@@ -6,63 +6,64 @@ L=LIB['lib']
 def ent(sheet,key,v=None):
     s=L.get(sheet) or {}
     return s.get((v+' · '+key) if v else key)
-# ---- the first quarter of the wardrobe ----
-TOPS={'tee':('TOP-SLEEVED-1','A'),'croptop':('TOP-SLEEVED-1','B'),'hoodie':('TOP-SLEEVED-2','A'),'cropbomber':('TOP-SLEEVED-3','A'),
- 'tank':('TOP-SLEEVELESS-1','A'),'halter':('TOP-SLEEVELESS-1','B'),'corset':('TOP-SLEEVELESS-2','A'),'bodysuit':('TOP-SLEEVELESS-3','A'),
- 'denimtrucker':('TOP-SLEEVED-5','A'),'pinkfriday':('SIG-TOP-1','A'),'queen':('SIG-TOP-1','B'),'barbtee':('SIG-TOP-4','A'),'varsity':('SIG-TOP-5','A'),
- 'bomber':('SIG-TOP-5','B'),'nickitee':('SIG-TOP-7','A'),'velourtrack':('SIG-TOP-12','B'),
- 'slipdress':('DRESS-1',None),'bodycon':('DRESS-2',None),'skater':('DRESS-3',None),'satindress':('DRESS-4',None),'tennisdress':('DRESS-6',None),'babydoll':('DRESS-8',None)}
-for i in range(1,7): TOPS['nicki' if i==1 else 'nicki%d'%i]=('NICKI-%d-TOP'%i,None)
-BOTS={'jeans':('BOTTOM-PANTS-1',None),'cargo':('BOTTOM-PANTS-2',None),'joggers':('BOTTOM-PANTS-4',None),'leathertrousers':('BOTTOM-PANTS-6',None),
- 'cutoffs':('BOTTOM-SHORTS-1',None),'bikers':('BOTTOM-SHORTS-2',None),'miniskirt':('BOTTOM-SKIRTS-1','A'),'pleated':('BOTTOM-SKIRTS-2','A')}
-for i in range(1,7): BOTS['nickiB%d'%i]=('NICKI-%d-BOTTOM'%i,None)
-SHOES={'sneakers':('SHOES-1','A',None),'chunky':('SHOES-1','B',None),'ankle':('SHOES-1','C',None),'combat':('SHOES-2','A',None),'heels':('SHOES-2','B',None),
- 'boots':('SHOES-2','C',('SHOES-3','A')),'courtlowtops':('SHOES-7','A',None),'cloudslides':('SHOES-4','C',None)}
-HAIR={'long':('HAIR-1','A'),'wavy':('HAIR-1','B'),'bob':('HAIR-2','A'),'ponytail':('HAIR-2','B'),'buns':('HAIR-3','A'),'fade':('HAIR-3','B'),
- 'locs':('HAIR-6','B'),'afro':('HAIR-7','A'),'boxbraids':('HAIR-7','B'),'puffs':('HAIR-8','B')}
-ACCH={'shades':('ACC-HEAD','SHADES','face'),'heartshades':('ACC-HEAD','HEART_SHADES','face'),'cap':('ACC-HEAD','BASEBALL_CAP','head'),'beanie':('ACC-HEAD','BEANIE','head'),
- 'headphones':('ACC-HEAD','HEADPHONES','head'),'hoops':('ACC-HEAD','HOOP_EARRINGS','ears'),'crown':('ACC-SPECIAL','CROWN','head'),'visor':('ACC-SPECIAL','GOLD_VISOR','face')}
-ACCN={'chain':('ACC-BODY','NECKLACE'),'pearls':('ACC-BODY','PEARLS'),'choker':('ACC-BODY','CHOKER')}
-pieces={}   # key -> dict(file, ox, oy, w, h, mode)
-def add(e, mode, extra=None):
+# ---- the whole wardrobe, straight from the 2D catalog ----
+CAT=json.load(open('/tmp/work/v3d/out/catalog.json'))
+pieces={}
+def add(e, mode, tint=False, extra=None):
     if not e: return None
     k=e['f'][:-4]
     if k not in pieces:
-        d={'file':e['f'],'ox':float(e.get('ox',0)),'oy':float(e.get('oy',0)),'w':e['w'],'h':e['h'],'mode':mode}
+        d={'file':e['f'],'ox':float(e.get('ox',0)),'oy':float(e.get('oy',0)),'w':e['w'],'h':e['h'],'mode':mode,'tint':bool(tint)}
         for a in ('ank','ball','slot','tx0','tx1'):
             if a in e: d[a]=e[a]
-        if extra: d.update(extra)
         pieces[k]=d
+    elif tint: pieces[k]['tint']=True
     return k
 items={'tops':{},'bottoms':{},'shoes':{},'hair':{},'acc':{}}
-for iid,(sh,v) in TOPS.items():
+for it in CAT['looks']:
+    nk=it.get('nk'); sh=it['sheet']+('-TOP' if nk else ''); v=None if nk else it.get('v')
+    tint=not (it.get('sig') or nk)
     r={}
     for p in ('torso','torsoB','sleeveU','sleeveF','dskF','dskB','mdskF','mdskB'):
-        k=add(ent(sh,p,v),'g')
+        k=add(ent(sh,p,v),'g',tint)
         if k: r[p]=k
-    items['tops'][iid]=r
-for iid,(sh,v) in BOTS.items():
-    r={}
+    if r: items['tops'][it['id']]=r
+    if nk:
+        n=it['sheet'].split('-')[1]; rb={}
+        for p in ('pelvis','pelvisB','thigh','thighB','shin','shinB'):
+            k=add(ent(it['sheet']+'-BOTTOM',p),'g',False)
+            if k: rb[p]=k
+        items['bottoms']['nickiB'+n]=rb
+for it in CAT['bottoms']:
+    tint=not it.get('fixed'); r={}
     for p in ('pelvis','pelvisB','thigh','thighB','shin','shinB','skF','skB','mskF','mskB'):
-        k=add(ent(sh,p,v),'g')
+        k=add(ent(it['sheet'],p,it.get('v')),'g',tint)
         if k: r[p]=k
-    items['bottoms'][iid]=r
-for iid,(sh,v,shaft) in SHOES.items():
-    r={}
+    if r: items['bottoms'][it['id']]=r
+for it in CAT['shoes']:
+    tint=not it.get('fixed'); r={}
     for p in ('shoeF','shoeS','shoeB'):
-        k=add(ent(sh,p,v),'g')
+        k=add(ent(it['sheet'],p,it.get('v')),'g',tint)
         if k: r[p]=k
-    if shaft:
+    sf=it.get('shaft')
+    if sf:
         for p in ('shaft','shaftB'):
-            k=add(ent(shaft[0],p,shaft[1]),'g')
+            k=add(ent(sf['sheet'],p,sf.get('v')),'g',True)
             if k: r[p]=k
-    items['shoes'][iid]=r
-for iid,(sh,v) in HAIR.items():
-    items['hair'][iid]={p:add(ent(sh,p,v),'g') for p in ('hairF','hairB')}
-for iid,(sh,key,slot) in ACCH.items():
-    items['acc'][iid]={'slot':slot,'img':add(ent(sh,key),'g')}
-for iid,(sh,key) in ACCN.items():
-    items['acc'][iid]={'slot':'neck','img':add(ent(sh,key),'g')}
+    if r.get('shoeF'): items['shoes'][it['id']]=r
+for it in CAT['hair']['styles']:
+    r={p:add(ent(it['sheet'],p,it.get('v')),'g',True) for p in ('hairF','hairB')}
+    if r['hairF'] and r['hairB']: items['hair'][it['id']]=r
+BODYKEY={'HIPBAG':'HIP BAG'}
+for it in CAT['accessories']['items']:
+    slot=it['slot']; tint=not it.get('full')
+    if slot in ('head','face','ears'): e=ent(it['sheet'],it['key'])
+    elif slot in ('neck','waist','carry'): e=ent('ACC-BODY',BODYKEY.get(it['key'],it['key']))
+    elif slot in ('wrist','arm'): e=ent('ACC-HANDS',it['key'])
+    elif slot=='hands': e=ent('ACC-HANDS','NAILS_RELAXED')
+    else: e=None
+    k=add(e,'g',tint)
+    if k: items['acc'][it['id']]={'slot':slot,'img':k}
 skin={}
 for t in 'LMD':
     for p in ('torso','pelvis','neck','uarm','farm','thigh','shin','hand_relax'):
@@ -107,9 +108,7 @@ for k,d in pieces.items():
 SIGPREF=('SIG-TOP','NICKI-','ACC-SPECIAL')
 FIXED_SHOES=set()
 def is_tint(k):
-    if k.startswith('BODY-'): return False
-    if k.startswith(SIGPREF): return False
-    return True
+    return bool(pieces[k].get('tint'))
 def grey(im):
     px=im.load(); W,H=im.size; hist=[0]*256; cnt=0
     for y in range(H):
@@ -136,7 +135,6 @@ cx=PAD;cy=PAD;rowh=0;pg=0
 for k,im,w,h in proc:
     d=pieces[k]
     src=grey(im) if is_tint(k) else im
-    d['tint']=is_tint(k)
     small=src.resize((w,h),Image.LANCZOS)
     if cx+w+PAD>PAGE: cx=PAD; cy+=rowh+PAD; rowh=0
     if cy+h+PAD>PAGE:
@@ -147,7 +145,7 @@ for k,im,w,h in proc:
 for i,p in enumerate(pages):
     # bleed colour into transparent pixels (premultiplied blur trick) to avoid dark mip fringes
     from PIL import ImageFilter
-    p.save('/tmp/work/v3d/out/atlas%d.png'%i, optimize=True)
+    p.save('/tmp/work/v3d/out/atlas%d.webp'%i, quality=92, method=4)
 meta={'scale':SC,'page':PAGE,'pages':len(pages),'pieces':pieces,'items':items,'skin':skin,'side':side,'defs':LIB['defs'],'skinBase':LIB['skinBase'],'libscale':LIB['scale']}
 json.dump(meta,open('/tmp/work/v3d/out/atlas.json','w'),separators=(',',':'))
 print('pieces',len(pieces),'pages',len(pages),'last y',cy+rowh)

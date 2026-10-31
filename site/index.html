@@ -46,7 +46,9 @@ button{font-family:inherit}
 #ped{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);width:66%;height:44px;border-radius:50%;background:radial-gradient(closest-side,#ff2f9edd,#ff2f9e33 70%,transparent)}
 #ring{position:absolute;bottom:58px;left:50%;transform:translateX(-50%);width:60%;height:30px;border-radius:50%;border:2px solid #ff9ad6;box-shadow:0 0 20px #ff2f9e,inset 0 0 16px #ff2f9e88}
 #fig{position:absolute;inset:0;z-index:2;display:flex;align-items:flex-end;justify-content:center;padding:54px 0 64px}
-#fig canvas{height:100%;max-height:640px;width:auto;max-width:100%}
+#fig canvas{height:100%;max-height:640px;width:auto;max-width:100%;touch-action:pan-y}
+#pin3{position:absolute;z-index:3;width:54px;height:54px;border-radius:50%;border:3px solid #1d9bf0;background:#2a1030 center/cover no-repeat;box-shadow:0 0 12px rgba(255,79,176,.7),0 3px 8px rgba(0,0,0,.5);pointer-events:none;animation:pinF 3.4s ease-in-out infinite}
+@keyframes pinF{0%,100%{translate:0 0}50%{translate:0 -4px}}
 #sparks{position:absolute;inset:0;pointer-events:none;z-index:1}
 #sparks i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff;opacity:0;animation:tw 3s ease-in-out infinite}
 @keyframes tw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.9;transform:scale(1)}}
@@ -144,7 +146,7 @@ button{font-family:inherit}
 <main id="app">
  <section id="stage" aria-label="Your character">
   <div id="beam"></div><div id="sparks"></div><div id="ped"></div><div id="ring"></div>
-  <div id="sbar"><button class="pill hot" id="rnd">🎲 Surprise me</button><button class="pill" id="rst">Start over</button></div>
+  <div id="sbar"><button class="pill hot" id="rnd">🎲 Surprise me</button><span style="display:flex;gap:8px"><button class="pill" id="v3">✨ See it in 3D</button><button class="pill" id="rst">Start over</button></span></div>
   <div id="lock"></div>
   <div id="fig"></div>
   <div id="pst" role="status" aria-live="polite"></div><div id="me"><input type="text" id="h" placeholder="Your @ (optional): see your pic" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="30"><select id="pl" aria-label="Platform"><option value="x">X</option><option value="kick">Kick</option></select></div>
@@ -218,8 +220,8 @@ button{font-family:inherit}
 <div id="done" role="dialog" aria-modal="true"><div class="box"><h2>Copied! <b>You're on the list.</b></h2>
  <ol><li>Keep this line handy (it's on your clipboard).</li><li>When <b>Virtual Nicki Night</b> goes live on X or Kick, <b>paste it in the live chat</b>.</li><li>You'll walk into the club wearing your look, with your profile picture as your face.</li></ol>
  <button id="ok">Got it</button></div></div>
-<script src="vnn/rig8.js?v=1792883647"></script>
-<script src="vnn/vnn-avatar.js?v=1792883647"></script>
+<script src="vnn/rig8.js?v=1793464415"></script>
+<script src="vnn/vnn-avatar.js?v=1793464415"></script>
 <script>
 (function () {
   var CAT = VNNA.CATALOG, byId = VNNA.byId, $ = function (i) { return document.getElementById(i); };
@@ -245,7 +247,35 @@ button{font-family:inherit}
   var cx = cvs.getContext('2d'), cur = null, tok = 0, t0 = performance.now(), STG = {};
   cx.imageSmoothingQuality = 'high';
   function rebuild() { var my = ++tok; VNNA.build(sel).then(function (r) { if (my === tok) cur = r; }); }
+  /* 3D preview (beta): the same Three.js avatar the club uses. Drag to turn it round. */
+  var V3 = { on: false, eng: null, loading: false, yaw: 0, drag: null, pin: null };
+  function v3Toggle() {
+    if (V3.loading) return; V3.on = !V3.on; $('v3').classList.toggle('hot', V3.on); $('v3').textContent = V3.on ? '✨ Back to 2D' : '✨ See it in 3D'; cvs.style.display = V3.on ? 'none' : '';
+    if (V3.on && !V3.eng) {
+      V3.loading = true; $('v3').textContent = 'Loading 3D…';
+      import('./vnn3d/vnn3d.js?v=1793464415').then(function (m) { return m.create({ base: 'vnn3d/', catalog: VNNA.CATALOG, w: Math.round(CW * DPR), h: Math.round(CH * DPR), horizon: Math.round(CH * DPR * 0.3), css: '', ver: '1793464415', size: 1 }); })
+        .then(function (e) { V3.eng = e; V3.loading = false; $('fig').appendChild(e.canvas); V3.pin = document.createElement('div'); V3.pin.id = 'pin3'; $('stage').appendChild(V3.pin); $('v3').textContent = '✨ Back to 2D'; v3Show(); })
+        .catch(function (err) { console.error('3D', err); V3.loading = false; V3.on = false; cvs.style.display = ''; $('v3').classList.remove('hot'); $('v3').textContent = '3D needs a newer browser'; });
+    }
+    v3Show();
+  }
+  function v3Show() { if (V3.eng) V3.eng.canvas.style.display = V3.on ? '' : 'none'; if (V3.pin) V3.pin.style.display = V3.on && photoImg ? '' : 'none'; }
+  function v3Frame(now) {
+    var w = Math.round(CW * DPR), h = Math.round(CH * DPR); if (!V3.drag && !calm) V3.yaw += 0.006;
+    var hh = 0; for (var i = 0; i < handle.length; i++) hh = (hh * 31 + handle.charCodeAt(i)) >>> 0;
+    var st = { key: 'me', look: Object.assign({}, sel, { face: hh % 8 }), x: w / 2, y: h * 0.955, fh: h * 0.78, vis: 1, dance: calm ? null : 'groove', idle: calm, ph: 0, yaw: Math.sin(V3.yaw) * 1.4 };
+    V3.eng.frame(now, (now - t0) / 1000 * 2, [st]);
+    if (V3.pin && photoImg && st.hy != null) { var cr = V3.eng.canvas.getBoundingClientRect(), sr = $('stage').getBoundingClientRect(), k = cr.height / h, sz = 54;
+      V3.pin.style.display = ''; if (V3.pin.dataset.src !== photoImg.src) { V3.pin.dataset.src = photoImg.src; V3.pin.style.backgroundImage = 'url("' + photoImg.src + '")'; }
+      V3.pin.style.borderColor = RING[plat] || '#ff4fb0'; V3.pin.style.left = (cr.left - sr.left + cr.width / 2 - sz / 2) + 'px'; V3.pin.style.top = (cr.top - sr.top + st.hy * k - sz - 12) + 'px'; }
+    else if (V3.pin) V3.pin.style.display = 'none';
+  }
+  $('v3').onclick = v3Toggle;
+  $('fig').addEventListener('pointerdown', function (e) { if (!V3.on) return; V3.drag = { x: e.clientX, y0: V3.yaw }; });
+  window.addEventListener('pointermove', function (e) { if (V3.drag) V3.yaw = V3.drag.y0 - (e.clientX - V3.drag.x) * 0.006; });
+  window.addEventListener('pointerup', function () { V3.drag = null; });
   function frame(now) {
+    if (V3.on && V3.eng) { try { v3Frame(now); } catch (e) { console.error(e); } requestAnimationFrame(frame); return; }
     if (cur) {
       cx.setTransform(DPR, 0, 0, DPR, 0, 0); cx.clearRect(0, 0, CW, CH);
       var s = CH / 2010;

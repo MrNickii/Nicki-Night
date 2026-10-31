@@ -50,10 +50,10 @@ function rowSpan(rows) { let a = 1e9, b = -1e9; for (const r of rows) if (r[1] >
 
 /* ------------------------------------------------------------------ engine */
 export async function create(opts) {
-  const base = opts.base || 'vnn3d/', CAT = opts.catalog, W = 1920, H = 1080;
-  const yh = opts.horizon != null ? opts.horizon : 276, F = 2000, CAMH = 3.0;
+  const base = opts.base || 'vnn3d/', CAT = opts.catalog, W = opts.w || 1920, H = opts.h || 1080;
+  const yh = opts.horizon != null ? opts.horizon : 276, F = 2000 * H / 1080, CAMH = 3.0;
   const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
-  canvas.style.cssText = 'position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;z-index:1';
+  canvas.style.cssText = opts.css != null ? opts.css : 'position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;z-index:1';
   const R = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: !!opts.capture });
   if (!R.capabilities.isWebGL2) throw new Error('WebGL2 not available');
   R.setPixelRatio(1); R.setSize(W, H, false); R.outputColorSpace = THREE.SRGBColorSpace; R.setClearColor(0x000000, 0);
@@ -75,9 +75,10 @@ export async function create(opts) {
   const pix = new Uint8Array(PAGE * PAGE * 4 * NPG);
   const cv = document.createElement('canvas'); cv.width = cv.height = PAGE; const cx = cv.getContext('2d', { willReadFrequently: true });
   for (let p = 0; p < AT.pages; p++) {
-    const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('atlas' + p)); i.src = base + 'atlas' + p + '.png?v=' + (opts.ver || 1); });
+    const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('atlas' + p)); i.src = base + 'atlas' + p + '.' + (AT.ext || 'webp') + '?v=' + (opts.ver || 1); });
     cx.clearRect(0, 0, PAGE, PAGE); cx.drawImage(im, 0, 0); pix.set(cx.getImageData(0, 0, PAGE, PAGE).data, p * PAGE * PAGE * 4);
   }
+  const BTIM = {}; for (const [k, src] of Object.entries(opts.btFaces || {})) { try { BTIM[k] = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; }); } catch (e) {} }
   const FACES = drawFaces(cx, PAGE); pix.set(cx.getImageData(0, 0, PAGE, PAGE).data, FACEPG * PAGE * PAGE * 4);
   const atlas = new THREE.DataArrayTexture(pix, PAGE, PAGE, NPG);
   atlas.format = THREE.RGBAFormat; atlas.type = THREE.UnsignedByteType; atlas.colorSpace = THREE.NoColorSpace;
@@ -455,6 +456,7 @@ export async function create(opts) {
 
     /* ---- head with a drawn face ---- */
     const face = FACES[L.face] || FACES[0];
+    const btFace = typeof L.face === 'string' && FACES[L.face];
     { const g = new THREE.SphereGeometry(HR, 28, 20); const pa = g.attributes.position, i0 = gb.n, FS = HR * 1.15;
       for (let i = 0; i < pa.count; i++) {
         let x = pa.getX(i), y = pa.getY(i), z = pa.getZ(i); const yy = y / HR, kk = yy < 0 ? 1 - 0.16 * yy * yy : 1; x *= kk * 1.04; z *= kk * 0.94;
@@ -502,7 +504,35 @@ export async function create(opts) {
     const accColor = hex3((byId(CAT.colors.clothing, L.accColor) || {}).hex || ({ gold: '#ffd25e', silver: '#cfd6e2' })[L.accColor] || '#ffd25e');
     const accs = (L.acc || []).slice(); if (L.crown) accs.push('crown');
     for (const id of accs) {
-      const A = AT.items.acc[id]; if (!A || !A.img) continue; const pc = piece(A.img), tint = /ACC-SPECIAL/.test(A.img) ? null : accColor;
+      const A = AT.items.acc[id]; if (!A || !A.img) continue; const aIt = byId(CAT.accessories.items, id) || {}, pc = piece(A.img), tint = (aIt.full || /ACC-SPECIAL/.test(A.img)) ? null : accColor;
+      if (A.slot === 'hands') { for (const s of ['Left', 'Right']) garment('hand_relax', s, A.img, null, 0.12, tint); continue; }
+      if (A.slot === 'wrist' || A.slot === 'arm') {
+        /* bracelets, watch and arm band: a band wrapped round the arm with the 2D art on it */
+        for (const s of ['Left', 'Right']) { if (A.slot === 'wrist' && s === 'Left' && id === 'watch') continue;
+          const seg = A.slot === 'wrist' ? 'farm' : 'uarm', fr0 = segFrame(seg, s), df = D[seg], len = Math.hypot(df.bone[0], df.bone[1]), yc = df.piv[1] + len * (A.slot === 'wrist' ? 0.86 : 0.42), bh = pc.h * LATR * 0.5, kpx = len / fr0.L3;
+          const fr = { at: y => fr0.at(yc + (y - pc.h / 2) * LATR * 0.5 * kpx), lat: fr0.lat, dep: fr0.dep, sc: fr0.sc, piv: fr0.piv };
+          const sec = () => { const b = bodySection(seg, yc, curvy) || { L: 2, R: 2, F: 2, B: 2 }, o = (TP.sleeveU && covers(TP.sleeveU, yc)) ? OFFT + 0.5 : 0.35; return { L: b.L + o, R: b.R + o, F: b.F + o, B: b.B + o }; };
+          const ang = (xw, zw) => Math.atan2(xw, zw), u = (xw, zw) => pc.ox + pc.w / 2 + ang(xw, zw) / Math.PI * pc.w * 0.98;
+          shell(gb, { fr, rows: range(0, pc.h, 3), nseg: 8, sec, w: (y, p) => segWeights(seg, s, yc, p, fr.lat), strips: [{ a0: -HALF, a1: HALF, pc, u, v: y => y + pc.oy, mode: gm(tint), tint: tintOr(tint) }, { a0: HALF, a1: 3 * HALF, pc, u: (xw, zw) => pc.ox + pc.w / 2 - (Math.PI - Math.abs(ang(xw, zw))) * Math.sign(xw) / Math.PI * pc.w * 0.98, v: y => y + pc.oy, mode: gm(tint), tint: tintOr(tint) }] }); }
+        continue;
+      }
+      if (A.slot === 'waist') {
+        const k = LATR * 0.8, yb = 34, b0 = bodySection('pelvis', yb, curvy), lay = (TP.torso && covers(TP.torso, 470)) ? OFFT + 0.5 : OFFB + 0.5;
+        const fr = { at: y => new THREE.Vector3(J.Hips.x, pelvisY(yb) - (y - pc.h / 2) * k * 0.8, J.Hips.z + 0.4), lat: X, dep: Zv, sc: k, piv: pc.w / 2 };
+        const sec = () => ({ L: b0.L + lay, R: b0.R + lay, F: b0.F + lay, B: b0.B + lay });
+        const u = (xw, zw) => pc.ox + pc.w / 2 + Math.atan2(xw, zw) / Math.PI * pc.w * 0.98;
+        shell(gb, { fr, rows: range(0, pc.h, 4), nseg: 12, sec, w: (y, p) => segWeights('pelvis', '', 30, p, X), strips: [{ a0: -HALF, a1: HALF, pc, u, v: y => y + pc.oy, mode: gm(tint), tint: tintOr(tint) }, { a0: HALF, a1: 3 * HALF, pc, u: (xw, zw) => pc.ox + pc.w / 2 + (Math.PI - Math.abs(Math.atan2(xw, zw))) * Math.sign(xw) / Math.PI * pc.w * 0.98, v: y => y + pc.oy, mode: gm(tint), tint: tintOr(tint) }] });
+        continue;
+      }
+      if (A.slot === 'carry') {
+        /* hip bag: a card on the right hip */
+        const kk = LATR * 0.75 * 0.55, b0 = bodySection('pelvis', 60, curvy), sd = -1, i0 = gb.n, nx = 6, ny = 8;
+        const c0 = new THREE.Vector3(J.Hips.x + sd * (b0.R * 0.92), pelvisY(40), J.Hips.z + b0.F * 0.25), nrm = new THREE.Vector3(sd * 0.75, 0, 0.66).normalize(), side = new THREE.Vector3().crossVectors(UP, nrm).normalize();
+        for (let r = 0; r <= ny; r++) for (let c = 0; c <= nx; c++) { const ix = pc.w * c / nx, iy = pc.h * r / ny, pos = c0.clone().addScaledVector(side, -(ix - pc.w / 2) * kk * sd).addScaledVector(UP, -iy * kk).addScaledVector(nrm, 1.6 + Math.sin(c / nx * Math.PI) * 1.2);
+          const q = uvOf(pc, ix + pc.ox, iy + pc.oy); gb.v(pos, [[BIX.Hips, 0.7], [BIX.RightUpLeg, 0.3]], [q[0], q[1], q[2], gm(tint)], tintOr(tint)); }
+        for (let r = 0; r < ny; r++) for (let c = 0; c < nx; c++) { const a2 = i0 + r * (nx + 1) + c, b2 = a2 + 1, c2 = a2 + nx + 1, d2 = c2 + 1; gb.tri(a2, c2, b2); gb.tri(b2, c2, d2); gb.tri(a2, b2, c2); gb.tri(b2, d2, c2); }
+        continue;
+      }
       if (A.slot === 'neck') {
         const k = LATR * 0.62 * 1.0, topY = J.Neck.y - 2.4, rows = rowSpan(pc.rows);
         const fr = { at: y => new THREE.Vector3(J.Spine2.x, topY - y * k * 0.85, J.Spine2.z), lat: X, dep: Zv, sc: k, piv: pc.w / 2 };
@@ -559,6 +589,11 @@ export async function create(opts) {
       const bx = (n % 4) * cell * 2, by = Math.floor(n / 4) * cell * 2; out.push({ x: bx, y: by, s: cell, fem, iris }); n++;
       for (let st = 0; st < 4; st++) { const ox = bx + (st & 1) * cell, oy = by + (st >> 1) * cell; drawFace(c, ox, oy, cell, fem, iris, !!(st & 1), !!(st & 2)); }
     }
+    /* bartenders keep the painted faces made for them */
+    for (const [k, im] of Object.entries(BTIM)) {
+      const bx = (n % 4) * cell * 2, by = Math.floor(n / 4) * cell * 2; out[k] = { x: bx, y: by, s: cell }; n++;
+      for (let st = 0; st < 4; st++) { const ox = bx + (st & 1) * cell, oy = by + (st >> 1) * cell, w = cell * 0.82, h = w * im.height / im.width; c.drawImage(im, ox + (cell - w) / 2, oy + (cell - h) / 2 + 6, w, h); }
+    }
     return out;
   }
   function drawFace(g, ox, oy, s, fem, iris, blink, talk) {
@@ -582,6 +617,57 @@ export async function create(opts) {
     if (talk) { g.fillStyle = '#3a1020'; g.beginPath(); g.ellipse(cx, ey + 46, 10, 9, 0, 0, 7); g.fill(); g.fillStyle = '#ff6f9c'; g.beginPath(); g.ellipse(cx, ey + 50, 6, 3.6, 0, 0, 7); g.fill(); }
     else { g.fillStyle = '#3a1020'; g.beginPath(); g.moveTo(cx - 11, ey + 40); g.quadraticCurveTo(cx, ey + 56, cx + 11, ey + 40); g.quadraticCurveTo(cx, ey + 45, cx - 11, ey + 40); g.fill(); g.fillStyle = fem ? '#ff6f9c' : '#e07a7a'; g.beginPath(); g.ellipse(cx, ey + 47.5, 5, 2.4, 0, 0, 7); g.fill(); }
     g.restore();
+  }
+
+  /* ---------------- drinks and phones: a personal skeleton for whoever is holding something */
+  const PRIGS = [], SP2 = BONES[BIX.Spine2].getWorldQuaternion(new THREE.Quaternion()).invert();
+  function personalRig(clip, t) {
+    let r = PRIGS.find(x => !x.busy); if (!r) { const bones = makeBones(104 * LATR * 0.92); rigRoot.add(bones[0]); r = { bones, skel: new THREE.Skeleton(bones, INV), mixer: new THREE.AnimationMixer(bones[0]), B: Object.fromEntries(bones.map(b => [b.name, b])), users: 0, personal: true }; PRIGS.push(r); }
+    r.busy = true; r.mixer.stopAllAction(); r.clip = clip; r.act = r.mixer.clipAction(clip); r.act.reset().play(); r.act.time = t || 0; r.speed = 1.05; return r;
+  }
+  const qa = new THREE.Quaternion(), qb = new THREE.Quaternion(), qc = new THREE.Quaternion(), va = new THREE.Vector3(), vb = new THREE.Vector3(), vc = new THREE.Vector3();
+  function aimBone(b, child, dir, w) {
+    b.updateWorldMatrix(true, false); child.updateWorldMatrix(false, false);
+    va.setFromMatrixPosition(b.matrixWorld); vb.setFromMatrixPosition(child.matrixWorld).sub(va).normalize();
+    qa.setFromUnitVectors(vb, dir); qa.slerp(qc.identity(), 1 - w);
+    b.getWorldQuaternion(qb); qb.premultiply(qa); b.parent.getWorldQuaternion(qc); b.quaternion.copy(qc.invert().multiply(qb)); b.updateMatrixWorld(true);
+  }
+  const POSE = { base: [[0.3, -0.92, 0.25], [-0.15, 0.2, 1]], mouth: [[0.45, -0.25, 0.55], [-0.7, 0.7, 0.2]], up: [[0.35, 0.9, 0.2], [0.05, 1, 0.15]], phone: [[0.5, -0.35, 0.6], [-0.35, 0.85, 0.35]] };
+  const dU = new THREE.Vector3(), dF = new THREE.Vector3(), tU = new THREE.Vector3(), tF = new THREE.Vector3();
+  function holdPose(r, h, w) {
+    const sd = h.hand === 'Left' ? 'Left' : 'Right', sx = sd === 'Left' ? 1 : -1, B = r.B;
+    const base = h.kind === 'phone' ? null : POSE.base, tg = POSE[h.to === 'up' ? 'up' : h.kind === 'phone' ? 'phone' : 'mouth'];
+    const sq = B.Spine2.getWorldQuaternion(new THREE.Quaternion()).multiply(SP2);
+    const set = (v, a) => v.set(a[0] * sx, a[1], a[2]);
+    if (base) { set(dU, base[0]); set(dF, base[1]); set(tU, tg[0]); set(tF, tg[1]); dU.lerp(tU, h.arm); dF.lerp(tF, h.arm); }
+    else { set(dU, tg[0]); set(dF, tg[1]); }
+    dU.normalize().applyQuaternion(sq); dF.normalize().applyQuaternion(sq);
+    const ww = base ? w : w * h.arm;
+    aimBone(B[sd + 'Arm'], B[sd + 'ForeArm'], dU, ww); aimBone(B[sd + 'ForeArm'], B[sd + 'Hand'], dF, ww);
+  }
+  const PMAT = {}; const pm = (c, o) => PMAT[c + (o ? 'o' : '')] || (PMAT[c + (o ? 'o' : '')] = o ? new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthWrite: false }) : new THREE.MeshToonMaterial({ color: c, gradientMap: ramp }));
+  const LIQ = { martini: '#ff4fa8', beer: '#ffb627', shot: '#ff9a1f', cocktail: '#ff7a3c', champagne: '#ffe58a', wine: '#9e1238', starships: '#ff3fd0', cybertruck: '#4fd8ff', daq: '#ff2f4f', barbz: '#ff5f8f' };
+  const SHAPE = { martini: 'cone', beer: 'mug', shot: 'shot', cocktail: 'tall', champagne: 'flute', wine: 'bowl', starships: 'tall', cybertruck: 'tall', daq: 'tall', barbz: 'bowl' };
+  function makeProp(kind) {
+    const g = new THREE.Group();
+    if (kind === 'phone') { const b = new THREE.Mesh(new THREE.BoxGeometry(3.2, 6, 0.6), pm('#1a1020')); const sc = new THREE.Mesh(new THREE.PlaneGeometry(2.7, 5.3), new THREE.MeshBasicMaterial({ color: '#9fe8ff' })); sc.position.z = -0.31; sc.rotation.y = Math.PI; b.add(sc); b.position.y = 2.5; g.add(b); return g; }
+    const sh = SHAPE[kind] || 'tall', lc = LIQ[kind] || '#ff7ab8';
+    const prof = { cone: [[0.2, 0], [2.2, 0], [0.3, 0.3], [0.3, 4], [3.6, 7.2]], mug: [[2.2, 0], [2.4, 6.4]], shot: [[1.3, 0], [1.7, 3]], tall: [[1.6, 0], [2, 7.5]], flute: [[1.4, 0], [0.3, 0.3], [0.3, 3.4], [1.2, 4], [1.3, 8.5]], bowl: [[1.5, 0], [0.3, 0.3], [0.3, 3.2], [2.4, 4.6], [2.2, 7]] }[sh];
+    const glass = new THREE.Mesh(new THREE.LatheGeometry(prof.map(p => new THREE.Vector2(p[0], p[1])), 14), pm('#e8f6ff', 0.38)); g.add(glass);
+    const top = prof[prof.length - 1][1], bot = sh === 'cone' ? 4.4 : sh === 'flute' ? 4.2 : sh === 'bowl' ? 3.6 : 0.4, rl = prof[prof.length - 1][0] * 0.9;
+    const liq = new THREE.Mesh(new THREE.CylinderGeometry(rl, sh === 'cone' ? 0.4 : rl * 0.9, top - bot - 0.6, 12), pm(lc)); liq.geometry.translate(0, (top - bot - 0.6) / 2, 0); liq.position.y = bot; g.add(liq); g.userData.liq = liq;
+    if (sh === 'tall') { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 9, 6), pm('#ff3fa4')); st.position.set(0.8, 6, 0); st.rotation.z = -0.25; g.add(st); }
+    if (sh === 'mug') { const hd = new THREE.Mesh(new THREE.TorusGeometry(1.4, 0.35, 6, 12, Math.PI), pm('#e8f6ff', 0.5)); hd.position.set(2.4, 3.4, 0); hd.rotation.z = -Math.PI / 2; g.add(hd); const fo = new THREE.Mesh(new THREE.SphereGeometry(2.3, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), pm('#fff8e6')); fo.position.y = 6.2; g.add(fo); }
+    return g;
+  }
+  function placeProp(a, st, s) {
+    const h = st.hold; if (!h || !a.prig) { if (a.prop) a.prop.visible = false; return; }
+    if (!a.prop || a.prop.userData.kind !== h.kind) { if (a.prop) scene.remove(a.prop); a.prop = makeProp(h.kind); a.prop.userData.kind = h.kind; scene.add(a.prop); }
+    const sd = h.hand === 'Left' ? 'Left' : 'Right', hb = a.prig.B[sd + 'Hand'], fb = a.prig.B[sd + 'ForeArm'];
+    hb.getWorldPosition(va); fb.getWorldPosition(vb); vc.copy(va).sub(vb).normalize(); va.addScaledVector(vc, 3.8);
+    va.applyMatrix4(a.mesh.matrixWorld); a.prop.position.copy(va); a.prop.visible = a.mesh.visible;
+    a.prop.scale.setScalar(s * 1.7 * Math.max(0.01, h.s == null ? 1 : h.s)); a.prop.rotation.order = 'YXZ'; a.prop.rotation.set(-0.1 * (h.aim || 0), a.yaw, (h.kind === 'phone' ? 0 : -(sd === 'Left' ? 1 : -1) * ((h.aim || 0) * 1.0 + (h.over || 0) * (h.aim || 0))) + (h.tilt || 0));
+    if (a.prop.userData.liq) a.prop.userData.liq.scale.y = Math.max(0.02, h.lvl == null ? 1 : h.lvl);
   }
 
   /* ---------------- blob shadows: one instanced draw */
@@ -615,7 +701,7 @@ export async function create(opts) {
     releaseGeo(old);
   }
   function faceHook(r, s, c, g, m) { const a = this.userData.av; U.uFace.value.set(a.blink ? 256 / PAGE : 0, a.talkOn ? 256 / PAGE : 0); m.uniformsNeedUpdate = true; }
-  function remove(a) { a.dead = true; if (a.mesh) { scene.remove(a.mesh, a.out); } releaseGeo(a.ge); if (a.rig) a.rig.users--; AV.delete(a.key); }
+  function remove(a) { a.dead = true; if (a.prig) { a.prig.busy = false; a.prig = null; } if (a.prop) scene.remove(a.prop); if (a.mesh) { scene.remove(a.mesh, a.out); } releaseGeo(a.ge); if (a.rig && !a.rig.personal) a.rig.users--; AV.delete(a.key); }
   function pickRig(a, st) {
     if (st.walk) return RIGS.walk[(st.ph >>> 0) % 3];
     if (st.idle) return RIGS.idle[(st.ph >>> 0) % 2];
@@ -654,9 +740,14 @@ export async function create(opts) {
       a.out.position.copy(a.mesh.position); a.out.scale.copy(a.mesh.scale); a.out.rotation.y = a.yaw;
       const showOut = st.fh > outlineCut ? true : st.fh > 80; a.out.visible = showOut;
       /* animation rig */
-      const rg = pickRig(a, st); if (rg !== a.rig) { if (a.rig) a.rig.users--; rg.users++; a.rig = rg; a.mesh.bind(rg.skel, IDENT); a.out.bind(rg.skel, IDENT); }
+      let rg = pickRig(a, st);
+      if (st.hold) { if (!a.prig) { a.prig = personalRig(rg.act.getClip(), rg.act.time); } else if (a.prig.clip !== rg.act.getClip()) { a.prig.mixer.stopAllAction(); a.prig.clip = rg.act.getClip(); a.prig.act = a.prig.mixer.clipAction(a.prig.clip); a.prig.act.play(); a.prig.act.time = rg.act.time; } a.hw = Math.min(1, (a.hw || 0) + dt * 4); a.lastHold = st.hold; rg = a.prig; }
+      else if (a.prig) { a.hw = Math.max(0, (a.hw || 0) - dt * 4); if (a.hw > 0) rg = a.prig; else { a.prig.busy = false; a.prig = null; } }
+      if (rg !== a.rig) { if (a.rig && !a.rig.personal) a.rig.users--; if (!rg.personal) rg.users++; a.rig = rg; a.mesh.bind(rg.skel, IDENT); a.out.bind(rg.skel, IDENT); }
       /* face life: blinks, mouth moves while their bubble is up */
       if (now > a.blinkT) { a.blink = !a.blink; a.blinkT = now + (a.blink ? 120 : 2200 + Math.random() * 3800); }
+      if (a.prig) { a.prig.mixer.update(dt * 1.05 * (opts.speed || 1)); a.prig.bones[0].updateMatrixWorld(true); const h = st.hold || a.lastHold; if (h) holdPose(a.prig, h, a.hw); }
+      a.mesh.updateMatrixWorld(); placeProp(a, st.hold ? st : { hold: null }, s);
       a.talkOn = !!st.talk && Math.sin(now / 1000 * 17 + (st.ph & 7)) > -0.1;
       /* where the head is on screen this frame (for the profile-pic pin and chat bubbles) */
       if (a.rig && a.rig.B.Head) { const hb = a.rig.B.Head; hb.getWorldPosition(tmpV); tmpV.y += (HC.y - J.Head.y) + HR * 1.12; a.mesh.updateMatrixWorld(); tmpV.applyMatrix4(a.mesh.matrixWorld).project(cam); st.hy = (1 - tmpV.y) / 2 * H; st.fy = st.y; }

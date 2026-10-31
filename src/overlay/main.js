@@ -367,7 +367,7 @@
   var V3VER = '__V3__';
   function m3dLoad() {
     if (M3.eng || M3.loading) return; M3.loading = true; M3.err = '';
-    import('./vnn3d/vnn3d.js?v=' + V3VER).then(function (m) { return m.create({ base: 'vnn3d/', catalog: CATALOG, horizon: R.persp.yh, ver: V3VER }); })
+    import('./vnn3d/vnn3d.js?v=' + V3VER).then(function (m) { return m.create({ base: 'vnn3d/', catalog: CATALOG, horizon: R.persp.yh, ver: V3VER, btFaces: { priya: 'vnn/bartenders/priya.png', amara: 'vnn/bartenders/amara.png', freya: 'vnn/bartenders/freya.png', valentina: 'vnn/bartenders/valentina.png', mei: 'vnn/bartenders/mei.png' } }); })
       .then(function (e) { M3.eng = e; M3.loading = false; $('crowd').appendChild(e.canvas); m3dApply(); try { log('3D avatars ready'); } catch (x) {} rcSnap(true); })
       .catch(function (err) { M3.loading = false; M3.err = String(err && err.message || err); console.error('3D avatars', err); S.m3d = false; save(); m3dApply(); try { log('3D avatars could not start: ' + M3.err + ' (staying on 2D)'); } catch (x) {} rcSnap(true); });
   }
@@ -406,8 +406,8 @@
       var cp = curPos(u, pn), wk = u.wk, walking = !!(wk && pn < wk.t1 + 120), x = cp[0] + (u.ox || 0), y = cp[1];
       if (!walking) { if (u._3x == null || u._3j) { u._3x = x; u._3y = y; u._3j = 0; } else { var f = 0.16; u._3x += (x - u._3x) * f; u._3y += (y - u._3y) * f; } x = u._3x; y = u._3y; } else { u._3x = x; u._3y = y; }
       var sc = (u.sc || 1) * (u.pop ? 1.12 : 1), feet = (y - u.h / 2) + (2005 * u.s0 - u.h / 2) * sc;
-      if (!u._3L || refresh || u._3ref !== u.look) { u._3L = lookFor(u); u._3ref = u.look; if (isNicki(u)) u._3L.crown = true; u._3L.face = (u.h32 >>> 13) % 8; }
-      a.push({ key: u.key, look: u._3L, x: x, y: feet, fh: u.fh * sc, vis: u.el.classList.contains('in'), walk: walking ? { dx: wk.x1 - wk.x0, dy: wk.y1 - wk.y0 } : null, dance: normD(u.dance), ph: u.h32 >>> 0, talk: !!BUB.map[u.key], idle: !!u.bt, front: !!(u.stage || u.top) });
+      if (!u._3L || refresh || u._3ref !== u.look) { u._3L = lookFor(u); u._3ref = u.look; if (isNicki(u)) u._3L.crown = true; u._3L.face = u.bt ? String(u.name || '').toLowerCase() : (u.h32 >>> 13) % 8; }
+      a.push({ key: u.key, look: u._3L, x: x, y: feet, fh: u.fh * sc, vis: u.el.classList.contains('in'), walk: walking ? { dx: wk.x1 - wk.x0, dy: wk.y1 - wk.y0 } : null, dance: normD(u.dance), ph: u.h32 >>> 0, talk: !!BUB.map[u.key], idle: !!u.bt, hold: holdFor(u, nowS()), front: !!(u.stage || u.top) });
       list.push(u);
     }
     order.forEach(function (k) { var u = users[k]; if (u && u.el) add(u); }); BT.forEach(add);
