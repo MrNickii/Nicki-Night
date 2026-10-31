@@ -1,0 +1,17 @@
+<!doctype html><html><body><script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {FBXLoader} from 'three/addons/loaders/FBXLoader.js';
+const KEEP=['Hips','Spine','Spine1','Spine2','Neck','Head','HeadTop_End','LeftShoulder','LeftArm','LeftForeArm','LeftHand','LeftHandMiddle1','RightShoulder','RightArm','RightForeArm','RightHand','RightHandMiddle1','LeftUpLeg','LeftLeg','LeftFoot','LeftToeBase','LeftToe_End','RightUpLeg','RightLeg','RightFoot','RightToeBase','RightToe_End'];
+const FILES=['Hip_Hop_Dancing','Hip_Hop_Dancing_1','Hip_Hop_Dancing_2','Hip_Hop_Dancing_3','Hip_Hop_Dancing_4','Hip_Hop_Dancing_5','Bboy_Hip_Hop_Move','Dancing_Twerk','Snake_Hip_Hop_Dance'];
+const L=new FBXLoader(), out={bones:[],clips:{}};
+for(const f of FILES){ const o=await L.loadAsync('fbx/'+f+'.fbx'); const B={}; o.traverse(b=>{if(b.isBone){const k=b.name.replace('mixamorig','');if(!B[k])B[k]=b;}});
+  if(!out.bones.length){ for(const k of KEEP){const b=B[k]; let p=b.parent; while(p&&!(p.isBone&&KEEP.includes(p.name.replace('mixamorig',''))))p=p.parent; out.bones.push({n:k,p:p?p.name.replace('mixamorig',''):null,pos:b.position.toArray(),q:b.quaternion.toArray()});}
+    const r=[];let p=B.Hips.parent;while(p){r.push([p.type,p.name,p.position.toArray(),p.quaternion.toArray(),p.scale.toArray()]);p=p.parent;} out.hipsParents=r; }
+  const c=o.animations[0]; const fps=30, n=Math.round(c.duration*fps); const mixer=new THREE.AnimationMixer(o); const a=mixer.clipAction(c); a.play();
+  const q=[], hp=[]; const ks=KEEP.filter(k=>!/End|Middle1/.test(k));
+  for(let i=0;i<n;i++){ mixer.setTime(i/fps); for(const k of ks){ const qq=B[k].quaternion; q.push(qq.x,qq.y,qq.z,qq.w);} hp.push(...B.Hips.position.toArray()); }
+  out.clips[f]={n,fps,bones:ks,dur:c.duration,q:Array.from(q,v=>Math.round(v*32767)),hp:hp.map(v=>+v.toFixed(2)),tracks:c.tracks.length};
+}
+window.OUT=out;
+</script></body></html>

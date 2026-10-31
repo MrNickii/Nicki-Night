@@ -334,7 +334,7 @@
     }
   }
   function build(u) {
-    if (!ENGINE) return; var L = lookFor(u), sg = JSON.stringify(L); if (u._sg === sg && u.set) return; u._sg = sg; var my = (u._bt = (u._bt || 0) + 1);
+    if (!ENGINE) return; if (M3 && M3.on) { u._sg = null; return; } var L = lookFor(u), sg = JSON.stringify(L); if (u._sg === sg && u.set) return; u._sg = sg; var my = (u._bt = (u._bt || 0) + 1);
     var j = { u: u, L: L, my: my }; if (u.stage || u.top) BQ.unshift(j); else BQ.push(j); pumpBuild();
   }
   /* soft silhouette shown for the second or two a new look is being assembled */
@@ -353,12 +353,69 @@
     if (u.sh) { var shw = u.fh * 0.46, shh = u.fh * 0.075; u.sh.style.width = shw + 'px'; u.sh.style.height = shh + 'px'; u.sh.style.left = (cw - shw) / 2 + 'px'; u.sh.style.top = (2003 * s0 - shh / 2) + 'px'; } u.cv.style.width = cw + 'px'; u.cv.style.height = ch + 'px'; u.inner.style.width = cw + 'px'; u.inner.style.height = ch + 'px';
     u.cw = cw; u.ch = ch; u.cv.style.marginLeft = '0'; u.dirty = 1; loadPhoto(u); build(u);
     if (u.pill) u.pill.style.bottom = 'calc(100% - ' + Math.round(250 * s0) + 'px)';
+    pfbSize(u);
   }
   function makeEl(u) {
     var el = document.createElement('div'); el.className = 'p';
-    el.innerHTML = '<div class="sh"></div><div class="in2"></div><div class="pill"></div>';
-    u.el = el; u.sh = el.firstChild; u.inner = el.children[1]; u.pill = el.lastChild; u.cv = null; u.cx = null; u.h = 0; u.ghostD = 0; u.dirty = 1;
+    el.innerHTML = '<div class="sh"></div><div class="in2"></div><div class="pill"></div><div class="pfb"><i></i></div>';
+    u.el = el; u.sh = el.firstChild; u.inner = el.children[1]; u.pill = el.children[2]; u.pfb = el.children[3]; u.cv = null; u.cx = null; u.h = 0; u.ghostD = 0; u.dirty = 1;
     $('crowd').appendChild(el);
+  }
+  /* ---------- 3D avatars (beta): a Three.js layer that takes over drawing the dancers; everything else on the overlay stays as it is ---------- */
+  var M3 = { on: false, eng: null, loading: false, err: '', ferr: 0, st: [], n: 0, lk: 0 };
+  if (Q.get('3d') === '1') S.m3d = true; else if (Q.get('3d') === '0') S.m3d = false;
+  var V3VER = '__V3__';
+  function m3dLoad() {
+    if (M3.eng || M3.loading) return; M3.loading = true; M3.err = '';
+    import('./vnn3d/vnn3d.js?v=' + V3VER).then(function (m) { return m.create({ base: 'vnn3d/', catalog: CATALOG, horizon: R.persp.yh, ver: V3VER }); })
+      .then(function (e) { M3.eng = e; M3.loading = false; $('crowd').appendChild(e.canvas); m3dApply(); try { log('3D avatars ready'); } catch (x) {} rcSnap(true); })
+      .catch(function (err) { M3.loading = false; M3.err = String(err && err.message || err); console.error('3D avatars', err); S.m3d = false; save(); m3dApply(); try { log('3D avatars could not start: ' + M3.err + ' (staying on 2D)'); } catch (x) {} rcSnap(true); });
+  }
+  function m3dSet(on) { S.m3d = !!on; save(); m3dApply(); rcSnap(true); }
+  function m3dApply() {
+    var on = !!S.m3d; if (on && !M3.eng) { m3dLoad(); return; }
+    var was = M3.on; M3.on = on && !!M3.eng; document.body.classList.toggle('m3d', M3.on);
+    if (M3.eng) M3.eng.canvas.style.display = M3.on ? '' : 'none';
+    if (was && !M3.on) { M3.eng.clear(); rebuildAll(); order.forEach(function (k) { var u = users[k]; if (u) u.dirty = 1; }); BT.forEach(function (u) { u.dirty = 1; }); }
+    order.forEach(function (k) { var u = users[k]; if (u && u.el) pfbSize(u); });
+  }
+  /* profile pictures float over 3D heads in a little pin. A big crowd only shows the people who are chatting (plus VIPs, stage and staff) */
+  function pfbSize(u) {
+    if (!u.pfb || !u.d) return; var k = (u.s0 || 0.05), sz = Math.round(Math.max(20, Math.min(54, u.d * 0.44)));
+    u.pfb.style.setProperty('--pfs', sz + 'px'); u.pfb.style.top = Math.round(2005 * k - (u.fh || u.d * 2) - sz - 12) + 'px';
+    u.pfb.style.setProperty('--pc', u.plat === 'kick' ? '#53fc18' : u.plat === 'tiktok' ? '#fe2c55' : '#1d9bf0');
+    var i = u.pfb.firstChild; if (u.photo && !u.photoBad && !S.nophoto[u.key] && i.dataset.src !== u.photo) { i.dataset.src = u.photo; i.style.backgroundImage = 'url("' + String(u.photo).replace(/"/g, '%22') + '")'; i.textContent = ''; }
+    else if ((!u.photo || u.photoBad || S.nophoto[u.key]) && !i.textContent) { i.style.backgroundImage = ''; i.textContent = String(u.name || '?').replace(/^@/, '').charAt(0).toUpperCase(); }
+  }
+  function pfbRule(list) {
+    var n = list.length, mode = S.pfb || 'auto', nowT = Date.now();
+    list.forEach(function (u) {
+      var on = mode === 'all' ? true : mode === 'off' ? false : mode === 'chat' ? (nowT - (u.lastActive || 0) < 90000) :
+        (n <= 30 || u.vip || u.stage || u.top || u.pop || isNicki(u) || isMod(u) || !!BUB.map[u.key] || (nowT - (u.lastActive || 0) < (n <= 80 ? 120000 : 45000)));
+      if (u.bt) on = false;
+      if (u.el && u.el.classList.contains('pfbOn') !== on) u.el.classList.toggle('pfbOn', on);
+      var tk = !!BUB.map[u.key]; if (u.el && u.el.classList.contains('pfbTalk') !== tk) u.el.classList.toggle('pfbTalk', tk);
+    });
+    document.body.style.setProperty('--pfk', n > 80 ? 0.72 : n > 40 ? 0.85 : 1);
+  }
+  function m3dFrame(now) {
+    var a = M3.st, pn = performance.now(), list = []; a.length = 0; M3.lk++;
+    var refresh = (M3.lk % 20) === 0;
+    function add(u) {
+      if (!u.el || !u.h || !u.fh) return;
+      var cp = curPos(u, pn), wk = u.wk, walking = !!(wk && pn < wk.t1 + 120), x = cp[0] + (u.ox || 0), y = cp[1];
+      if (!walking) { if (u._3x == null || u._3j) { u._3x = x; u._3y = y; u._3j = 0; } else { var f = 0.16; u._3x += (x - u._3x) * f; u._3y += (y - u._3y) * f; } x = u._3x; y = u._3y; } else { u._3x = x; u._3y = y; }
+      var sc = (u.sc || 1) * (u.pop ? 1.12 : 1), feet = (y - u.h / 2) + (2005 * u.s0 - u.h / 2) * sc;
+      if (!u._3L || refresh || u._3ref !== u.look) { u._3L = lookFor(u); u._3ref = u.look; if (isNicki(u)) u._3L.crown = true; u._3L.face = (u.h32 >>> 13) % 8; }
+      a.push({ key: u.key, look: u._3L, x: x, y: feet, fh: u.fh * sc, vis: u.el.classList.contains('in'), walk: walking ? { dx: wk.x1 - wk.x0, dy: wk.y1 - wk.y0 } : null, dance: normD(u.dance), ph: u.h32 >>> 0, talk: !!BUB.map[u.key], idle: !!u.bt, front: !!(u.stage || u.top) });
+      list.push(u);
+    }
+    order.forEach(function (k) { var u = users[k]; if (u && u.el) add(u); }); BT.forEach(add);
+    if (refresh || M3.n !== list.length) { M3.n = list.length; pfbRule(list.filter(function (u) { return u.inside; })); }
+    M3.eng.frame(pn, bclk * 0.6, a);
+    /* pins follow the real 3D head (dances crouch and bounce) */
+    for (var i = 0; i < a.length; i++) { var q = a[i], u2 = list[i]; if (q.hy == null || !u2.pfb) continue; var sc2 = (u2.sc || 1) * (u2.pop ? 1.12 : 1), hd = Math.max(10, (q.fy - q.hy) / sc2); u2._3hd = hd;
+      if (u2.el.classList.contains('pfbOn')) { var sz = parseFloat(u2.pfb.style.getPropertyValue('--pfs')) || 40, tp = Math.round(2005 * u2.s0 - hd - sz * (parseFloat(document.body.style.getPropertyValue('--pfk')) || 1) - 6); if (Math.abs(tp - (u2._3pt || 0)) > 1) { u2._3pt = tp; u2.pfb.style.top = tp + 'px'; } } }
   }
   /* one shared animation loop for everyone on screen */
   var FPSCAP = Math.max(10, Math.min(60, Number(new URLSearchParams(location.search).get('fps')) || 30)), lastDraw = 0;
@@ -389,6 +446,7 @@
     if (dtSamp && dtSamp.length < 140) { dtSamp.push(dt); if (dtSamp.length === 140) { var sm = dtSamp.slice(20).sort(function (a, b) { return a - b; }); dtRef = Math.max(15, Math.min(34, sm[Math.floor(sm.length * 0.25)])); dtSamp = null; } }
     dtAvg += (dt - dtAvg) * 0.05; bclk += Math.min(400, rdt) / 1000 * LT.bpm / 60; /* the dance clock follows real time, so a slow computer gives choppier frames but never slow-motion dancing */ spkTick(); if (LT.disco) discoDraw(false);
     if (now - lastDraw < 1000 / FPSCAP - 4) return; lastDraw = now; frameN++;
+    if (M3 && M3.on && M3.eng) { var t3 = performance.now(); try { m3dFrame(now); } catch (e) { M3.ferr++; if (M3.ferr === 1) console.error('3D frame', e); if (M3.ferr > 5) { M3.err = 'drawing error: ' + (e && e.message || e); m3dSet(false); try { log('3D avatars hit a problem, switched back to 2D'); } catch (x) {} } } fpsMs = performance.now() - t3; return; }
     /* how often each dancer is redrawn (1 = every frame). Fully adaptive with hysteresis: a sudden big crowd starts on the safe setting,
        half a second of slow frames steps it up, and 2.5 seconds of comfortably fast frames steps it back down toward full smoothness */
     var list = crowdList(), n = list.length, base = n <= 30 ? 1 : n <= 70 ? 2 : n <= 140 ? 3 : 4;
@@ -416,6 +474,7 @@
   VNNA.setCache(60); /* built outfits kept for quick re-use; each holds many image canvases, so keep this modest */
   VNNA.init(AB + 'lib_lo/', AB + 'moc.json').then(function () { ENGINE = true; rebuildAll(); }).catch(function (e) { ENGERR = String(e && e.message || e); console.error('avatar assets', e); var b = document.getElementById('cstat'); if (b) b.title = 'Avatar assets: ' + ENGERR; });
   requestAnimationFrame(animate);
+  setTimeout(m3dApply, 0);
   /* walking: straight lines at a pace that follows the avatar's size; the legs follow the distance travelled */
   var WALKSP = 2.1, WALKCYC = 0.95;
   function curPos(u, nowMs) { var w = u.wk; if (w && nowMs < w.t1) { var f = (nowMs - w.t0) / (w.t1 - w.t0); return [w.x0 + (w.x1 - w.x0) * f, w.y0 + (w.y1 - w.y0) * f]; } return [u.x == null ? 0 : u.x, u.y == null ? 0 : u.y]; }
@@ -1210,7 +1269,7 @@
     BUB.list.forEach(function (b) {
       var u = b.u, el = u.el; if (!el || !u.cw) return;
       var r = el.getBoundingClientRect(); if (!r.width) return;
-      var ratio = r.height / (u.ch || r.height), headTop = r.top + (2005 * u.s0 - u.fh * 0.88) * ratio;
+      var ratio = r.height / (u.ch || r.height), m3 = !!(M3 && M3.on), ex = m3 ? (u.el.classList.contains('pfbOn') && u.pfb ? (parseFloat(u.pfb.style.getPropertyValue('--pfs')) || 40) + 18 : 10) : 0, headTop = r.top + (2005 * u.s0 - (m3 && u._3hd ? u._3hd : u.fh * (m3 ? 1.04 : 0.88)) - ex) * ratio;
       if (!b.w) { b.w = b.el.offsetWidth; b.h = b.box.offsetHeight; }
       items.push({ b: b, ax: (r.left + r.width / 2 - sr.left) / k, ay: (headTop - sr.top) / k - 4 });
       if (u.ring && now - (u.rgT || 0) > 500) { u.rgT = now; var rw = Math.max(50, Math.round(u.d * 1.2)), rh = Math.round(rw * 0.3); u.ring.style.cssText = 'top:' + Math.round(2005 * u.s0 - 2) + 'px;width:' + rw + 'px;height:' + rh + 'px;margin:' + (-rh / 2) + 'px 0 0 ' + (-rw / 2) + 'px'; }
@@ -1253,7 +1312,7 @@
   function headPos(u) {
     var el = u.el; if (!el || !u.cw || u.s0 == null) return null;
     var sr = $('stage').getBoundingClientRect(), k = (sr.width / W) || 1, r = el.getBoundingClientRect(); if (!r.width) return null;
-    var ratio = r.height / (u.ch || r.height), headTop = r.top + (2005 * u.s0 - u.fh * 0.88) * ratio;
+    var ratio = r.height / (u.ch || r.height), m3 = !!(M3 && M3.on), ex = m3 ? (u.el.classList.contains('pfbOn') && u.pfb ? (parseFloat(u.pfb.style.getPropertyValue('--pfs')) || 40) + 18 : 10) : 0, headTop = r.top + (2005 * u.s0 - (m3 && u._3hd ? u._3hd : u.fh * (m3 ? 1.04 : 0.88)) - ex) * ratio;
     return { x: (r.left + r.width / 2 - sr.left) / k, y: (headTop - sr.top) / k };
   }
   function emojiPop(u, text) {
@@ -1741,6 +1800,8 @@
     'specials': function (a) { specials(a.on !== false, a.on === false ? 0 : (Number(a.sec) || 20) * 1000); },
     'lag.set': function (a) { S.lag = Math.max(0, Math.min(60, Math.round(Number(a.sec) || 0))); save(); rcSnap(true); },
     'lite.set': function (a) { S.lite = a.on ? true : false; slowT = 0; liteApply(); save(); rcSnap(true); },
+    'avatar.mode': function (a) { m3dSet(a.on == null ? !S.m3d : !!a.on); },
+    'avatar.badges': function (a) { S.pfb = ['auto', 'all', 'chat', 'off'].indexOf(a.m) >= 0 ? a.m : 'auto'; save(); M3.n = -1; rcSnap(true); },
     'spk.set': function (a) { if (a.on != null) S.spk.on = !!a.on; if (a.amt != null) S.spk.amt = Math.max(0, Math.min(1.5, Number(a.amt) || 0)); spkShow(); save(); rcSnap(true); },
     'city.set': function (a) { S.cityOn = a.on !== false; setBg(); save(); rcSnap(true); },
     'city.fire': function (a) { CITY.fire(Math.max(1, Math.min(6, Number(a.n) || 3))); },
@@ -1999,7 +2060,7 @@
     people.sort(function (a, b) { return b.la - a.la; });
     var top = []; order.forEach(function (k) { var u = users[k]; if (u && u.inside && u.stage && S.top5 && !RW.on) top[u.rank || 0] = { n: u.name, s: u.show }; });
     var L = {}; Object.keys(LT).forEach(function (k) { if (k.charAt(0) !== '_') L[k] = LT[k]; });
-    var snap = { t: 'state', ver: 1, lag: S.lag, cf: S.cf || '', panels: S.panels, staff: STAFF, specials: !!($('specials') && $('specials').classList.contains('show')), ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, spk: S.spk, lite: !!S.lite, liteAuto: S.lite === 'auto', codes: Object.keys(S.codes).map(function (t) { return { t: t, w: S.codes[t].word, on: S.codes[t].on, item: itemName(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })[0]) }; }), cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
+    var snap = { t: 'state', ver: 1, lag: S.lag, cf: S.cf || '', panels: S.panels, staff: STAFF, specials: !!($('specials') && $('specials').classList.contains('show')), ssn: !!(ws && ws.readyState === 1), cnt: cnt, k: CROWDK, top5: !!S.top5, top: top.filter(Boolean), light: L, np: S.np, vip: S.vip, mods: S.mods, need: S.need, maxOn: S.maxOn, spk: S.spk, lite: !!S.lite, liteAuto: S.lite === 'auto', m3d: !!S.m3d, m3dOn: !!M3.on, m3dLoading: !!M3.loading, m3dErr: M3.err || '', pfb: S.pfb || 'auto', codes: Object.keys(S.codes).map(function (t) { return { t: t, w: S.codes[t].word, on: S.codes[t].on, item: itemName(Object.keys(EARN.items).filter(function (i) { return EARN.items[i] === t; })[0]) }; }), cl: { on: CL.on, ph: CL.ph, left: CL.ph === 'last' ? Math.max(0, Math.ceil((CL.end - Date.now()) / 1000)) : 0, msg: S.closing }, rw: { on: RW.on, ph: RW.phase, left: RW.phase === 'vote' ? Math.max(0, Math.ceil((RW.end - Date.now()) / 1000)) : 0 }, lm: lastMsg ? Date.now() - lastMsg : null, mod: { blocked: Object.keys(S.blocked).map(function (k) { return { k: k, n: S.blocked[k] }; }), nophoto: Object.keys(S.nophoto).map(function (k) { return { k: k, n: S.nophoto[k] }; }) }, city: S.cityOn !== false, bub: { on: S.bub.on !== false, emoji: S.bub.emoji !== false, words: S.bub.words }, scale: R.scale, nicki: { done: !!S.nickiDone, inside: !!(users['x:nickiminaj'] && users['x:nickiminaj'].inside) }, people: people.slice(0, 200), log: (logEl.textContent || '').split('\n').slice(0, 12) };
     var sig = JSON.stringify(snap); if (!force && sig === RC.lastSnap) return; RC.lastSnap = sig; rcSend(snap);
   }
   function rcStart() {
@@ -2020,7 +2081,7 @@
   CITY.start(); spkBuild(); liteApply(); if (K_STEPS.indexOf(S.k) >= 0) CROWDK = S.k; buildSlots(); placeFixed(); buildGlows(); buildLed(); buildBartenders(); setBg(); buildPanel(); setNP(S.np.a, S.np.t); npStart(); vipUI(); lightUI(); tip(); setInterval(tip, 8000); connect(); rcStart();
   Object.keys(S.users || {}).forEach(function (k) { var sv = S.users[k]; if (sv.inside) { var u = newUser(k, sv.name, sv.plat, sv.photo); u.hnd = k.split(':')[1]; u.inside = true; u._restore = true; refreshVip(u); order.push(k); } });
   relayout();
-  window.__vnn = { raw: handleRaw, mq: function () { return { q: MQ.length, dropped: mqDrop }; }, slots: function (k) { var o = makeSlots(k); return { floor: o.floor.length, bar: o.bar.length, vip: o.vip.length }; }, city: CITY, perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap, drinks: { order: orderDrink, round: barRound, act: startAct, hold: holdOf }, demo: demoRun, emo: emojiOnly, bub: bubble, bubs: BUB, bubRule: bubRule };
+  window.__vnn = { raw: handleRaw, mq: function () { return { q: MQ.length, dropped: mqDrop }; }, slots: function (k) { var o = makeSlots(k); return { floor: o.floor.length, bar: o.bar.length, vip: o.vip.length }; }, city: CITY, perf: function () { return { stride: STRIDE, ms: +fpsMs.toFixed(1), dt: +dtAvg.toFixed(1), cache: VNNA.cacheSize(), n: crowdList().length }; }, top5: setTop5, fit: autoFit, out: function () { var n = users['x:nickiminaj']; if (n) nickiWalkOut(n); }, k: function () { return CROWDK; }, np: setNP, chat: onMessage, raw: handleRaw, users: users, state: function () { return { S: S, R: R, LT: LT }; }, light: lightCmd, bots: addBots, nicki: nickiRehearse, rc: rcRecv, snap: rcSnap, drinks: { order: orderDrink, round: barRound, act: startAct, hold: holdOf }, m3: M3, m3set: m3dSet, demo: demoRun, emo: emojiOnly, bub: bubble, bubs: BUB, bubRule: bubRule };
 })();
 </script>
 </body>

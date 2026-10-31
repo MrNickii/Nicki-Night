@@ -21,6 +21,16 @@ html.polish .p .sh { display: block; }
 body.lite .p .sh { display: none !important; } body.lite .p .in2 canvas { filter: none !important; }
 .p.walk .av * { animation-play-state: paused !important; }
 @keyframes step { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-7px) rotate(1.5deg); } }
+.p .pfb { position: absolute; left: 50%; width: calc(var(--pfs, 40px) * var(--pfk, 1)); height: calc(var(--pfs, 40px) * var(--pfk, 1)); transform: translate(-50%, 8px) scale(.55); display: none; opacity: 0; transition: opacity .35s, transform .45s cubic-bezier(.2,1.6,.4,1); pointer-events: none; z-index: 4; }
+.p .pfb i { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--pc, #ff4fb0); background: #2a1030 center / cover no-repeat; box-shadow: 0 0 10px var(--pc, #ff4fb0), 0 3px 8px rgba(0,0,0,.55); font: 900 calc(var(--pfs, 40px) * .45) / 1 system-ui, Arial, sans-serif; color: #fff; display: flex; align-items: center; justify-content: center; font-style: normal; box-sizing: border-box; animation: pfbF 3.4s ease-in-out infinite; }
+.p .pfb::after { content: ''; position: absolute; left: 50%; bottom: -8px; margin-left: -6px; border: 6px solid transparent; border-top: 8px solid var(--pc, #ff4fb0); border-bottom: 0; }
+@keyframes pfbF { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+body.m3d .p .pfb { display: block; }
+body.m3d .p.pfbOn .pfb { opacity: 1; transform: translate(-50%, 0) scale(1); }
+body.m3d .p.pfbOn.pfbTalk .pfb { transform: translate(-50%, -4px) scale(1.18); }
+body.m3d .p .in2 canvas { visibility: hidden; }
+body.m3d .p .sh { display: none !important; }
+body.lite .p .pfb i { box-shadow: 0 2px 5px rgba(0,0,0,.5); animation: none; }
 .pill { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 4px); white-space: nowrap; box-sizing: border-box; border: .62em solid transparent; border-image: url(vnn/ui/tag.png) 32 fill / .62em stretch; padding: .02em .5em; background: none; font: 700 15px/1.15 system-ui, Arial, sans-serif; color: #fff; text-shadow: 0 0 6px rgba(255,79,176,.8); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; z-index: 5; }
 .pill.show { filter: drop-shadow(0 0 5px rgba(255,79,176,.8)) drop-shadow(0 0 12px rgba(255,79,176,.4)); }
 .pill.show { opacity: 1; transform: translate(-50%, -2px); }
