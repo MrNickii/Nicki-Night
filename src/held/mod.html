@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="icon" href="vnn/ui/icon.png">
+<title>Nicki Night · Mods</title><link rel="stylesheet" href="vnn/panel.css"></head>
+<body>
+<div id="gate"><div style="font:900 22px system-ui;letter-spacing:.08em">NICKI NIGHT · MODS</div><input id="gin" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="PIN"><button id="gbtn">Unlock</button><div id="gmsg" style="color:#ff8ad0;min-height:22px"></div></div>
+<header><h1>NICKI <b>NIGHT</b> · Mods</h1><span class="pill"><i class="dot" id="d1"></i><span id="s1">Connecting…</span></span><span id="who"></span></header>
+<main>
+ <div id="offmsg">The Mod panel is switched off right now. The buttons will work again when the show's control turns it back on.</div>
+ <p class="how" style="font-size:15px">Keep the club safe. Find a person, then tap <b>Hide photo</b> for a bad picture, or <b>Block</b> for bad behavior (tap Block twice). Everything can be undone at the bottom.</p>
+
+ <div class="card needon"><h2>Find someone</h2>
+  <input type="text" id="find" placeholder="Type part of their name" autocapitalize="off" autocorrect="off">
+  <div id="people" style="margin-top:8px"></div></div>
+
+ <div class="card needon"><h2>Emergency</h2><p class="how">Chat flooded with nasty messages? Pause the bubbles. Turn them back on when it calms down.</p>
+  <button class="b big" id="bub">Chat bubbles</button>
+  <p class="how" style="margin-top:12px">Runway, Top 5 or an entrance stuck? This ends it and puts everyone back.</p>
+  <button class="b big" id="evend">⏹ End event</button></div>
+
+ <div class="card needon"><h2>Add a VIP</h2><p class="how">Type their X @. They go to the VIP lounge.</p>
+  <div class="row"><input type="text" id="vh" placeholder="@handle" autocapitalize="off" autocorrect="off"><button class="b go" id="vadd" style="flex:0 0 100px">Add</button></div></div>
+
+ <div class="card needon"><h2>Undo</h2><div id="undo"></div></div>
+</main>
+<div id="toast"></div>
+<script src="vnn/panel.js"></script>
+<script>
+(function () {
+  var P = PANEL, $ = P.$, cmd = P.cmd, esc = P.esc, ZN = { floor: 'dance floor', bar: 'bar', vip: 'VIP', stage: 'stage' };
+  function people() {
+    var st = P.st(); if (!st) return; var q = $('find').value.toLowerCase().replace(/^@/, '');
+    if (document.activeElement && document.activeElement.closest && document.activeElement.closest('#people')) return;
+    var L = (st.people || []).filter(function (p) { return !q || (p.n + ' ' + p.h).toLowerCase().indexOf(q) >= 0; }).slice(0, 40);
+    $('people').innerHTML = L.length ? L.map(function (p) { return '<div class="person"><div class="av ' + esc(p.p) + '">' + esc((p.n || '?').charAt(0).toUpperCase()) + '</div><div style="flex:1;min-width:0"><div class="nm">' + esc(p.n) + '</div><div class="meta">' + esc(p.p) + ' · ' + (ZN[p.z] || '') + '</div></div>' + (p.np ? '<button class="b sm" data-up="' + esc(p.k) + '">Show photo</button>' : '<button class="b sm" data-ph="' + esc(p.k) + '">Hide photo</button>') + '<button class="b sm bad" data-bl="' + esc(p.k) + '" data-n="' + esc(p.n) + '">Block</button></div>'; }).join('') : '<p class="how">' + (q ? 'Nobody with that name inside.' : 'Nobody inside yet.') + '</p>';
+  }
+  $('find').oninput = people;
+  function act(e) {
+    var ph = e.target.closest('[data-ph]'), up = e.target.closest('[data-up]'), bl = e.target.closest('[data-bl]'), ub = e.target.closest('[data-ub]');
+    if (ph) cmd('mod.photo', { key: ph.dataset.ph, hide: true }, 'Photo hidden');
+    if (up) cmd('mod.photo', { key: up.dataset.up, hide: false }, 'Photo shown');
+    if (ub) cmd('mod.block', { key: ub.dataset.ub, on: false }, 'Unblocked');
+    if (bl) P.armed(bl, function () { cmd('mod.block', { key: bl.dataset.bl, n: bl.dataset.n }, 'Blocked ' + bl.dataset.n); });
+  }
+  $('people').onclick = act; $('undo').onclick = act;
+  $('evend').onclick = function () { if (!P.st()) { P.toast('Waiting for the club to connect…', 'bad'); return; } cmd('event.end', {}, 'Back to normal'); };
+  $('bub').onclick = function () { var st = P.st(); if (!st || !st.bub) { P.toast('Waiting for the club to connect…', 'bad'); return; } cmd('bub.set', { on: !st.bub.on }); };
+  $('vadd').onclick = function () { var h = $('vh').value.trim(); if (!h) return; cmd('user.vip', { h: h }, 'Added ' + h).then(function (r) { if (r.ok !== false) $('vh').value = ''; }); };
+  P.on(function (st) {
+    document.body.classList.toggle('off', !!(st.panels && st.panels.mod === false)); people();
+    var on = !(st.bub && st.bub.on === false); $('bub').classList.toggle('bad', !on); $('bub').textContent = on ? 'Bubbles are ON · tap to pause' : 'Bubbles are PAUSED · tap to turn on';
+    var m = st.mod || {}, h = '';
+    (m.blocked || []).forEach(function (x) { h += '<div class="person"><div style="flex:1" class="nm">' + esc(x.n) + ' <span class="tag">blocked</span></div><button class="b sm" data-ub="' + esc(x.k) + '">Unblock</button></div>'; });
+    (m.nophoto || []).forEach(function (x) { h += '<div class="person"><div style="flex:1" class="nm">' + esc(x.n) + ' <span class="tag">photo hidden</span></div><button class="b sm" data-up="' + esc(x.k) + '">Show photo</button></div>'; });
+    $('undo').innerHTML = h || '<p class="how">Nothing to undo.</p>';
+  });
+  P.gate(function () { P.ident('mod', ['marajestyelitev', 'breythebarbie'], P.start); }, 'mod');
+})();
+</script>
+</body></html>
