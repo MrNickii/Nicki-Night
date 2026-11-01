@@ -226,7 +226,25 @@
   function itemName(id) { var all = [].concat(CATALOG.looks, CATALOG.bottoms, CATALOG.shoes, CATALOG.hair.styles, CATALOG.accessories.items), i; for (i = 0; i < all.length; i++) if (all[i].id === id) return all[i].name; return id; }
   /* the owner and the staff list wear anything: every earned and VIP piece */
   var OWNER = { mrnicki: 1, mrnickii: 1 };
-  var OPEN_ALL = true; /* tonight: every piece is unlocked for everyone */
+  var OPEN_ALL = false; /* locks are back: earned items need their task, VIP items need VIP (staff and the owner still get everything) */
+  /* one-time reset (Ken, 2026-11-01): everyone's earned items, grants and night progress are wiped, and anything locked is taken off saved looks */
+  if (S.lockV !== 2) {
+    (function () {
+      var all = [].concat(CATALOG.looks, CATALOG.bottoms, CATALOG.shoes, CATALOG.hair.styles, CATALOG.accessories.items), U = {};
+      all.forEach(function (it) { if (it && it.id) U[it.id] = it.unlock || 'free'; });
+      var vips = {}; (S.vip || []).forEach(function (h) { vips[String(h).toLowerCase().replace(/^@/, '')] = 1; });
+      Object.keys(S.users || {}).forEach(function (k) {
+        var sv = S.users[k]; if (!sv) return; sv.ear = {}; sv.pg = null; sv.grant = false; sv.show = 0;
+        var h = k.split(':').slice(1).join(':').toLowerCase(); if (STAFF[h] || OWNER[h]) return;
+        var vip = k.indexOf('x:') === 0 && !!vips[h], L = sv.look; if (!L) return;
+        var bad = function (id) { var u = U[id]; return u === 'earned' || u === 'nicki' || (u === 'vip' && !vip); };
+        ['top', 'bottom', 'shoes', 'hair'].forEach(function (f) { if (L[f] && bad(L[f])) L[f] = null; });
+        if (Array.isArray(L.acc)) L.acc = L.acc.filter(function (id) { return !bad(id); });
+      });
+      S.ss = { peak: 0, ent: {}, sd: {}, win: [] }; S.lockV = 2;
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    })();
+  }
   function allAccess(u) { if (!u) return false; if (OPEN_ALL || u.grant) return true; return ids(u).some(function (h) { return STAFF[h] || OWNER[h]; }); }
   function itemEarned(u, id) { var t = EARN.items[id]; return allAccess(u) || !t || !!(u.ear && u.ear[t]); }
   function isEarned(u) { return allAccess(u) || !!(u.ear && Object.keys(u.ear).length); }
